@@ -1,3 +1,4 @@
 ## 0.0.1
 
-* TODO: Describe initial release.
+- Initial release of shared feature modules.
+- Added starter auth implementation, profile and notifications stubs, and shared settings logic for theme and locale preferences.

@@ -35,16 +35,22 @@ class AppButton extends StatelessWidget {
               )
             : Text(label);
 
-    final effectiveWidth = width != null ? SizedBox(width: width, child: _build(context, child)) : _build(context, child);
+    final effectiveWidth = width != null
+        ? SizedBox(width: width, child: _build(context, child))
+        : _build(context, child);
     return effectiveWidth;
   }
 
   Widget _build(BuildContext context, Widget child) {
     return switch (variant) {
-      AppButtonVariant.primary => ElevatedButton(onPressed: isLoading ? null : onPressed, child: child),
-      AppButtonVariant.secondary => FilledButton.tonal(onPressed: isLoading ? null : onPressed, child: child),
-      AppButtonVariant.outline => OutlinedButton(onPressed: isLoading ? null : onPressed, child: child),
-      AppButtonVariant.text => TextButton(onPressed: isLoading ? null : onPressed, child: child),
+      AppButtonVariant.primary =>
+        ElevatedButton(onPressed: isLoading ? null : onPressed, child: child),
+      AppButtonVariant.secondary => FilledButton.tonal(
+          onPressed: isLoading ? null : onPressed, child: child),
+      AppButtonVariant.outline =>
+        OutlinedButton(onPressed: isLoading ? null : onPressed, child: child),
+      AppButtonVariant.text =>
+        TextButton(onPressed: isLoading ? null : onPressed, child: child),
     };
   }
 }

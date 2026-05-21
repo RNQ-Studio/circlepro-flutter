@@ -43,7 +43,8 @@ abstract final class AppTheme {
           ),
           filled: true,
           fillColor: AppColors.white,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       );
 
@@ -83,11 +84,13 @@ abstract final class AppTheme {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: AppColors.primaryLight, width: 2),
+            borderSide:
+                const BorderSide(color: AppColors.primaryLight, width: 2),
           ),
           filled: true,
           fillColor: AppColors.grey800,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       );
 

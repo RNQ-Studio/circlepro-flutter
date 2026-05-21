@@ -8,7 +8,8 @@ import '../domain/repositories/auth_repository.dart';
 
 /// Must be overridden at app scope with a real [StorageService] implementation.
 final storageServiceProvider = Provider<StorageService>((ref) {
-  throw UnimplementedError('storageServiceProvider must be overridden in app scope');
+  throw UnimplementedError(
+      'storageServiceProvider must be overridden in app scope');
 });
 
 final _dioClientProvider = Provider<DioClient>(

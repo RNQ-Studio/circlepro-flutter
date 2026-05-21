@@ -8,17 +8,17 @@ Panduan git workflow dan aturan kontribusi untuk project ini.
 
 Project ini menggunakan **simplified GitFlow**:
 
-```
+```text
 main
- └── develop
-      ├── feature/[nama]
-      ├── fix/[nama]
-      └── hotfix/[nama]
+`-- develop
+    |-- feature/[nama]
+    |-- fix/[nama]
+    `-- hotfix/[nama]
 ```
 
 | Branch | Fungsi | Branch asal | Merge ke |
 |---|---|---|---|
-| `main` | Kode production, selalu stable | — | — |
+| `main` | Kode production, selalu stable | - | - |
 | `develop` | Integrasi, branch kerja utama | `main` | `main` |
 | `feature/[nama]` | Fitur baru | `develop` | `develop` |
 | `fix/[nama]` | Bug fix | `develop` | `develop` |
@@ -44,7 +44,7 @@ Gunakan **kebab-case**, singkat tapi deskriptif. Hindari nama generik seperti `f
 
 Project ini menggunakan [Conventional Commits](https://www.conventionalcommits.org/):
 
-```
+```text
 <type>(<scope>): <deskripsi singkat>
 ```
 
@@ -61,31 +61,31 @@ Project ini menggunakan [Conventional Commits](https://www.conventionalcommits.o
 | `chore` | Build process, dependency update, tooling |
 | `perf` | Peningkatan performa |
 
-### Scope (opsional)
+### Scope
 
-Nama fitur atau package yang diubah: `auth`, `profile`, `core`, `router`, dll.
+Scope opsional. Gunakan nama fitur atau package yang diubah, misalnya `auth`, `profile`, `core`, atau `router`.
 
-### Aturan penulisan
+### Aturan Penulisan
 
-- Deskripsi singkat maksimal **72 karakter**
-- Gunakan **imperative mood**: `add`, `fix`, `update`, `remove` — bukan `added`, `fixing`
-- Tidak diakhiri tanda titik
+- Deskripsi singkat maksimal **72 karakter**.
+- Gunakan imperative mood: `add`, `fix`, `update`, `remove`.
+- Jangan akhiri deskripsi dengan tanda titik.
 
-### Contoh
+Contoh:
 
 ```bash
 feat(auth): add biometric login support
 fix(network): handle 401 response on token expiry
-docs: update ARCHITECTURE.md with override rule
-refactor(core): simplify ResponsiveLayout widget
-chore: upgrade riverpod to 2.6.0
+docs: update architecture guide
+refactor(core): simplify responsive layout
+chore: upgrade riverpod
 ```
 
 ---
 
 ## Workflow
 
-### Mengerjakan fitur baru
+### Mengerjakan Fitur Baru
 
 ```bash
 # 1. Pastikan develop up to date
@@ -99,7 +99,7 @@ git checkout -b feature/nama-fitur
 git add <file>
 git commit -m "feat(scope): deskripsi"
 
-# 4. Rebase ke develop sebelum push (agar tidak konflik)
+# 4. Rebase ke develop sebelum push
 git fetch origin
 git rebase origin/develop
 
@@ -107,7 +107,7 @@ git rebase origin/develop
 git push origin feature/nama-fitur
 ```
 
-### Hotfix production
+### Hotfix Production
 
 ```bash
 # 1. Branch dari main
@@ -119,50 +119,81 @@ git checkout -b hotfix/nama-fix
 git commit -m "fix(scope): deskripsi"
 git push origin hotfix/nama-fix
 
-# 3. Buat PR ke main DAN develop (dua PR terpisah)
+# 3. Buat PR ke main dan develop
 ```
+
+---
+
+## Quality Checks
+
+CI menjalankan checks berikut pada push dan pull request ke `main` atau `develop`:
+
+```bash
+dart pub get
+dart run melos list
+dart run melos run format:check
+dart run melos run analyze
+dart run melos run test
+```
+
+Sebelum submit PR, jalankan dari root repo:
+
+```bash
+dart run melos run format:check
+dart run melos run analyze
+dart run melos run test
+```
+
+Jika format check gagal, jalankan:
+
+```bash
+dart run melos run format
+```
+
+Lalu commit hasil format.
 
 ---
 
 ## Pull Request
 
-### Sebelum submit PR
+### Sebelum Submit PR
 
-- [ ] Kode sudah di-format (`dart format .`)
-- [ ] Tidak ada warning dari analyzer (`dart analyze`)
-- [ ] Sudah test manual di device/emulator
-- [ ] Commit message mengikuti convention
-- [ ] Sudah rebase ke branch target terbaru
+- [ ] Kode sudah di-format (`dart run melos run format:check`).
+- [ ] Tidak ada warning/error dari analyzer (`dart run melos run analyze`).
+- [ ] Test otomatis pass (`dart run melos run test`).
+- [ ] Sudah test manual di device/emulator jika perubahan menyentuh UI atau platform.
+- [ ] Commit message mengikuti convention.
+- [ ] Sudah rebase ke branch target terbaru.
 
 ### Judul PR
 
 Ikuti format commit convention:
 
-```
+```text
 feat(auth): add biometric login support
 fix(network): handle 401 response on token expiry
 ```
 
-### Target branch
+### Target Branch
 
 | Jenis perubahan | Target branch |
 |---|---|
 | Fitur, fix, refactor | `develop` |
 | Hotfix production | `main` |
 
-### Merge policy
+### Merge Policy
 
-- Minimal **1 approval** dari reviewer sebelum merge
-- Yang boleh merge: **author PR sendiri** setelah dapat approval, atau **maintainer**
-- Gunakan **Squash and Merge** untuk `feature/*` dan `fix/*` ke `develop`
-- Gunakan **Merge Commit** untuk `develop` → `main` dan `hotfix/*` → `main`
-- Jangan merge PR yang masih memiliki unresolved comment
+- Minimal **1 approval** dari reviewer sebelum merge.
+- Yang boleh merge: author PR sendiri setelah dapat approval, atau maintainer.
+- Gunakan **Squash and Merge** untuk `feature/*` dan `fix/*` ke `develop`.
+- Gunakan **Merge Commit** untuk `develop` ke `main` dan `hotfix/*` ke `main`.
+- Jangan merge PR yang masih memiliki unresolved comment.
 
 ---
 
-## Catatan tambahan
+## Catatan Tambahan
 
-### Jika ada konflik saat rebase
+### Jika Ada Konflik Saat Rebase
 
 ```bash
 # Selesaikan konflik, lalu lanjutkan
@@ -170,6 +201,6 @@ git add <file-yang-konflik>
 git rebase --continue
 ```
 
-### Rilis versi (opsional, jika dibutuhkan nanti)
+### Rilis Versi
 
 Jika project berkembang ke tahap rilis versioned, buat branch `release/x.x.x` dari `develop`, lakukan finalisasi, lalu merge ke `main` dan `develop`.

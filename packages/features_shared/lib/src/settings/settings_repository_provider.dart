@@ -12,7 +12,8 @@ final _settingsStorageProvider = FutureProvider<StorageService>((ref) async {
   return storage;
 });
 
-final settingsRepositoryProvider = FutureProvider<SettingsRepository>((ref) async {
+final settingsRepositoryProvider =
+    FutureProvider<SettingsRepository>((ref) async {
   final storage = await ref.watch(_settingsStorageProvider.future);
   return SettingsRepositoryImpl(storage);
 });

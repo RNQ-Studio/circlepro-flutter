@@ -66,7 +66,9 @@ class _ThemeTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) => RadioGroup<ThemeMode>(
         groupValue: current,
-        onChanged: (val) { if (val != null) onChanged(val); },
+        onChanged: (val) {
+          if (val != null) onChanged(val);
+        },
         child: Column(
           children: ThemeMode.values
               .map((mode) => RadioListTile<ThemeMode>(
@@ -90,7 +92,9 @@ class _LanguageTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) => RadioGroup<String>(
         groupValue: current.languageCode,
-        onChanged: (val) { if (val != null) onChanged(Locale(val)); },
+        onChanged: (val) {
+          if (val != null) onChanged(Locale(val));
+        },
         child: const Column(
           children: [
             RadioListTile<String>(

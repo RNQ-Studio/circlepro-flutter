@@ -37,7 +37,8 @@ class DioClient {
             err.type == DioExceptionType.sendTimeout) {
           handler.reject(
             err.copyWith(
-              error: NetworkException('Connection timeout', statusCode: statusCode),
+              error: NetworkException('Connection timeout',
+                  statusCode: statusCode),
             ),
           );
           return;
@@ -45,7 +46,9 @@ class DioClient {
         handler.reject(
           err.copyWith(
             error: ServerException(
-              err.response?.data?['message']?.toString() ?? err.message ?? 'Server error',
+              err.response?.data?['message']?.toString() ??
+                  err.message ??
+                  'Server error',
             ),
           ),
         );

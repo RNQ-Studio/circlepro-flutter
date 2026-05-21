@@ -1,6 +1,8 @@
 # flutter-starter
 
-Flutter starter project dengan **Monorepo**, **Clean Architecture**, **Multi-Flavor**, dan **Multi-Environment** — siap di-fork sebagai fondasi project baru.
+[![CI](https://github.com/ramadhanrosihadi/flutter-starter/actions/workflows/ci.yml/badge.svg)](https://github.com/ramadhanrosihadi/flutter-starter/actions/workflows/ci.yml)
+
+Flutter starter project dengan **Monorepo**, **Clean Architecture**, **Multi-Flavor**, dan **Multi-Environment**. Repo ini disiapkan untuk di-fork sebagai fondasi project baru.
 
 ---
 
@@ -13,8 +15,27 @@ Flutter starter project dengan **Monorepo**, **Clean Architecture**, **Multi-Fla
 | Navigation | [GoRouter](https://pub.dev/packages/go_router) |
 | HTTP Client | [Dio](https://pub.dev/packages/dio) |
 | Local Storage | SharedPreferences + FlutterSecureStorage |
-| Backend Services | Firebase |
 | Localization | Flutter gen-l10n |
+
+Catatan: Firebase bersifat optional dan belum menjadi dependency aktif di kode starter. Jika project memakai Firebase, lihat `docs/STARTER_GUIDE.md`.
+
+---
+
+## Available Features
+
+Starter ini sudah membawa fondasi berikut:
+
+| Area | Status | Keterangan |
+|------|--------|------------|
+| Monorepo workspace | siap pakai | Dart workspace + Melos scripts |
+| Multi app/flavor | siap pakai | `apps/main` dan `apps/variant` |
+| Multi environment | siap pakai | `dev`, `staging`, `prod` via `--dart-define=ENV=...` |
+| Auth | starter implementation | repository, usecase, provider, route, login screen |
+| Settings | starter implementation | theme mode dan locale preference persisten |
+| Profile | stub | struktur clean architecture dan data dummy |
+| Notifications | stub | struktur clean architecture dan empty state |
+| Core foundation | siap pakai | theme, l10n, network, storage, responsive, route constants, widgets |
+| CI | siap pakai | format check, analyze, test |
 
 ---
 
@@ -22,8 +43,16 @@ Flutter starter project dengan **Monorepo**, **Clean Architecture**, **Multi-Fla
 
 Pastikan tools berikut sudah terinstall:
 
-- [Flutter SDK](https://docs.flutter.dev/get-started/install) — stable channel
-- [Melos](https://melos.invertase.dev/getting-started) — `dart pub global activate melos`
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) stable channel
+- [Melos](https://melos.invertase.dev/getting-started)
+
+Install Melos jika belum tersedia:
+
+```bash
+dart pub global activate melos
+```
+
+Jika command `melos` global belum dikenali, gunakan `dart run melos ...`.
 
 ---
 
@@ -34,11 +63,14 @@ Pastikan tools berikut sudah terinstall:
 git clone https://github.com/ramadhanrosihadi/flutter-starter.git
 cd flutter-starter
 
-# 2. Install semua dependencies dari root
+# 2. Install dependencies dari root
 dart pub get
 
-# 3. Jalankan app
-melos run dev
+# 3. Cek workspace
+dart run melos list
+
+# 4. Jalankan app main
+dart run melos run dev
 ```
 
 ---
@@ -47,19 +79,79 @@ melos run dev
 
 ```bash
 # apps/main
-melos run dev                                         # dev (default)
-flutter run --dart-define=ENV=staging                 # staging
-flutter run --dart-define=ENV=prod                    # prod
+dart run melos run dev
 
 # apps/variant
-melos run dev:variant                                 # dev (default)
-flutter run -t lib/main.dart --dart-define=ENV=staging   # staging
-flutter run -t lib/main.dart --dart-define=ENV=prod      # prod
-
-# Build
-melos run build:android
-melos run build:ios
+dart run melos run dev:variant
 ```
+
+Manual run dari folder app:
+
+```bash
+cd apps/main
+flutter run --dart-define=ENV=staging
+flutter run --dart-define=ENV=prod
+```
+
+```bash
+cd apps/variant
+flutter run --dart-define=ENV=staging
+flutter run --dart-define=ENV=prod
+```
+
+Build:
+
+```bash
+dart run melos run build:android
+dart run melos run build:ios
+dart run melos run build:web
+```
+
+---
+
+## Common Commands
+
+Jalankan dari root repo:
+
+| Command | Fungsi |
+|---------|--------|
+| `dart pub get` | Install dependencies workspace |
+| `dart run melos list` | Lihat package/app yang terdaftar |
+| `dart run melos run dev` | Run `apps/main` dengan `ENV=dev` |
+| `dart run melos run dev:variant` | Run `apps/variant` dengan `ENV=dev` |
+| `dart run melos run format` | Format semua file Dart |
+| `dart run melos run format:check` | Cek format tanpa menulis file |
+| `dart run melos run analyze` | Analyze semua package dan app |
+| `dart run melos run test` | Run semua test |
+| `dart run melos run build:android` | Build APK semua app |
+| `dart run melos run build:ios` | Build IPA semua app |
+| `dart run melos run build:web` | Build web semua app |
+
+App-specific scripts juga tersedia, misalnya `build:android:main`, `build:android:variant`, `test:core`, `test:main`, dan `test:variant`.
+
+---
+
+## Quality Checks
+
+CI menjalankan check berikut pada push dan pull request ke `main` atau `develop`:
+
+```bash
+dart pub get
+dart run melos list
+dart run melos run format:check
+dart run melos run analyze
+dart run melos run test
+```
+
+Sebelum membuat PR, jalankan:
+
+```bash
+dart run melos run format:check
+dart run melos run analyze
+dart run melos run test
+```
+
+Workflow CI ada di `.github/workflows/ci.yml`.
 
 ---
 
@@ -67,12 +159,22 @@ melos run build:ios
 
 Monorepo dengan dua layer utama:
 
-```
-packages/   → shared libraries (core, features_shared)
-apps/       → Flutter apps (main, variant)
+```text
+packages/   # shared libraries: core, features_shared
+apps/       # Flutter apps: main, variant
 ```
 
-Lihat [ARCHITECTURE.md](ARCHITECTURE.md) untuk dokumentasi lengkap arsitektur, aturan dependency, dan panduan menambah fitur atau flavor baru.
+Lihat [ARCHITECTURE.md](ARCHITECTURE.md) untuk dokumentasi lengkap arsitektur dan aturan dependency.
+
+---
+
+## Dokumentasi
+
+- Baru fork atau copy repo? Baca [Starter Guide](docs/STARTER_GUIDE.md).
+- Ingin memahami struktur dan dependency rule? Baca [Architecture](ARCHITECTURE.md).
+- Ingin menambah fitur baru? Baca [Add Feature Guide](docs/ADD_FEATURE.md).
+- Ingin menambah app/flavor baru? Baca [Add App Flavor Guide](docs/ADD_APP_FLAVOR.md).
+- Ingin kontribusi lewat branch/PR? Baca [Contributing Guide](CONTRIBUTING.md).
 
 ---
 
@@ -80,9 +182,10 @@ Lihat [ARCHITECTURE.md](ARCHITECTURE.md) untuk dokumentasi lengkap arsitektur, a
 
 Setelah fork, lakukan langkah berikut sebelum mulai development:
 
-- [ ] Rename package name di seluruh `pubspec.yaml` (ganti `app_main`, `app_variant`, dll)
-- [ ] Update `applicationId` / bundle ID di `android/` dan `ios/` masing-masing app
-- [ ] Ganti base URL di `MainConfig` dan `VariantConfig`
-- [ ] Rename `variant` sesuai nama produk atau klien
-- [ ] Tambahkan `google-services.json` (Android) dan `GoogleService-Info.plist` (iOS) dari Firebase Console
-- [ ] Update nama app di `AndroidManifest.xml` dan `Info.plist`
+- [ ] Rename package name di `pubspec.yaml` yang relevan.
+- [ ] Update `applicationId` Android dan bundle ID iOS masing-masing app.
+- [ ] Ganti base URL di `MainConfig` dan `VariantConfig`.
+- [ ] Tentukan apakah `variant` tetap dipakai, dihapus, atau direname.
+- [ ] Tambahkan konfigurasi Firebase jika project memakai Firebase.
+- [ ] Update nama app, icon, splash screen, web title, dan manifest.
+- [ ] Jalankan quality checks lokal sebelum PR.

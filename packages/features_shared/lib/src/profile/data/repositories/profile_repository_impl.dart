@@ -6,11 +6,13 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Profile> getProfile(String userId) {
-    throw UnimplementedError('ProfileRepositoryImpl.getProfile not yet implemented');
+    throw UnimplementedError(
+        'ProfileRepositoryImpl.getProfile not yet implemented');
   }
 
   @override
   Future<Profile> updateProfile(Profile profile) {
-    throw UnimplementedError('ProfileRepositoryImpl.updateProfile not yet implemented');
+    throw UnimplementedError(
+        'ProfileRepositoryImpl.updateProfile not yet implemented');
   }
 }

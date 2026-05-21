@@ -20,16 +20,76 @@ melos:
   scripts:
     dev:
       run: cd apps/main && flutter run --dart-define=ENV=dev
+      description: Run the main app in dev environment.
 
     "dev:variant":
       run: cd apps/variant && flutter run --dart-define=ENV=dev
+      description: Run the variant app in dev environment.
+
+    analyze:
+      run: dart analyze packages/core packages/features_shared apps/main apps/variant
+      description: Analyze all packages and apps.
+
+    format:
+      run: dart format .
+      description: Format all Dart files.
+
+    "format:check":
+      run: dart format --output=none --set-exit-if-changed .
+      description: Check Dart formatting without changing files.
 
     build:android:
+      run: cd apps/main && flutter build apk --dart-define=ENV=prod && cd ../variant && flutter build apk --dart-define=ENV=prod
+      description: Build Android APKs for all apps.
+
+    "build:android:main":
       run: cd apps/main && flutter build apk --dart-define=ENV=prod
+      description: Build Android APK for the main app.
+
+    "build:android:variant":
+      run: cd apps/variant && flutter build apk --dart-define=ENV=prod
+      description: Build Android APK for the variant app.
 
     build:ios:
+      run: cd apps/main && flutter build ipa --dart-define=ENV=prod && cd ../variant && flutter build ipa --dart-define=ENV=prod
+      description: Build iOS IPAs for all apps.
+
+    "build:ios:main":
       run: cd apps/main && flutter build ipa --dart-define=ENV=prod
+      description: Build iOS IPA for the main app.
+
+    "build:ios:variant":
+      run: cd apps/variant && flutter build ipa --dart-define=ENV=prod
+      description: Build iOS IPA for the variant app.
+
+    build:web:
+      run: cd apps/main && flutter build web --dart-define=ENV=prod && cd ../variant && flutter build web --dart-define=ENV=prod
+      description: Build web output for all apps.
+
+    "build:web:main":
+      run: cd apps/main && flutter build web --dart-define=ENV=prod
+      description: Build web output for the main app.
+
+    "build:web:variant":
+      run: cd apps/variant && flutter build web --dart-define=ENV=prod
+      description: Build web output for the variant app.
 
     test:
-      exec: flutter test
-      concurrency: 4
+      run: flutter test apps/main/test apps/variant/test packages/core/test packages/features_shared/test
+      description: Run tests for all packages and apps.
+
+    "test:core":
+      run: flutter test packages/core/test
+      description: Run tests for the core package.
+
+    "test:features_shared":
+      run: flutter test packages/features_shared/test
+      description: Run tests for the features_shared package.
+
+    "test:main":
+      run: flutter test apps/main/test
+      description: Run tests for the main app.
+
+    "test:variant":
+      run: flutter test apps/variant/test
+      description: Run tests for the variant app.

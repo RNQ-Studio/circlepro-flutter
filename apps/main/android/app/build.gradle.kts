@@ -15,7 +15,7 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        // Replace this starter ID before publishing a real app.
         applicationId = "id.rmq.main"
         minSdk = 24
         targetSdk = 36
@@ -25,8 +25,8 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // Starter default: debug signing keeps local release builds runnable.
+            // Configure a production signing config before publishing.
             signingConfig = signingConfigs.getByName("debug")
         }
     }
