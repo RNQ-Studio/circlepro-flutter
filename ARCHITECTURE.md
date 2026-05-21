@@ -86,8 +86,8 @@ flutter-starter/
     |   |   |-- config/                   # MainConfig membaca ENV dari --dart-define
     |   |   |-- dev/                      # Riverpod overrides khusus debug (FakeAuthRepository, dll) — tidak masuk production build
     |   |   |-- features/                 # fitur eksklusif app main
+    |   |   |   |-- home/                 # home screen (data/domain/presentation)
     |   |   |   `-- settings/             # UI settings khusus main
-    |   |   |-- home/                     # home screen app main
     |   |   |-- router/
     |   |   |   `-- app_router.dart       # GoRouter final untuk app main
     |   |   |-- app.dart                  # ProviderScope + MaterialApp.router
@@ -102,8 +102,8 @@ flutter-starter/
         |-- lib/
         |   |-- config/                   # VariantConfig membaca ENV dari --dart-define
         |   |-- features/                 # fitur eksklusif app variant
+        |   |   |-- home/                 # home screen (data/domain/presentation)
         |   |   `-- settings/             # UI settings khusus variant
-        |   |-- home/                     # home screen app variant
         |   |-- router/
         |   |   `-- app_router.dart       # GoRouter final untuk app variant
         |   |-- app.dart                  # ProviderScope + MaterialApp.router

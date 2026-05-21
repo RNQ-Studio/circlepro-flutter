@@ -1,21 +1,15 @@
 import 'package:flutter/material.dart';
 
+import '../../domain/entities/user_profile.dart';
+
 class HomeUserHeader extends StatelessWidget {
   const HomeUserHeader({
     super.key,
-    required this.name,
-    required this.email,
-    required this.gender,
-    required this.age,
-    required this.city,
+    required this.profile,
     required this.onEditTap,
   });
 
-  final String name;
-  final String email;
-  final String gender;
-  final String age;
-  final String city;
+  final UserProfile profile;
   final VoidCallback onEditTap;
 
   @override
@@ -41,16 +35,16 @@ class HomeUserHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Hi, $name',
+                  'Hi, ${profile.name}',
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(email, style: theme.textTheme.bodyMedium),
+                Text(profile.email, style: theme.textTheme.bodyMedium),
                 const SizedBox(height: 2),
                 Text(
-                  '$gender | Usia $age | Domisili di $city',
+                  '${profile.gender} | Usia ${profile.age} | Domisili di ${profile.city}',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),

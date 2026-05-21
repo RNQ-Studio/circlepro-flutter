@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:core/core.dart';
 
-import 'home_fake_data.dart';
+import 'home_provider.dart';
 import 'widgets/home_user_header.dart';
 import 'widgets/home_menu_grid.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profileAsync = ref.watch(userProfileProvider);
+
     return Scaffold(
       body: SafeArea(
         child: CustomScrollView(
@@ -29,14 +32,20 @@ class HomeScreen extends StatelessWidget {
               ],
             ),
             SliverToBoxAdapter(
-              child: HomeUserHeader(
-                name: kFakeUserName,
-                email: kFakeUserEmail,
-                gender: kFakeUserGender,
-                age: kFakeUserAge,
-                city: kFakeUserCity,
-                onEditTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Edit profil belum tersedia')),
+              child: profileAsync.when(
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (e, _) => Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Text('Gagal memuat profil: $e'),
+                ),
+                data: (profile) => HomeUserHeader(
+                  profile: profile,
+                  onEditTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Edit profil belum tersedia')),
+                  ),
                 ),
               ),
             ),

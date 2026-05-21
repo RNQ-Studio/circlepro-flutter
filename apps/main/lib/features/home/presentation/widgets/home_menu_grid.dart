@@ -8,21 +8,21 @@ class _MenuItem {
 }
 
 const _menuItems = [
-  _MenuItem(label: 'Menu 01', icon: Icons.track_changes,       color: Colors.purple),
-  _MenuItem(label: 'Menu 02', icon: Icons.military_tech,       color: Colors.deepOrange),
-  _MenuItem(label: 'Menu 03', icon: Icons.show_chart,          color: Colors.teal),
-  _MenuItem(label: 'Menu 04', icon: Icons.storage,             color: Colors.amber),
-  _MenuItem(label: 'Menu 05', icon: Icons.group_add,           color: Colors.green),
-  _MenuItem(label: 'Menu 06', icon: Icons.person,              color: Colors.cyan),
-  _MenuItem(label: 'Menu 07', icon: Icons.people,              color: Color(0xFF00695C)),
-  _MenuItem(label: 'Menu 08', icon: Icons.bar_chart,           color: Colors.deepPurple),
-  _MenuItem(label: 'Menu 09', icon: Icons.search,              color: Colors.teal),
-  _MenuItem(label: 'Menu 10', icon: Icons.location_on,         color: Colors.brown),
-  _MenuItem(label: 'Menu 11', icon: Icons.lightbulb_outline,   color: Colors.amber),
-  _MenuItem(label: 'Menu 12', icon: Icons.calculate,           color: Colors.blueGrey),
-  _MenuItem(label: 'Menu 13', icon: Icons.timer,               color: Colors.red),
-  _MenuItem(label: 'Menu 14', icon: Icons.feedback_outlined,   color: Colors.orange),
-  _MenuItem(label: 'Menu 15', icon: Icons.star_outline,        color: Colors.indigo),
+  _MenuItem(label: 'Menu 01', icon: Icons.track_changes,     color: Colors.purple),
+  _MenuItem(label: 'Menu 02', icon: Icons.military_tech,     color: Colors.deepOrange),
+  _MenuItem(label: 'Menu 03', icon: Icons.show_chart,        color: Colors.teal),
+  _MenuItem(label: 'Menu 04', icon: Icons.storage,           color: Colors.amber),
+  _MenuItem(label: 'Menu 05', icon: Icons.group_add,         color: Colors.green),
+  _MenuItem(label: 'Menu 06', icon: Icons.person,            color: Colors.cyan),
+  _MenuItem(label: 'Menu 07', icon: Icons.people,            color: Color(0xFF00695C)),
+  _MenuItem(label: 'Menu 08', icon: Icons.bar_chart,         color: Colors.deepPurple),
+  _MenuItem(label: 'Menu 09', icon: Icons.search,            color: Colors.teal),
+  _MenuItem(label: 'Menu 10', icon: Icons.location_on,       color: Colors.brown),
+  _MenuItem(label: 'Menu 11', icon: Icons.lightbulb_outline, color: Colors.amber),
+  _MenuItem(label: 'Menu 12', icon: Icons.calculate,         color: Colors.blueGrey),
+  _MenuItem(label: 'Menu 13', icon: Icons.timer,             color: Colors.red),
+  _MenuItem(label: 'Menu 14', icon: Icons.feedback_outlined, color: Colors.orange),
+  _MenuItem(label: 'Menu 15', icon: Icons.star_outline,      color: Colors.indigo),
 ];
 
 class HomeMenuGrid extends StatelessWidget {
