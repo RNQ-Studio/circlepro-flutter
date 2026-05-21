@@ -239,8 +239,9 @@ Acceptance criteria sprint: kedua app (`apps/main` dan `apps/variant`) bisa di-r
     );
     @override
     String get baseUrl => switch (environment) {
+      Environment.dev => 'https://api-dev.example.com',
+      Environment.staging => 'https://api-staging.example.com',
       Environment.prod => 'https://api.example.com',
-      _ => 'https://api-dev.example.com',
     };
   }
   ```
@@ -390,15 +391,28 @@ Acceptance criteria sprint: kedua app (`apps/main` dan `apps/variant`) bisa di-r
 
 ## Phase 5 — `apps/variant/`
 
-- [ ] Buat Flutter project:
+- [x] Buat Flutter project:
   ```bash
-  flutter create --org id.rmq --platforms android,ios,web --project-name app_variant apps/variant
+  flutter create --no-pub --org id.rmq --platforms android,ios,web --project-name app_variant apps/variant
   ```
-- [ ] Hapus boilerplate: `lib/main.dart` dan `test/widget_test.dart`
-- [ ] Update `apps/variant/pubspec.yaml`:
+  > `--no-pub` menjaga proses create tetap cepat dan konsisten dengan `apps/main`. Dependency workspace di-resolve setelah `apps/variant` masuk root `workspace`.
+- [x] Hapus boilerplate: `lib/main.dart` dan `test/widget_test.dart`
+- [x] Update `apps/variant/pubspec.yaml`:
   - `name: app_variant`, `resolution: workspace`
-  - deps: `core`, `features_shared`
-- [ ] Tambahkan `apps/variant` ke workspace di root `pubspec.yaml` (workspace sekarang lengkap):
+  - deps: `core`, `features_shared`, `flutter_localizations`, `intl: any`, `flutter_riverpod`, `go_router` (direct deps karena diimport langsung di app layer)
+  ```yaml
+  dependencies:
+    flutter:
+      sdk: flutter
+    flutter_localizations:
+      sdk: flutter
+    intl: any
+    core:
+    features_shared:
+    flutter_riverpod: ^3.3.1
+    go_router: ^17.2.3
+  ```
+- [x] Tambahkan `apps/variant` ke workspace di root `pubspec.yaml` (workspace sekarang lengkap):
   ```yaml
   workspace:
     - packages/core
@@ -406,29 +420,45 @@ Acceptance criteria sprint: kedua app (`apps/main` dan `apps/variant`) bisa di-r
     - apps/main
     - apps/variant
   ```
-- [ ] Jalankan `melos bootstrap` dari root — semua 4 package sudah siap, resolve penuh workspace:
+- [x] Jalankan `melos bootstrap` dari root — semua 4 package sudah siap, resolve penuh workspace:
   ```bash
   melos bootstrap
   ```
-- [ ] Konfigurasi platform:
+- [x] Konfigurasi platform:
   - Android (`android/app/build.gradle.kts`):
     - `applicationId = "id.rmq.variant"`
     - `minSdk = 24` (default Flutter 3.41.6, sudah memenuhi syarat `flutter_secure_storage`)
     - `targetSdk = 36` (default Flutter 3.41.6, sesuai Google Play requirement)
     - `compileSdk = 36` (default Flutter 3.41.6)
-  - iOS: `PRODUCT_BUNDLE_IDENTIFIER = id.rmq.variant` di `ios/Runner/Info.plist`
+  - iOS: `PRODUCT_BUNDLE_IDENTIFIER = id.rmq.variant` di `ios/Runner.xcodeproj/project.pbxproj`
   - Web: update `<title>` di `web/index.html`
-- [ ] `lib/config/variant_config.dart` — `VariantConfig extends AppConfig` (sama polanya dengan `MainConfig`)
-- [ ] `lib/bootstrap.dart` — async init (sama dengan apps/main)
-- [ ] `lib/app.dart` — `ProviderScope` + `MaterialApp.router` dengan tema dari `core` dan router dari `app_router.dart`
-- [ ] `lib/router/app_router.dart` — `GoRouter` instance: shared routes dari `features_shared` (termasuk `AuthGuard`) + home route eksklusif variant
-- [ ] `lib/main.dart`:
+- [x] `lib/config/variant_config.dart` — `VariantConfig extends AppConfig` (sama polanya dengan `MainConfig`)
+- [x] `lib/bootstrap.dart` — async init (sama dengan apps/main)
+- [x] `lib/app.dart` — `ProviderScope` + `MaterialApp.router` dengan tema dari `core` dan router dari `app_router.dart`
+- [x] `lib/home/home_screen.dart` — placeholder home screen khusus variant:
+  ```dart
+  class HomeScreen extends StatelessWidget {
+    const HomeScreen({super.key});
+
+    @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Variant')),
+        body: const Center(child: Text('Welcome to Variant!')),
+      );
+    }
+  }
+  ```
+- [x] `lib/router/app_router.dart` — `GoRouter` instance: shared routes dari `features_shared` (termasuk `AuthGuard`) + home route eksklusif variant
+- [x] `lib/main.dart`:
   ```dart
   void main() async {
     AppConfig.instance = VariantConfig();
-    await bootstrap(const App());
+    await bootstrap();
   }
   ```
-- [ ] Verifikasi: jalankan `flutter run --dart-define=ENV=dev` dari `apps/variant`
+- [x] `test/home_screen_test.dart` — widget test minimal agar `melos run test` tetap pass setelah `apps/variant` masuk workspace.
+- [x] Update `.vscode/launch.json` — tambahkan konfigurasi run/debug untuk `variant dev`, `variant staging`, dan `variant prod`.
+- [x] Verifikasi: jalankan `flutter run --dart-define=ENV=dev` dari `apps/variant`
 
 **Selesai jika:** `apps/variant` tampil di emulator/device dengan home screen tanpa error.

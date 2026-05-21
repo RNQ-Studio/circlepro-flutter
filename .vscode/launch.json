@@ -24,6 +24,30 @@
       "cwd": "apps/main",
       "program": "lib/main.dart",
       "toolArgs": ["--dart-define=ENV=prod"]
+    },
+    {
+      "name": "variant dev",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "apps/variant",
+      "program": "lib/main.dart",
+      "toolArgs": ["--dart-define=ENV=dev"]
+    },
+    {
+      "name": "variant staging",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "apps/variant",
+      "program": "lib/main.dart",
+      "toolArgs": ["--dart-define=ENV=staging"]
+    },
+    {
+      "name": "variant prod",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "apps/variant",
+      "program": "lib/main.dart",
+      "toolArgs": ["--dart-define=ENV=prod"]
     }
   ]
 }
