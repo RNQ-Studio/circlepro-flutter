@@ -45,12 +45,12 @@ export 'src/notifications/presentation/notifications_provider.dart';
 export 'src/notifications/presentation/notifications_screen.dart';
 
 // settings — domain
-export 'src/settings/settings_repository.dart';
+export 'src/settings/domain/repositories/settings_repository.dart';
 
 // settings — data
-export 'src/settings/settings_repository_impl.dart';
+export 'src/settings/data/repositories/settings_repository_impl.dart';
 
 // settings — presentation
-export 'src/settings/settings_providers.dart';
-export 'src/settings/theme_notifier.dart';
-export 'src/settings/locale_notifier.dart';
+export 'src/settings/presentation/settings_providers.dart';
+export 'src/settings/presentation/theme_notifier.dart';
+export 'src/settings/presentation/locale_notifier.dart';

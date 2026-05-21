@@ -195,13 +195,13 @@ feature/
 
 Fitur yang dipakai semua app ditempatkan di `packages/features_shared/lib/src/`. Fitur yang hanya berlaku untuk satu app ditempatkan di `apps/<app_name>/lib/features/`.
 
-Contoh saat ini:
+Aturan saat ini:
 
-- Auth, profile, dan notifications mengikuti struktur `data/domain/presentation`.
-- Settings adalah shared application logic yang lebih kecil, jadi tidak dipaksa memiliki folder `data/domain/presentation`.
-- UI settings yang berbeda per app ada di `apps/main/lib/features/settings/` dan `apps/variant/lib/features/settings/`.
+- Setiap folder fitur di `apps/<app_name>/lib/features/` wajib memiliki folder `data/`, `domain/`, dan `presentation/`.
+- Jika sebuah fitur saat ini hanya memiliki UI atau route, folder layer yang belum dipakai tetap dibuat dengan placeholder `.gitkeep`.
+- Auth, profile, notifications, home, dan settings mengikuti struktur `data/domain/presentation`.
 
-Prinsipnya: gunakan struktur tiga lapisan saat fitur punya data source, entity/usecase, dan UI yang cukup jelas. Untuk logic kecil seperti settings preference, struktur yang lebih sederhana boleh dipakai selama dependency tetap satu arah dan public API tetap diexport dari barrel file.
+Prinsipnya: dependency tetap satu arah dari presentation ke domain ke data. Untuk logic kecil seperti settings preference, layer yang belum memiliki implementasi boleh kosong terlebih dahulu selama struktur fitur tetap konsisten.
 
 ---
 
