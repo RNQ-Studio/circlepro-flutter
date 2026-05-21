@@ -31,16 +31,16 @@ Acceptance criteria sprint: `flutter test` dari root pass tanpa error, coverage 
 
 ## Phase 1 — Setup Test Infrastructure
 
-- [ ] Tambah `mocktail` ke dev_dependencies `packages/features_shared/pubspec.yaml`:
+- [x] Tambah `mocktail` ke dev_dependencies `packages/features_shared/pubspec.yaml`:
   ```yaml
   dev_dependencies:
     flutter_test:
       sdk: flutter
     mocktail: ^1.0.4
   ```
-- [ ] Tambah `mocktail` ke dev_dependencies `apps/main/pubspec.yaml` dan `apps/variant/pubspec.yaml`
-- [ ] `dart pub get` dari root
-- [ ] Buat struktur direktori test:
+- [x] Tambah `mocktail` ke dev_dependencies `apps/main/pubspec.yaml` dan `apps/variant/pubspec.yaml`
+- [x] `dart pub get` dari root
+- [x] Buat struktur direktori test:
   ```bash
   mkdir -p packages/features_shared/test/settings
   mkdir -p packages/features_shared/test/auth
@@ -53,7 +53,7 @@ Acceptance criteria sprint: `flutter test` dari root pass tanpa error, coverage 
 
 ## Phase 2 — Unit Test `packages/core`
 
-- [ ] Buat `packages/core/test/errors/app_exception_test.dart`:
+- [x] Buat `packages/core/test/errors/app_exception_test.dart`:
   ```dart
   import 'package:core/core.dart';
   import 'package:flutter_test/flutter_test.dart';
@@ -82,7 +82,7 @@ Acceptance criteria sprint: `flutter test` dari root pass tanpa error, coverage 
     });
   }
   ```
-- [ ] `flutter test packages/core/test` — pass
+- [x] `flutter test packages/core/test` — pass
 
 **Selesai jika:** AppException toString behavior terdokumentasi via test.
 
@@ -92,14 +92,14 @@ Acceptance criteria sprint: `flutter test` dari root pass tanpa error, coverage 
 
 Gunakan `StorageService` mock agar test tidak bergantung pada SharedPreferences asli.
 
-- [ ] Buat `packages/features_shared/test/settings/mock_storage.dart`:
+- [x] Buat `packages/features_shared/test/settings/mock_storage.dart`:
   ```dart
   import 'package:core/core.dart';
   import 'package:mocktail/mocktail.dart';
 
   class MockStorageService extends Mock implements StorageService {}
   ```
-- [ ] Buat `packages/features_shared/test/settings/settings_repository_impl_test.dart`:
+- [x] Buat `packages/features_shared/test/settings/settings_repository_impl_test.dart`:
   ```dart
   import 'package:flutter/material.dart';
   import 'package:flutter_test/flutter_test.dart';
@@ -170,7 +170,7 @@ Gunakan `StorageService` mock agar test tidak bergantung pada SharedPreferences 
     });
   }
   ```
-- [ ] `flutter test packages/features_shared/test/settings` — pass
+- [x] `flutter test packages/features_shared/test/settings` — pass
 
 **Selesai jika:** Happy path dan default value settings repository terdokumentasi via test.
 
@@ -178,14 +178,14 @@ Gunakan `StorageService` mock agar test tidak bergantung pada SharedPreferences 
 
 ## Phase 4 — Unit Test Auth (`packages/features_shared`)
 
-- [ ] Buat `packages/features_shared/test/auth/mock_auth_repository.dart`:
+- [x] Buat `packages/features_shared/test/auth/mock_auth_repository.dart`:
   ```dart
   import 'package:features_shared/features_shared.dart';
   import 'package:mocktail/mocktail.dart';
 
   class MockAuthRepository extends Mock implements AuthRepository {}
   ```
-- [ ] Buat `packages/features_shared/test/auth/auth_notifier_test.dart`:
+- [x] Buat `packages/features_shared/test/auth/auth_notifier_test.dart`:
   ```dart
   import 'package:flutter_riverpod/flutter_riverpod.dart';
   import 'package:flutter_test/flutter_test.dart';
@@ -258,7 +258,7 @@ Gunakan `StorageService` mock agar test tidak bergantung pada SharedPreferences 
     });
   }
   ```
-- [ ] `flutter test packages/features_shared/test/auth` — pass
+- [x] `flutter test packages/features_shared/test/auth` — pass
 
 **Selesai jika:** Login success, login failure (dengan pesan yang benar), dan logout ter-cover.
 
@@ -266,7 +266,7 @@ Gunakan `StorageService` mock agar test tidak bergantung pada SharedPreferences 
 
 ## Phase 5 — Widget Test `apps/main`
 
-- [ ] Update `apps/main/test/home_screen_test.dart` — tambah test tombol settings:
+- [x] Update `apps/main/test/home_screen_test.dart` — tambah test tombol settings:
   ```dart
   import 'package:app_main/home/home_screen.dart';
   import 'package:core/core.dart';
@@ -305,7 +305,7 @@ Gunakan `StorageService` mock agar test tidak bergantung pada SharedPreferences 
   }
   ```
   > Setelah Sprint 003 selesai, teks `'Home'` dan `'Welcome!'` akan berasal dari ARB. Update test ini dengan `AppLocalizations` jika Sprint 003 sudah diimplementasi.
-- [ ] Buat `apps/main/test/features/settings/settings_screen_test.dart`:
+- [x] Buat `apps/main/test/features/settings/settings_screen_test.dart`:
   ```dart
   import 'package:app_main/features/settings/presentation/settings_screen.dart';
   import 'package:features_shared/features_shared.dart';
@@ -355,7 +355,7 @@ Gunakan `StorageService` mock agar test tidak bergantung pada SharedPreferences 
   }
   ```
   > `_FakeThemeNotifier` dan `_FakeLocaleNotifier` meng-override `build()` agar tidak perlu storage asli saat test.
-- [ ] `flutter test apps/main/test` — semua pass
+- [x] `flutter test apps/main/test` — semua pass
 
 **Selesai jika:** HomeScreen dan SettingsScreen ter-cover termasuk navigasi dan konten utama.
 
@@ -363,8 +363,8 @@ Gunakan `StorageService` mock agar test tidak bergantung pada SharedPreferences 
 
 ## Phase 6 — Verifikasi Final
 
-- [ ] `flutter test apps/main/test apps/variant/test packages/core/test packages/features_shared/test` — semua pass
-- [ ] `dart analyze packages/core packages/features_shared apps/main apps/variant` — no issues
-- [ ] Update sprint doc — centang semua task
+- [x] `flutter test apps/main/test apps/variant/test packages/core/test packages/features_shared/test` — semua pass
+- [x] `dart analyze packages/core packages/features_shared apps/main apps/variant` — no issues
+- [x] Update sprint doc — centang semua task
 
 **Selesai jika:** Semua test pass, analyze clean, tidak ada test yang di-skip.

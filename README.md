@@ -30,11 +30,13 @@ Starter ini sudah membawa fondasi berikut:
 | Monorepo workspace | siap pakai | Dart workspace + Melos scripts |
 | Multi app/flavor | siap pakai | `apps/main` dan `apps/variant` |
 | Multi environment | siap pakai | `dev`, `staging`, `prod` via `--dart-define=ENV=...` |
-| Auth | starter implementation | repository, usecase, provider, route, login screen |
-| Settings | starter implementation | theme mode dan locale preference persisten |
+| Auth | starter implementation | repository, usecase, provider, route, login screen; mock dev via `FakeAuthRepository` |
+| Settings | starter implementation | theme mode (system/light/dark) dan locale preference persisten |
+| Localization (L10n) | siap pakai | real-time language switching ID ↔ EN tanpa restart, ARB-based via `flutter gen-l10n`, preferensi tersimpan antar sesi |
 | Profile | stub | struktur clean architecture dan data dummy |
 | Notifications | stub | struktur clean architecture dan empty state |
-| Core foundation | siap pakai | theme, l10n, network, storage, responsive, route constants, widgets |
+| Core foundation | siap pakai | theme, network, storage, responsive, route constants, widgets |
+| Testing | siap pakai | 28 tests — unit (exceptions, settings repo, auth notifier) + widget (HomeScreen, SettingsScreen) |
 | CI | siap pakai | format check, analyze, test |
 
 ---
@@ -152,6 +154,19 @@ dart run melos run test
 ```
 
 Workflow CI ada di `.github/workflows/ci.yml`.
+
+### Test Coverage
+
+| Package / App | Test File | Yang di-cover |
+|---|---|---|
+| `packages/core` | `test/errors/app_exception_test.dart` | `AppException.toString()` semua subclass |
+| `packages/features_shared` | `test/settings/settings_repository_impl_test.dart` | `getThemeMode`, `saveThemeMode`, `getLocale`, `saveLocale` |
+| `packages/features_shared` | `test/auth/auth_notifier_test.dart` | initial state, login success/failure, logout, checkCurrentUser |
+| `apps/main` | `test/home_screen_test.dart` | render + navigasi ke settings |
+| `apps/main` | `test/features/settings/settings_screen_test.dart` | section headers + pilihan theme |
+| `apps/variant` | `test/home_screen_test.dart` | smoke test render |
+
+Mock menggunakan `mocktail` — `StorageService` di-mock untuk settings test, `AuthRepository` di-mock untuk auth test. `ThemeNotifier` dan `LocaleNotifier` di-fake via subclass override `build()` agar widget test tidak butuh storage asli.
 
 ---
 
