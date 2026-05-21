@@ -39,7 +39,7 @@ flutter-starter/
 │   │   │       ├── l10n/                ← file terjemahan (.arb) + konfigurasi gen-l10n
 │   │   │       ├── network/             ← Dio client: base URL, interceptor auth, error handler global
 │   │   │       ├── responsive/          ← Breakpoints (konstanta ukuran layar) + ResponsiveLayout widget
-│   │   │       ├── router/              ← AppRoutes (nama konstanta route) + AuthGuard + NavigatorObserver
+│   │   │       ├── router/              ← AppRoutes (nama konstanta route) + NavigatorObserver (AuthGuard ada di features_shared/auth/presentation/)
 │   │   │       ├── storage/             ← wrapper SharedPreferences/SecureStorage: token, user preference
 │   │   │       ├── theme/               ← ThemeData light & dark, warna, tipografi, ukuran
 │   │   │       ├── utils/               ← fungsi pembantu global: format tanggal, validasi, helper umum
