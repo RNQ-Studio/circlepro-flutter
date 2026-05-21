@@ -43,3 +43,14 @@ export 'src/notifications/data/repositories/notifications_repository_impl.dart';
 // notifications — presentation
 export 'src/notifications/presentation/notifications_provider.dart';
 export 'src/notifications/presentation/notifications_screen.dart';
+
+// settings — domain
+export 'src/settings/settings_repository.dart';
+
+// settings — data
+export 'src/settings/settings_repository_impl.dart';
+
+// settings — presentation
+export 'src/settings/settings_providers.dart';
+export 'src/settings/theme_notifier.dart';
+export 'src/settings/locale_notifier.dart';

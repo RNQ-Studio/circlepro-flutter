@@ -3,6 +3,7 @@ import 'package:features_shared/features_shared.dart';
 import 'package:go_router/go_router.dart';
 
 import '../home/home_screen.dart';
+import '../features/settings/presentation/settings_route.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
@@ -10,6 +11,7 @@ final appRouter = GoRouter(
   observers: [AppNavigatorObserver()],
   routes: [
     ...authRoutes,
+    settingsRoute,
     GoRoute(
       path: '/',
       builder: (context, state) => const HomeScreen(),

@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:core/core.dart';
 import 'package:features_shared/features_shared.dart';
 
+import 'dev/fake_auth_repository.dart';
 import 'router/app_router.dart';
 
 class App extends StatelessWidget {
@@ -15,6 +17,8 @@ class App extends StatelessWidget {
     return ProviderScope(
       overrides: [
         storageServiceProvider.overrideWithValue(storage),
+        if (kDebugMode)
+          authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
       ],
       child: const _AppRouter(),
     );
@@ -40,10 +44,16 @@ class _AppRouterState extends ConsumerState<_AppRouter> {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode =
+        ref.watch(themeNotifierProvider).asData?.value ?? ThemeMode.system;
+    final locale = ref.watch(localeNotifierProvider).asData?.value;
+
     return MaterialApp.router(
       title: 'Flutter Starter',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
+      themeMode: themeMode,
+      locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: appRouter,

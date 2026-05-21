@@ -28,7 +28,8 @@ class AuthNotifier extends Notifier<AuthState> {
     state = const AuthLoading();
     try {
       final user = await _getCurrentUser();
-      state = user != null ? AuthAuthenticated(user) : const AuthUnauthenticated();
+      state =
+          user != null ? AuthAuthenticated(user) : const AuthUnauthenticated();
     } on Exception catch (e) {
       state = AuthError(e.toString());
     }
@@ -51,7 +52,8 @@ class AuthNotifier extends Notifier<AuthState> {
   }) async {
     state = const AuthLoading();
     try {
-      final user = await _register(name: name, email: email, password: password);
+      final user =
+          await _register(name: name, email: email, password: password);
       state = AuthAuthenticated(user);
     } on Exception catch (e) {
       state = AuthError(e.toString());

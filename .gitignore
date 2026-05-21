@@ -36,3 +36,5 @@ build/
 # Misc
 *.log
 *.DS_Store
+
+.vscode/templates

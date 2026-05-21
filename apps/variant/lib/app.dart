@@ -40,10 +40,16 @@ class _AppRouterState extends ConsumerState<_AppRouter> {
 
   @override
   Widget build(BuildContext context) {
+    final themeMode =
+        ref.watch(themeNotifierProvider).asData?.value ?? ThemeMode.system;
+    final locale = ref.watch(localeNotifierProvider).asData?.value;
+
     return MaterialApp.router(
       title: 'Flutter Starter Variant',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
+      themeMode: themeMode,
+      locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: appRouter,
