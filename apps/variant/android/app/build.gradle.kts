@@ -1,3 +1,12 @@
+import java.util.Properties
+
+// Load signing properties from key.properties if it exists.
+// Do NOT commit key.properties or the keystore file to version control.
+val keyPropsFile = rootProject.file("key.properties")
+val keyProps = Properties().apply {
+    if (keyPropsFile.exists()) keyPropsFile.inputStream().use { load(it) }
+}
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android Gradle plugin.
@@ -14,11 +23,18 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+    signingConfigs {
+        create("release") {
+            keyAlias = keyProps["keyAlias"] as String? ?: ""
+            keyPassword = keyProps["keyPassword"] as String? ?: ""
+            storeFile = (keyProps["storeFile"] as String?)?.let { file(it) }
+            storePassword = keyProps["storePassword"] as String? ?: ""
+        }
+    }
+
     defaultConfig {
-        // Replace this starter ID before publishing a real app.
+        // TODO: Replace with your project's application ID before publishing.
         applicationId = "id.rmq.variant"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 24
         targetSdk = 36
         versionCode = flutter.versionCode
@@ -27,9 +43,13 @@ android {
 
     buildTypes {
         release {
-            // Starter default: debug signing keeps local release builds runnable.
-            // Configure a production signing config before publishing.
-            signingConfig = signingConfigs.getByName("debug")
+            // Uses release signing when key.properties is present;
+            // falls back to debug signing for local dev convenience.
+            signingConfig = if (keyPropsFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

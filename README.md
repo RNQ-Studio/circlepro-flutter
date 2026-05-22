@@ -31,13 +31,14 @@ Starter ini sudah membawa fondasi berikut:
 | Multi app/flavor | siap pakai | `apps/main` dan `apps/variant` |
 | Multi environment | siap pakai | `dev`, `staging`, `prod` via `--dart-define=ENV=...` |
 | Auth | starter implementation | repository, usecase, provider, route, login screen; mock dev via `FakeAuthRepository` |
-| Settings | starter implementation | theme mode (system/light/dark) dan locale preference persisten |
+| Settings | siap pakai | theme mode (system/light/dark) dan locale preference persisten |
 | Localization (L10n) | siap pakai | real-time language switching ID ↔ EN tanpa restart, ARB-based via `flutter gen-l10n`, preferensi tersimpan antar sesi |
-| Profile | stub | struktur clean architecture dan data dummy |
+| Profile | siap pakai | Clean Architecture lengkap — domain, data, presentation; membaca dari sesi auth, tampil di kedua app, tombol logout |
 | Notifications | stub | struktur clean architecture dan empty state |
 | Core foundation | siap pakai | theme, network, storage, responsive, route constants, widgets |
 | Testing | siap pakai | 28 tests — unit (exceptions, settings repo, auth notifier) + widget (HomeScreen, SettingsScreen) |
-| CI | siap pakai | format check, analyze, test |
+| CI | siap pakai | format check, analyze, test via GitHub Actions |
+| Android signing config | siap pakai | signing config structure via `key.properties` (key.properties.example disertakan) |
 
 ---
 
@@ -203,4 +204,5 @@ Setelah fork, lakukan langkah berikut sebelum mulai development:
 - [ ] Tentukan apakah `variant` tetap dipakai, dihapus, atau direname.
 - [ ] Tambahkan konfigurasi Firebase jika project memakai Firebase.
 - [ ] Update nama app, icon, splash screen, web title, dan manifest.
+- [ ] Setup Android signing: copy `android/key.properties.example` → `android/key.properties`, isi dengan keystore path dan password.
 - [ ] Jalankan quality checks lokal sebelum PR.
