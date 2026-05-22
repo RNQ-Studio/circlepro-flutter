@@ -1,13 +1,25 @@
 import 'package:flutter/material.dart';
 
 class _MenuItem {
-  const _MenuItem({required this.label, required this.icon, required this.color});
+  const _MenuItem({
+    required this.label,
+    required this.icon,
+    required this.color,
+    this.isGallery = false,
+  });
   final String label;
   final IconData icon;
   final Color color;
+  final bool isGallery;
 }
 
 const _menuItems = [
+  _MenuItem(
+    label: 'UI Gallery',
+    icon: Icons.widgets_outlined,
+    color: Colors.indigo,
+    isGallery: true,
+  ),
   _MenuItem(label: 'Menu 01', icon: Icons.track_changes,     color: Colors.purple),
   _MenuItem(label: 'Menu 02', icon: Icons.military_tech,     color: Colors.deepOrange),
   _MenuItem(label: 'Menu 03', icon: Icons.show_chart,        color: Colors.teal),
@@ -68,15 +80,22 @@ class _MenuCell extends StatelessWidget {
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: item.color,
+              color: item.isGallery
+                  ? item.color
+                  : item.color,
               borderRadius: BorderRadius.circular(16),
+              boxShadow: item.isGallery
+                  ? [BoxShadow(color: item.color.withOpacity(0.35), blurRadius: 8, offset: const Offset(0, 3))]
+                  : null,
             ),
             child: Icon(item.icon, color: Colors.white, size: 28),
           ),
           const SizedBox(height: 6),
           Text(
             item.label,
-            style: Theme.of(context).textTheme.labelSmall,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              fontWeight: item.isGallery ? FontWeight.bold : FontWeight.normal,
+            ),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,

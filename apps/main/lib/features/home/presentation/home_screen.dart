@@ -52,9 +52,15 @@ class HomeScreen extends ConsumerWidget {
             const SliverToBoxAdapter(child: Divider(height: 24)),
             SliverToBoxAdapter(
               child: HomeMenuGrid(
-                onMenuTap: (label) => ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('$label — Fitur belum tersedia')),
-                ),
+                onMenuTap: (label) {
+                  if (label == 'UI Gallery') {
+                    context.push('/ui-gallery');
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('$label — Fitur belum tersedia')),
+                    );
+                  }
+                },
               ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 32)),
