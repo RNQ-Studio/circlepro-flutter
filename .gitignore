@@ -1,0 +1,44 @@
+# Dart / Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+
+# Pub
+.pub-cache/
+.pub/
+
+# Android
+**/android/.gradle/
+**/android/local.properties
+**/android/captures/
+**/android/gradle/wrapper/gradle-wrapper.jar
+**/android/key.properties
+
+# iOS
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+
+# macOS
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+**/macos/Flutter/ephemeral/
+
+# IDEs
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+*.iml
+
+# Misc
+*.log
+*.DS_Store
+
+.vscode/templates
+
+# Android release signing — never commit these
+*.jks
+*.keystore

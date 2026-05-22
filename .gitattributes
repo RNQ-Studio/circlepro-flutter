@@ -1,0 +1,41 @@
+# Normalize line endings for all text files
+* text=auto eol=lf
+
+# Dart/Flutter files — always LF
+*.dart text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.arb text eol=lf
+
+# Kotlin/Gradle
+*.kt text eol=lf
+*.kts text eol=lf
+
+# Swift/Obj-C
+*.swift text eol=lf
+
+# Shell scripts — always LF
+*.sh text eol=lf
+
+# Windows batch — always CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files — no text processing
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.ttf binary
+*.otf binary
+*.apk binary
+*.ipa binary
+*.aab binary
+*.zip binary
+*.jar binary
+*.keystore binary
+*.jks binary

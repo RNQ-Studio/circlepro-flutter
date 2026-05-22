@@ -5,6 +5,9 @@
   "editor.tabSize": 2,
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
+  "[markdown]": {
+    "editor.wordWrap": "off"
+  },
   "[dart]": {
     "editor.formatOnSave": true,
     "editor.selectionHighlight": false,

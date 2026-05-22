@@ -1,0 +1,23 @@
+name: features_shared
+description: "Shared features package — auth, profile, notifications."
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  core:
+  dio: ^5.9.2
+  flutter_riverpod: ^3.3.1
+  go_router: ^17.2.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  mocktail: ^1.0.4
