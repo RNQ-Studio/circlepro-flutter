@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:core/core.dart';
 
-import 'settings_repository.dart';
+import '../../domain/repositories/settings_repository.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {
   SettingsRepositoryImpl(this._storage);

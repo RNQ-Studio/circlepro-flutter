@@ -1,8 +1,8 @@
 import 'package:core/core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'settings_repository.dart';
-import 'settings_repository_impl.dart';
+import '../data/repositories/settings_repository_impl.dart';
+import '../domain/repositories/settings_repository.dart';
 
 // FutureProvider karena SharedPreferencesStorage.init() adalah async
 // (memanggil SharedPreferences.getInstance() yang mengembalikan Future).

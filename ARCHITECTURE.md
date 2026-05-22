@@ -37,7 +37,14 @@ flutter-starter/
 |
 |-- sprints/                             # rencana dan catatan eksekusi per sprint
 |   |-- 001_setup.md                     # setup monorepo, core, shared features, dan app
-|   `-- 002_feature_settings.md          # fitur settings lintas flavor
+|   |-- 002_feature_settings.md          # fitur settings lintas flavor
+|   |-- 003_l10n.md                      # localization end-to-end
+|   |-- 004_testing.md                   # unit & widget tests
+|   |-- 005_ci_cd.md                     # CI/CD verification
+|   |-- 006_profile_feature.md           # fitur profile (clean architecture)
+|   |-- 007_release_prep.md              # release preparation
+|   |-- 008_home_screen.md               # home screen apps/main
+|   `-- 009_ui_gallery.md                # UI component gallery
 |
 |-- packages/                            # shared libraries, bukan Flutter app
 |   |
@@ -86,8 +93,12 @@ flutter-starter/
     |   |   |-- config/                   # MainConfig membaca ENV dari --dart-define
     |   |   |-- dev/                      # Riverpod overrides khusus debug (FakeAuthRepository, dll) — tidak masuk production build
     |   |   |-- features/                 # fitur eksklusif app main
-    |   |   |   `-- settings/             # UI settings khusus main
-    |   |   |-- home/                     # home screen app main
+    |   |   |   |-- home/                 # home screen (data/domain/presentation)
+    |   |   |   |-- settings/             # UI settings khusus main
+    |   |   |   `-- ui_gallery/           # UI component gallery (referensi dev — hapus sebelum prod)
+    |   |   |       |-- data/             # dummy_data.dart
+    |   |   |       |-- widgets/          # section_header, demo_card, gallery_menu_card
+    |   |   |       `-- screens/          # ui_gallery_home_screen + 8 layar demo
     |   |   |-- router/
     |   |   |   `-- app_router.dart       # GoRouter final untuk app main
     |   |   |-- app.dart                  # ProviderScope + MaterialApp.router
@@ -102,8 +113,8 @@ flutter-starter/
         |-- lib/
         |   |-- config/                   # VariantConfig membaca ENV dari --dart-define
         |   |-- features/                 # fitur eksklusif app variant
+        |   |   |-- home/                 # home screen (data/domain/presentation)
         |   |   `-- settings/             # UI settings khusus variant
-        |   |-- home/                     # home screen app variant
         |   |-- router/
         |   |   `-- app_router.dart       # GoRouter final untuk app variant
         |   |-- app.dart                  # ProviderScope + MaterialApp.router
@@ -195,13 +206,13 @@ feature/
 
 Fitur yang dipakai semua app ditempatkan di `packages/features_shared/lib/src/`. Fitur yang hanya berlaku untuk satu app ditempatkan di `apps/<app_name>/lib/features/`.
 
-Contoh saat ini:
+Aturan saat ini:
 
-- Auth, profile, dan notifications mengikuti struktur `data/domain/presentation`.
-- Settings adalah shared application logic yang lebih kecil, jadi tidak dipaksa memiliki folder `data/domain/presentation`.
-- UI settings yang berbeda per app ada di `apps/main/lib/features/settings/` dan `apps/variant/lib/features/settings/`.
+- Setiap folder fitur di `apps/<app_name>/lib/features/` wajib memiliki folder `data/`, `domain/`, dan `presentation/`.
+- Jika sebuah fitur saat ini hanya memiliki UI atau route, folder layer yang belum dipakai tetap dibuat dengan placeholder `.gitkeep`.
+- Auth, profile, notifications, home, dan settings mengikuti struktur `data/domain/presentation`.
 
-Prinsipnya: gunakan struktur tiga lapisan saat fitur punya data source, entity/usecase, dan UI yang cukup jelas. Untuk logic kecil seperti settings preference, struktur yang lebih sederhana boleh dipakai selama dependency tetap satu arah dan public API tetap diexport dari barrel file.
+Prinsipnya: dependency tetap satu arah dari presentation ke domain ke data. Untuk logic kecil seperti settings preference, layer yang belum memiliki implementasi boleh kosong terlebih dahulu selama struktur fitur tetap konsisten.
 
 ---
 

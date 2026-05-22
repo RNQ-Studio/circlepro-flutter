@@ -81,6 +81,7 @@ Gunakan checklist ini sebelum mulai development fitur.
 - [ ] Tambahkan konfigurasi Firebase jika project memakai Firebase.
 - [ ] Update icon, splash screen, dan web manifest.
 - [ ] Update LICENSE dan package README yang masih boilerplate.
+- [ ] Tentukan apakah UI Gallery tetap dipertahankan sebagai referensi komponen atau dihapus sebelum production release (lihat bagian 13).
 
 ---
 
@@ -337,7 +338,102 @@ Jika CI gagal:
 
 ---
 
-## 13. Setelah Project Mulai Stabil
+## 13. UI Component Gallery
+
+`apps/main` menyertakan **UI Component Gallery** — mini showcase interaktif yang menampilkan komponen-komponen Flutter yang umum dipakai. Gallery ini dibangun di Sprint 009 dan tersedia langsung dari Home screen tanpa perlu konfigurasi tambahan.
+
+### Cara Mengakses Gallery
+
+Jalankan `apps/main`, lalu tap item **"UI Gallery"** di grid menu Home screen. Gallery membuka halaman daftar 8 kategori:
+
+| Kategori | Isi |
+|----------|-----|
+| Dialog & Popup | Alert dialog, confirm dialog, shake dialog, countdown dialog, loading dialog, bottom sheet, snackbar (4 varian) |
+| Form & Input | TextField, password toggle, validasi email real-time, date picker, dropdown, radio, checkbox, switch, slider |
+| Cards & Lists | 5 varian card, dismissible list + undo, reorderable list |
+| Navigation & Tab | TabBar, Stepper, Drawer dengan UserAccountsDrawerHeader, BottomNavigationBar (M2 & M3) |
+| Loading & Empty | Shimmer manual via ShaderMask, linear/circular progress, 4 varian empty state, pull-to-refresh |
+| Animation | Hero transition, page transition 3 tipe, AnimatedList, staggered animation |
+| Feedback & Input | Star rating drag, like button animation, reaction picker, OTP 6-digit |
+| Utilities | Clipboard copy, search highlight dengan RichText, color picker, tooltip & badge |
+
+### Cara Pakai Sebagai Referensi
+
+Saat membangun fitur baru yang memerlukan komponen tertentu — misalnya dialog konfirmasi, form dengan validasi, atau animasi sederhana — buka layar gallery yang relevan dan lihat implementasinya langsung di file berikut:
+
+```text
+apps/main/lib/features/ui_gallery/screens/
+├── dialog_popup_screen.dart
+├── form_input_screen.dart
+├── cards_list_screen.dart
+├── navigation_tab_screen.dart
+├── loading_empty_screen.dart
+├── animation_screen.dart
+├── feedback_screen.dart
+└── utilities_screen.dart
+```
+
+Dummy data yang dipakai gallery tersimpan di:
+
+```text
+apps/main/lib/features/ui_gallery/data/dummy_data.dart
+```
+
+Widget helper (section header, demo card, gallery menu card) tersimpan di:
+
+```text
+apps/main/lib/features/ui_gallery/widgets/
+```
+
+### Menghapus Gallery Sebelum Production
+
+Gallery adalah referensi development, bukan fitur produk. Jika project tidak memerlukan gallery di production, hapus seluruh kodenya:
+
+**1. Hapus folder gallery:**
+
+```bash
+rm -rf apps/main/lib/features/ui_gallery/
+```
+
+**2. Hapus route dari `app_router.dart`:**
+
+```dart
+// hapus import ini:
+import '../features/ui_gallery/screens/ui_gallery_home_screen.dart';
+
+// hapus GoRoute ini:
+GoRoute(
+  path: '/ui-gallery',
+  builder: (context, state) => const UiGalleryHomeScreen(),
+),
+```
+
+**3. Kembalikan `home_screen.dart` ke perilaku semula:**
+
+```dart
+// ubah kembali onMenuTap menjadi selalu menampilkan SnackBar,
+// atau hubungkan ke fitur nyata yang sudah dibangun:
+onMenuTap: (label) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('$label belum tersedia')),
+  );
+},
+```
+
+**4. Update `home_menu_grid.dart`:**
+
+Hapus item `_MenuItem` dengan label `'UI Gallery'` dan field `isGallery`. Pastikan method `onMenuTap` tidak mengecek label ini lagi.
+
+**5. Verifikasi:**
+
+```bash
+dart run melos run analyze
+dart run melos run test
+```
+
+---
+
+## 14. Setelah Project Mulai Stabil
 
 Hal yang sebaiknya ditambahkan ketika starter sudah menjadi project nyata:
 
