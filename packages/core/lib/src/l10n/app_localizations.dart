@@ -26,41 +26,6 @@ import 'app_localizations_id.dart';
 ///   home: MyApplicationHome(),
 /// );
 /// ```
-///
-/// ## Update pubspec.yaml
-///
-/// Please make sure to update your pubspec.yaml to include the following
-/// packages:
-///
-/// ```yaml
-/// dependencies:
-///   # Internationalization support.
-///   flutter_localizations:
-///     sdk: flutter
-///   intl: any # Use the pinned version from flutter_localizations
-///
-///   # Rest of dependencies
-/// ```
-///
-/// ## iOS Applications
-///
-/// iOS applications define key application metadata, including supported
-/// locales, in an Info.plist file that is built into the application bundle.
-/// To configure the locales supported by your app, you’ll need to edit this
-/// file.
-///
-/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
-/// Then, in the Project Navigator, open the Info.plist file under the Runner
-/// project’s Runner folder.
-///
-/// Next, select the Information Property List item, select Add Item from the
-/// Editor menu, then select Localizations from the pop-up menu.
-///
-/// Select and expand the newly-created Localizations item then, for each
-/// locale your application supports, add a new item and select the locale
-/// you wish to add from the pop-up menu in the Value field. This list should
-/// be consistent with the languages listed in the AppLocalizations.supportedLocales
-/// property.
 abstract class AppLocalizations {
   AppLocalizations(String locale)
       : localeName = intl.Intl.canonicalizedLocale(locale.toString());
@@ -74,16 +39,6 @@ abstract class AppLocalizations {
   static const LocalizationsDelegate<AppLocalizations> delegate =
       _AppLocalizationsDelegate();
 
-  /// A list of this localizations delegate along with the default localizations
-  /// delegates.
-  ///
-  /// Returns a list of localizations delegates containing this delegate along with
-  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
-  /// and GlobalWidgetsLocalizations.delegate.
-  ///
-  /// Additional delegates can be added by appending to this list in
-  /// MaterialApp. This list does not have to be used at all if a custom list
-  /// of delegates is preferred or required.
   static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
       <LocalizationsDelegate<dynamic>>[
     delegate,
@@ -92,191 +47,109 @@ abstract class AppLocalizations {
     GlobalWidgetsLocalizations.delegate,
   ];
 
-  /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('id')
+    Locale('id'),
   ];
 
-  /// Nama aplikasi
-  ///
-  /// In id, this message translates to:
-  /// **'Flutter Starter'**
+  /// In id: **'Flutter Starter'**
   String get appName;
 
-  /// Label halaman beranda
-  ///
-  /// In id, this message translates to:
-  /// **'Beranda'**
+  /// In id: **'Beranda'**
   String get home;
 
-  /// Label halaman pengaturan
-  ///
-  /// In id, this message translates to:
-  /// **'Pengaturan'**
+  /// In id: **'Pengaturan'**
   String get settings;
 
-  /// Teks sambutan di halaman beranda
-  ///
-  /// In id, this message translates to:
-  /// **'Selamat datang!'**
+  /// In id: **'Selamat datang!'**
   String get welcome;
 
-  /// Judul seksi tampilan di settings
-  ///
-  /// In id, this message translates to:
-  /// **'Tampilan'**
+  /// In id: **'Tampilan'**
   String get appearance;
 
-  /// Pilihan tema: ikuti sistem
-  ///
-  /// In id, this message translates to:
-  /// **'Ikuti sistem'**
+  /// In id: **'Ikuti sistem'**
   String get themeSystem;
 
-  /// Pilihan tema: terang
-  ///
-  /// In id, this message translates to:
-  /// **'Terang'**
+  /// In id: **'Terang'**
   String get themeLight;
 
-  /// Pilihan tema: gelap
-  ///
-  /// In id, this message translates to:
-  /// **'Gelap'**
+  /// In id: **'Gelap'**
   String get themeDark;
 
-  /// Subjudul mode gelap di variant settings
-  ///
-  /// In id, this message translates to:
-  /// **'Tampilan gelap'**
+  /// In id: **'Tampilan gelap'**
   String get themeDarkSubtitle;
 
-  /// Judul seksi bahasa di settings
-  ///
-  /// In id, this message translates to:
-  /// **'Bahasa'**
+  /// In id: **'Bahasa'**
   String get language;
 
-  /// Pilihan bahasa: Indonesia
-  ///
-  /// In id, this message translates to:
-  /// **'Indonesia'**
+  /// In id: **'Indonesia'**
   String get langIndonesia;
 
-  /// Pilihan bahasa: Inggris
-  ///
-  /// In id, this message translates to:
-  /// **'English'**
+  /// In id: **'English'**
   String get langEnglish;
 
-  /// Subjudul pilihan bahasa Inggris di variant settings
-  ///
-  /// In id, this message translates to:
-  /// **'Use English language'**
+  /// In id: **'Use English language'**
   String get langEnglishSubtitle;
 
-  /// Label versi di settings
-  ///
-  /// In id, this message translates to:
-  /// **'Versi'**
+  /// In id: **'Versi'**
   String get version;
 
-  /// Label versi aplikasi di variant settings
-  ///
-  /// In id, this message translates to:
-  /// **'Versi Aplikasi'**
+  /// In id: **'Versi Aplikasi'**
   String get appVersion;
 
-  /// Judul halaman login
-  ///
-  /// In id, this message translates to:
-  /// **'Masuk'**
+  /// In id: **'Masuk'**
   String get signIn;
 
-  /// Tombol OK
-  ///
-  /// In id, this message translates to:
-  /// **'OK'**
+  /// In id: **'OK'**
   String get ok;
 
-  /// Tombol batal
-  ///
-  /// In id, this message translates to:
-  /// **'Batal'**
+  /// In id: **'Batal'**
   String get cancel;
 
-  /// Tombol simpan
-  ///
-  /// In id, this message translates to:
-  /// **'Simpan'**
+  /// In id: **'Simpan'**
   String get save;
 
-  /// Tombol hapus
-  ///
-  /// In id, this message translates to:
-  /// **'Hapus'**
+  /// In id: **'Hapus'**
   String get delete;
 
-  /// Teks loading
-  ///
-  /// In id, this message translates to:
-  /// **'Memuat...'**
+  /// In id: **'Memuat...'**
   String get loading;
 
-  /// Pesan error umum
-  ///
-  /// In id, this message translates to:
-  /// **'Terjadi kesalahan. Coba lagi.'**
+  /// In id: **'Terjadi kesalahan. Coba lagi.'**
   String get errorGeneral;
 
-  /// Pesan error jaringan
-  ///
-  /// In id, this message translates to:
-  /// **'Tidak ada koneksi internet.'**
+  /// In id: **'Tidak ada koneksi internet.'**
   String get errorNetwork;
 
-  /// Validasi email tidak valid
-  ///
-  /// In id, this message translates to:
-  /// **'Masukkan email yang valid'**
+  /// In id: **'Masukkan email yang valid'**
   String get errorInvalidEmail;
 
-  /// Validasi password terlalu pendek
-  ///
-  /// In id, this message translates to:
-  /// **'Minimal 6 karakter'**
+  /// In id: **'Minimal 6 karakter'**
   String get errorPasswordTooShort;
 
-  /// Tombol masuk
-  ///
-  /// In id, this message translates to:
-  /// **'Masuk'**
+  /// In id: **'Masuk'**
   String get login;
 
-  /// Tombol keluar
-  ///
-  /// In id, this message translates to:
-  /// **'Keluar'**
+  /// In id: **'Keluar'**
   String get logout;
 
-  /// Tombol daftar
-  ///
-  /// In id, this message translates to:
-  /// **'Daftar'**
+  /// In id: **'Daftar'**
   String get register;
 
-  /// Label email
-  ///
-  /// In id, this message translates to:
-  /// **'Email'**
+  /// In id: **'Email'**
   String get email;
 
-  /// Label kata sandi
-  ///
-  /// In id, this message translates to:
-  /// **'Kata Sandi'**
+  /// In id: **'Kata Sandi'**
   String get password;
+
+  /// In id: **'Profil'**
+  String get profile;
+
+  /// In id: **'Nama'**
+  String get name;
+
+  /// In id: **'Yakin ingin keluar?'**
+  String get logoutConfirm;
 }
 
 class _AppLocalizationsDelegate
@@ -297,7 +170,6 @@ class _AppLocalizationsDelegate
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-  // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
     case 'en':
       return AppLocalizationsEn();
@@ -306,8 +178,9 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
   }
 
   throw FlutterError(
-      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-      'an issue with the localizations generation tool. Please file an issue '
-      'on GitHub with a reproducible sample app and the gen-l10n configuration '
-      'that was used.');
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
 }

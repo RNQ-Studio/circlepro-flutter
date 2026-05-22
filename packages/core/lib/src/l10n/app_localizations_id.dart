@@ -97,4 +97,13 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get password => 'Kata Sandi';
+
+  @override
+  String get profile => 'Profil';
+
+  @override
+  String get name => 'Nama';
+
+  @override
+  String get logoutConfirm => 'Yakin ingin keluar?';
 }

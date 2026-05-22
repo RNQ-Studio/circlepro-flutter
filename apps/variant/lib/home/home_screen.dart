@@ -13,6 +13,10 @@ class HomeScreen extends StatelessWidget {
         title: Text(l10n.home),
         actions: [
           IconButton(
+            icon: const Icon(Icons.person_outline),
+            onPressed: () => context.push(AppRoutes.profile),
+          ),
+          IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () => context.push(AppRoutes.settings),
           ),

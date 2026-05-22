@@ -29,5 +29,8 @@
   "logout": "Logout",
   "register": "Register",
   "email": "Email",
-  "password": "Password"
+  "password": "Password",
+  "profile": "Profile",
+  "name": "Name",
+  "logoutConfirm": "Are you sure you want to logout?"
 }

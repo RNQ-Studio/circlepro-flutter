@@ -119,5 +119,17 @@
   "password": "Kata Sandi",
   "@password": {
     "description": "Label kata sandi"
+  },
+  "profile": "Profil",
+  "@profile": {
+    "description": "Label halaman profil"
+  },
+  "name": "Nama",
+  "@name": {
+    "description": "Label nama pengguna"
+  },
+  "logoutConfirm": "Yakin ingin keluar?",
+  "@logoutConfirm": {
+    "description": "Konfirmasi dialog logout"
   }
 }
