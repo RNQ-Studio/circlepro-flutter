@@ -45,11 +45,11 @@ melos:
       description: Analyze all packages and apps.
 
     format:
-      run: dart format .
-      description: Format all Dart files.
+      run: dart format --line-length=80 packages apps
+      description: Format all Dart files (excludes bricks/ which contains Mason templates).
 
     "format:check":
-      run: dart format --output=none --set-exit-if-changed .
+      run: dart format --output=none --set-exit-if-changed packages apps
       description: Check Dart formatting without changing files.
 
     build:android:
@@ -107,3 +107,7 @@ melos:
     "test:variant":
       run: flutter test apps/variant/test
       description: Run tests for the variant app.
+
+    make-feature:
+      run: mason make feature --output-dir packages/features_shared/lib/src/
+      description: Generate a new Clean Architecture feature with Mason
