@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../data/biometric_auth_service.dart';
 import '../domain/usecases/get_current_user_use_case.dart';
 import '../domain/usecases/login_use_case.dart';
 import '../domain/usecases/logout_use_case.dart';
@@ -70,6 +71,34 @@ class AuthNotifier extends _$AuthNotifier {
       state = const AuthUnauthenticated();
     } on Exception catch (e) {
       state = AuthError(e.toString());
+    }
+  }
+
+  /// Authenticate using device biometrics (fingerprint / Face ID).
+  ///
+  /// Only works when the user already has a valid cached session (token).
+  /// If biometric verification succeeds, restores the session via
+  /// [checkCurrentUser].
+  Future<void> loginWithBiometric() async {
+    state = const AuthLoading();
+
+    final biometricService = ref.read(biometricAuthServiceProvider);
+    final isSupported = await biometricService.isDeviceSupported();
+
+    if (!isSupported) {
+      state = const AuthError('Biometric tidak didukung di perangkat ini');
+      return;
+    }
+
+    final authenticated = await biometricService.authenticate(
+      localizedReason: 'Verifikasi identitas Anda untuk masuk',
+    );
+
+    if (authenticated) {
+      // Biometric passed — try to restore cached session.
+      await checkCurrentUser();
+    } else {
+      state = const AuthError('Verifikasi biometric gagal');
     }
   }
 }

@@ -2,6 +2,7 @@ import 'package:core/core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../data/biometric_auth_service.dart';
 import 'auth_provider.dart';
 import 'auth_state.dart';
 
@@ -97,11 +98,77 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         )
                       : Text(l10n.login),
                 ),
+                const SizedBox(height: 16),
+                const _BiometricLoginButton(),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+}
+
+/// Shows a fingerprint/face-id button only when biometric is available
+/// and the user has enabled it in settings.
+class _BiometricLoginButton extends ConsumerWidget {
+  const _BiometricLoginButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+
+    return FutureBuilder<bool>(
+      future: _isBiometricAvailableAndEnabled(ref),
+      builder: (context, snapshot) {
+        if (!(snapshot.data ?? false)) return const SizedBox.shrink();
+
+        return Column(
+          children: [
+            const Divider(),
+            const SizedBox(height: 8),
+            Text(
+              'atau masuk dengan',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.5),
+                  ),
+            ),
+            const SizedBox(height: 8),
+            IconButton.filled(
+              iconSize: 36,
+              style: IconButton.styleFrom(
+                padding: const EdgeInsets.all(16),
+              ),
+              onPressed: authState is AuthLoading
+                  ? null
+                  : () => ref.read(authProvider.notifier).loginWithBiometric(),
+              icon: const Icon(Icons.fingerprint),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<bool> _isBiometricAvailableAndEnabled(WidgetRef ref) async {
+    try {
+      final service = ref.read(biometricAuthServiceProvider);
+      final isSupported = await service.isDeviceSupported();
+      if (!isSupported) return false;
+
+      final canCheck = await service.canCheckBiometrics();
+      if (!canCheck) return false;
+
+      // Check user preference from SharedPreferences.
+      final storage = SharedPreferencesStorage();
+      await storage.init();
+      final enabled = await storage.read(AppConstants.keyBiometricEnabled);
+      return enabled == 'true';
+    } catch (_) {
+      return false;
+    }
   }
 }
