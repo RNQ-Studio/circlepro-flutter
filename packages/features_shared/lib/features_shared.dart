@@ -11,6 +11,7 @@ export 'src/auth/data/models/user_model.dart';
 export 'src/auth/data/datasources/auth_local_data_source.dart';
 export 'src/auth/data/datasources/auth_remote_data_source.dart';
 export 'src/auth/data/repositories/auth_repository_impl.dart';
+export 'src/auth/data/biometric_auth_service.dart';
 
 // auth — presentation
 export 'src/auth/presentation/auth_guard.dart';
@@ -54,3 +55,14 @@ export 'src/settings/data/repositories/settings_repository_impl.dart';
 export 'src/settings/presentation/settings_providers.dart';
 export 'src/settings/presentation/theme_notifier.dart';
 export 'src/settings/presentation/locale_notifier.dart';
+
+// onboarding — domain
+export 'src/onboarding/domain/onboarding_repository.dart';
+
+// onboarding — data
+export 'src/onboarding/data/onboarding_repository_impl.dart';
+
+// onboarding — presentation
+export 'src/onboarding/presentation/onboarding_notifier.dart';
+export 'src/onboarding/presentation/splash_screen.dart';
+export 'src/onboarding/presentation/onboarding_screen.dart';
