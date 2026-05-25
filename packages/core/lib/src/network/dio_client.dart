@@ -3,9 +3,13 @@ import '../config/app_config.dart';
 import '../errors/app_exception.dart';
 import '../storage/storage_service.dart';
 import 'auth_interceptor.dart';
+import 'token_refresh_interceptor.dart';
 
 class DioClient {
-  DioClient(StorageService storage) {
+  DioClient(
+    StorageService storage, {
+    Future<void> Function()? onLogout,
+  }) {
     _dio = Dio(
       BaseOptions(
         baseUrl: AppConfig.instance.baseUrl,
@@ -13,9 +17,17 @@ class DioClient {
         receiveTimeout: const Duration(seconds: 30),
         headers: {'Content-Type': 'application/json'},
       ),
-    )
-      ..interceptors.add(AuthInterceptor(storage))
-      ..interceptors.add(_errorInterceptor());
+    );
+
+    _dio.interceptors.addAll([
+      AuthInterceptor(storage),
+      TokenRefreshInterceptor(
+        dio: _dio,
+        storage: storage,
+        onLogout: onLogout,
+      ),
+      _errorInterceptor(),
+    ]);
   }
 
   late final Dio _dio;
@@ -26,6 +38,8 @@ class DioClient {
     return InterceptorsWrapper(
       onError: (err, handler) {
         final statusCode = err.response?.statusCode;
+        // 401 is already handled by TokenRefreshInterceptor.
+        // If we still get here with 401, it means refresh also failed.
         if (statusCode == 401) {
           handler.reject(
             err.copyWith(error: const UnauthorizedException()),
