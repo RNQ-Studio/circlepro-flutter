@@ -7,7 +7,7 @@ import '../features/settings/presentation/settings_route.dart';
 import '../features/profile/presentation/profile_route.dart';
 
 final appRouter = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/splash',
   redirect: authRedirect,
   observers: [AppNavigatorObserver()],
   routes: [

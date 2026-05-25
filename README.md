@@ -66,13 +66,18 @@ Jika command `melos` global belum dikenali, gunakan `dart run melos ...`.
 git clone https://github.com/ramadhanrosihadi/flutter-starter.git
 cd flutter-starter
 
-# 2. Install dependencies dari root
+# 2. Install dependencies dari root & bootstrap
 dart pub get
+dart run melos bootstrap
+# ↑ postbootstrap otomatis menjalankan `melos run l10n` setelah bootstrap
 
-# 3. Cek workspace
+# 3. (Opsional) Generate Localization Files secara manual jika postbootstrap gagal
+dart run melos run l10n
+
+# 4. Cek workspace
 dart run melos list
 
-# 4. Jalankan app main
+# 5. Jalankan app main
 dart run melos run dev
 ```
 
@@ -120,6 +125,7 @@ Jalankan dari root repo:
 |---------|--------|
 | `dart pub get` | Install dependencies workspace |
 | `dart run melos list` | Lihat package/app yang terdaftar |
+| `dart run melos run l10n` | **Generate localization files (wajib di awal clone)** |
 | `dart run melos run dev` | Run `apps/main` dengan `ENV=dev` |
 | `dart run melos run dev:variant` | Run `apps/variant` dengan `ENV=dev` |
 | `dart run melos run format` | Format semua file Dart |
@@ -191,6 +197,9 @@ Lihat [ARCHITECTURE.md](ARCHITECTURE.md) untuk dokumentasi lengkap arsitektur da
 - Ingin menambah fitur baru? Baca [Add Feature Guide](docs/ADD_FEATURE.md).
 - Ingin menambah app/flavor baru? Baca [Add App Flavor Guide](docs/ADD_APP_FLAVOR.md).
 - Ingin kontribusi lewat branch/PR? Baca [Contributing Guide](CONTRIBUTING.md).
+
+## 🤖 Panduan untuk AI Agent
+Lihat [CLAUDE.md](CLAUDE.md) untuk panduan lengkap bagi AI Agent yang bekerja di proyek ini.
 
 ---
 

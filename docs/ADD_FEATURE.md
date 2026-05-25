@@ -4,6 +4,25 @@ Panduan ini menjelaskan cara menambah fitur baru di starter ini. Fokusnya adalah
 
 ---
 
+## Cara Cepat (Mason CLI)
+
+Jika Mason CLI sudah terinstal (`dart pub global activate mason_cli`), buat fitur baru dengan satu perintah:
+
+```bash
+# Generate di features_shared (default)
+mason make feature --feature_name order --output-dir packages/features_shared/lib/src/
+
+# Atau via Melos script
+dart run melos run make-feature
+```
+
+Perintah ini menghasilkan struktur Clean Architecture lengkap:
+- `domain/` — entity, repository interface, use cases
+- `data/` — model, remote & local data source, repository impl
+- `presentation/` — Riverpod notifier, screen
+
+Setelah generate, lanjutkan ke bagian **4. Export Shared Feature** untuk mendaftarkan public API.
+
 ## 1. Tentukan Lokasi Fitur
 
 Sebelum membuat file, jawab pertanyaan ini:

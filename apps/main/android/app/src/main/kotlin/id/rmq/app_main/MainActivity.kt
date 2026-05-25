@@ -1,5 +1,6 @@
 package id.rmq.app_main
 
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 
-class MainActivity : FlutterActivity()
+// FlutterFragmentActivity is required for biometric dialog support
+class MainActivity : FlutterFragmentActivity()

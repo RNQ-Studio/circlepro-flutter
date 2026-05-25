@@ -1,206 +1,196 @@
-# Contributing Guide
+# PANDUAN KONTRIBUSI (CONTRIBUTING)
 
-Panduan git workflow dan aturan kontribusi untuk project ini.
+Panduan kontribusi untuk **Flutter Starter** — berfokus pada **Manajemen Git Best Practice** menggunakan **Git Flow**, alur kerja kolaborasi, kualitas kode, dan konvensi commit. Dokumen ini mengikat untuk seluruh kontributor, termasuk sesi pengembangan oleh developer maupun asisten AI.
+
+Repository: `https://github.com/ramadhanrosihadi/flutter-starter`
+
+> [!NOTE]
+> Proyek ini adalah **monorepo Flutter** yang dikelola dengan **[Melos](https://melos.invertase.dev/)**. Struktur workspace: `apps/main`, `apps/variant`, `packages/core`, dan `packages/features_shared`. Sebagian besar perintah lintas-paket dijalankan melalui `melos run <script>` (lihat daftar script di `pubspec.yaml`). Jalankan `melos bootstrap` (atau `dart pub get` per-paket) setelah `git clone` atau menambah dependency baru.
 
 ---
 
-## Branching Strategy
+## 1. Alur Kerja Branch (Git Flow)
 
-Project ini menggunakan **simplified GitFlow**:
+Proyek ini mengadopsi alur kerja **Git Flow** standar industri, yang sangat cocok untuk rilis terjadwal (*Scheduled Releases*) dan pengembangan skala enterprise yang memerlukan isolasi ketat antar-lingkungan pengembangan.
 
-```text
-main
-`-- develop
-    |-- feature/[nama]
-    |-- fix/[nama]
-    `-- hotfix/[nama]
+### Struktur Branch Utama:
+
+1. **Branch Utama (`main`)**:
+   - Berisi kode versi *production* yang sangat stabil dan siap pakai oleh pengguna akhir.
+   - Hanya menerima penggabungan (*merge*) dari branch **`release/*`** dan **`hotfix/*`**.
+   - Setiap penggabungan ke `main` wajib disertai pembuatan **Tag** versi (misal: `v1.0.0`).
+   - **Dilarang keras melakukan commit atau merge langsung** dari branch fitur ke `main`.
+
+2. **Branch Integrasi (`develop`)**:
+   - Menjadi pusat integrasi dari seluruh fitur baru yang sedang dikembangkan.
+   - Seluruh branch **`feature/*`** dan **`bugfix/*`** dicabangkan dari `develop` dan wajib digabungkan kembali ke `develop`.
+   - Kode di `develop` harus selalu dalam kondisi bisa di-build dan seluruh automated test wajib hijau (lulus 100%).
+
+---
+
+### Struktur Branch Pendukung (Temporary Branches):
+
+#### A. Branch Fitur (`feature/*`)
+* **Kegunaan**: Pengembangan fitur baru secara terisolasi.
+* **Dicabangkan dari**: `develop`
+* **Digabungkan ke**: `develop` (melalui Pull Request / PR)
+* **Penamaan**: `feature/<nama-fitur>` (contoh: `feature/oauth-google`)
+
+#### B. Branch Perbaikan Bug (`bugfix/*`)
+* **Kegunaan**: Perbaikan bug non-kritis yang ditemukan di lingkungan development/staging sebelum rilis.
+* **Dicabangkan dari**: `develop`
+* **Digabungkan ke**: `develop` (melalui Pull Request / PR)
+* **Penamaan**: `bugfix/<nama-bug>` (contoh: `bugfix/email-verification-timeout`)
+
+#### C. Branch Persiapan Rilis (`release/*`)
+* **Kegunaan**: Fase stabilisasi sebelum rilis ke production (hanya boleh berisi perbaikan bug minor dan pembaruan versi/dokumentasi, dilarang menambah fitur baru).
+* **Dicabangkan dari**: `develop`
+* **Digabungkan ke**: `main` (dengan Tag versi) dan `develop` (agar perbaikan bug rilis terintegrasi kembali)
+* **Penamaan**: `release/<versi-rilis>` (contoh: `release/v1.0.0`)
+
+#### D. Branch Perbaikan Cepat Staging/Production (`hotfix/*`)
+* **Kegunaan**: Perbaikan darurat/kritis langsung pada sistem production yang aktif.
+* **Dicabangkan dari**: `main`
+* **Digabungkan ke**: `main` (dengan Tag versi baru) dan `develop` (atau branch `release` aktif jika ada)
+* **Penamaan**: `hotfix/<nama-hotfix>` (contoh: `hotfix/payment-gateway-error`)
+
+---
+
+## 2. Konvensi Pesan Commit (Conventional Commits)
+
+Kami menggunakan standar **[Conventional Commits](https://www.conventionalcommits.org/)** untuk menjaga kerapian riwayat git proyek (*git log*) agar mudah dibaca manusia dan mesin (untuk auto-generate changelog).
+
+### Format Pesan Commit:
+```
+<type>(<scope opsional>): <subjek singkat, imperatif, ≤72 karakter>
+
+[body opsional: deskripsi detail perubahan, alasan, dan konteks tambahan]
+
+[footer opsional: referensi issue/task, misal: Closes #12, BREAKING CHANGE]
 ```
 
-| Branch | Fungsi | Branch asal | Merge ke |
-|---|---|---|---|
-| `main` | Kode production, selalu stable | - | - |
-| `develop` | Integrasi, branch kerja utama | `main` | `main` |
-| `feature/[nama]` | Fitur baru | `develop` | `develop` |
-| `fix/[nama]` | Bug fix | `develop` | `develop` |
-| `hotfix/[nama]` | Perbaikan mendesak di production | `main` | `main` + `develop` |
+### Tipe Commit (`type`):
+* `feat`: Fitur baru untuk pengguna aplikasi.
+* `fix`: Perbaikan bug atau error.
+* `chore`: Tugas administratif, update package/dependency, konfigurasi tooling.
+* `docs`: Pembaruan dokumentasi (markdown, panduan).
+* `refactor`: Perubahan struktur kode (bukan memperbaiki bug maupun menambah fitur baru).
+* `style`: Perubahan format/whitespace tanpa mengubah logika program (hasil `dart format`).
+* `perf`: Peningkatan performa kode.
+* `test`: Menambah, mengubah, atau memperbaiki berkas pengujian (widget/unit/integration test).
+
+### Prinsip Menulis Commit:
+1. **Atomic Commits**: Buat commit kecil yang fokus pada **satu perubahan logis**. Jangan mencampur perbaikan bug, penulisan tes, dan update dokumentasi dalam satu commit raksasa di akhir hari.
+2. **Gunakan Kalimat Imperatif**: Tulis subjek commit dalam bentuk perintah masa kini (misal: `feat(auth): add google login` bukan `added google login` atau `adds google login`).
+3. **Gaya Penulisan**: Huruf pertama subjek menggunakan huruf kecil, dan **jangan** akhiri subjek dengan tanda titik `.`.
+4. **Keamanan Kode**: Jangan pernah men-stage atau meng-commit file rahasia (keystore Android `*.jks`, `key.properties`, `google-services.json`, `GoogleService-Info.plist`, API key). Pastikan file tersebut sudah terdaftar di `.gitignore`.
 
 ---
 
-## Branch Naming
+## 3. Gerbang Kualitas Sebelum Commit (Quality Gate)
+
+Sebelum Anda melakukan commit atau push, Anda **wajib** memastikan kode Anda bersih dan tidak merusak sistem dengan menjalankan perintah berikut secara lokal. Skript-skript di bawah dijalankan dari root workspace via Melos sehingga mencakup seluruh `apps/*` dan `packages/*`:
 
 ```bash
-feature/auth-login
-feature/profile-edit
-fix/crash-on-startup
-fix/token-expired-not-handled
-hotfix/payment-failure
+# 1. Format kode otomatis (Dart formatter, lebar baris default 80)
+melos run format
+#    Verifikasi tanpa mengubah berkas (dipakai di CI):
+melos run format:check
+
+# 2. Analisis kode statis (lint flutter_lints + type-check, tidak boleh ada issue)
+melos run analyze
+
+# 3. Jalankan seluruh automated tests (wajib lulus 100%)
+melos run test
+#    Atau per-target jika perlu: melos run test:core / test:features_shared / test:main / test:variant
+
+# 4. Regenerasi localization bila menyentuh berkas .arb (l10n)
+melos run l10n
 ```
 
-Gunakan **kebab-case**, singkat tapi deskriptif. Hindari nama generik seperti `feature/update` atau `fix/bug`. Maksimal **50 karakter** untuk nama branch.
+> [!TIP]
+> Jika menambah atau mengubah dependency (`pubspec.yaml`), jalankan `melos bootstrap` agar seluruh paket pada workspace ter-resolve ulang sebelum commit.
+
+> [!IMPORTANT]
+> **Pembaruan CHANGELOG.md Wajib**: Setiap paket yang dapat dirilis memiliki `CHANGELOG.md` sendiri (mis. `packages/core/CHANGELOG.md`, `packages/features_shared/CHANGELOG.md`). Sebelum melakukan push, catat perubahan Anda pada `CHANGELOG.md` paket yang terdampak di bawah bagian `## [Unreleased]`, dan kelompokkan ke kategori yang sesuai (`Added`, `Changed`, `Fixed`, dll.). Jika langkah ini terlewat, kontribusi Anda dapat ditolak pada saat proses code review.
+
+> [!CAUTION]
+> Jika salah satu dari proses di atas gagal atau menghasilkan warna merah pada pengujian otomatis, **perbaiki kodenya terlebih dahulu**. Jangan pernah memaksa commit kode yang rusak ke repository.
 
 ---
 
-## Commit Convention
+## 4. Proses Pull Request (PR) & Code Review
 
-Project ini menggunakan [Conventional Commits](https://www.conventionalcommits.org/):
+Pull Request (PR) adalah gerbang utama pertahanan kualitas kode di repository ini.
 
-```text
-<type>(<scope>): <deskripsi singkat>
-```
-
-### Type
-
-| Type | Digunakan untuk |
-|---|---|
-| `feat` | Fitur baru |
-| `fix` | Bug fix |
-| `docs` | Perubahan dokumentasi |
-| `style` | Format kode, tanpa perubahan logika |
-| `refactor` | Refactor tanpa tambah fitur atau fix bug |
-| `test` | Tambah atau update test |
-| `chore` | Build process, dependency update, tooling |
-| `perf` | Peningkatan performa |
-
-### Scope
-
-Scope opsional. Gunakan nama fitur atau package yang diubah, misalnya `auth`, `profile`, `core`, atau `router`.
-
-### Aturan Penulisan
-
-- Deskripsi singkat maksimal **72 karakter**.
-- Gunakan imperative mood: `add`, `fix`, `update`, `remove`.
-- Jangan akhiri deskripsi dengan tanda titik.
-
-Contoh:
-
-```bash
-feat(auth): add biometric login support
-fix(network): handle 401 response on token expiry
-docs: update architecture guide
-refactor(core): simplify responsive layout
-chore: upgrade riverpod
-```
+### Praktik Terbaik Pull Request:
+1. **Buat PR yang Kecil dan Fokus**: Usahakan ukuran PR berada di bawah **200 baris kode** (LOC). PR yang kecil lebih cepat direview, lebih mudah dipahami, dan meminimalisir kemungkinan masuknya bug baru.
+2. **Target Merge yang Sesuai**:
+   - Untuk branch `feature/*` dan `bugfix/*`, pastikan target penggabungannya adalah branch **`develop`** (BUKAN `main`).
+   - Untuk branch `release/*` dan `hotfix/*`, target penggabungannya adalah branch **`main`** dan branch **`develop`**.
+3. **Gunakan Judul PR yang Jelas**: Samakan judul PR dengan format Conventional Commits (misal: `feat(auth): implement google login flow`).
+4. **Tulis Deskripsi PR secara Detail**:
+   - **Tujuan**: Apa yang diselesaikan oleh PR ini?
+   - **Perubahan Utama**: File mana saja yang dimodifikasi secara signifikan?
+   - **Cara Menguji**: Langkah demi langkah untuk memverifikasi perubahan Anda.
+   - **Visual/Media**: Tambahkan screenshot/GIF jika ada perubahan tampilan (UI).
+5. **Gunakan Rebase untuk Sinkronisasi**:
+   Sebelum meminta review, pastikan branch fitur Anda sinkron dengan branch `develop` terbaru menggunakan rebase:
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git checkout <nama-branch-fitur>
+   git rebase develop
+   ```
+   *Jika terjadi konflik, selesaikan konfliknya, kemudian lanjutkan rebase dengan `git rebase --continue`.*
+6. **Wajib Code Review**: Setiap PR harus mendapatkan persetujuan (*Approved*) minimal dari **1 reviewer** (atau disepakati oleh tim/asisten AI) sebelum digabungkan.
+7. **Hapus Branch Pasca-Merge**: Begitu PR sukses digabungkan (*merged*), segera hapus branch fitur tersebut baik di remote maupun lokal untuk menjaga kebersihan repositori.
 
 ---
 
-## Workflow
+## 5. Alur Kerja Commit & Push yang Benar
 
-### Mengerjakan Fitur Baru
+Jalankan perintah ini secara berurutan saat mengembangkan fitur menggunakan alur kerja Git Flow:
 
 ```bash
-# 1. Pastikan develop up to date
+# 1. Tarik pembaruan terbaru dari develop sebelum membuat branch baru
 git checkout develop
 git pull origin develop
 
-# 2. Buat branch baru
-git checkout -b feature/nama-fitur
+# 2. Buat branch fitur baru yang dicabangkan dari develop
+git checkout -b feature/add-email-verification
 
-# 3. Kerjakan, commit secara incremental
-git add <file>
-git commit -m "feat(scope): deskripsi"
+# 3. Lakukan coding, lalu verifikasi Quality Gate (§3)
+melos run format && melos run analyze && melos run test
 
-# 4. Rebase ke develop sebelum push
-git fetch origin
-git rebase origin/develop
+# 3.5 Perbarui CHANGELOG.md paket terdampak pada bagian ## [Unreleased]
+# (Buka CHANGELOG.md paket yang Anda ubah & catat ringkasan kontribusi di kategori yang sesuai)
 
-# 5. Push dan buat Pull Request ke develop
-git push origin feature/nama-fitur
+# 4. Stage perubahan secara spesifik (jangan lupa sertakan berkas CHANGELOG.md!)
+git add packages/core/lib/src/auth/ apps/main/lib/main.dart packages/core/CHANGELOG.md
+
+# 5. Lakukan commit dengan pesan konvensional
+git commit -m "feat(auth): add email verification flow"
+
+# 6. Push ke remote repository
+git push -u origin feature/add-email-verification
 ```
 
-### Hotfix Production
-
-```bash
-# 1. Branch dari main
-git checkout main
-git pull origin main
-git checkout -b hotfix/nama-fix
-
-# 2. Fix, commit, push
-git commit -m "fix(scope): deskripsi"
-git push origin hotfix/nama-fix
-
-# 3. Buat PR ke main dan develop
-```
+### Aturan Tambahan Penggunaan Git:
+- **Jangan pernah menggunakan `git push --force`** pada branch utama (`main`/`develop`) atau branch bersama. Jika Anda perlu memperbarui branch fitur pribadi setelah rebase, gunakan opsi yang lebih aman: `git push --force-with-lease`.
+- Lakukan **push secara berkala** sepanjang sesi kerja Anda. Jangan menumpuk perubahan selama berhari-hari di lokal tanpa di-push ke remote.
 
 ---
 
-## Quality Checks
+## 6. Checklist Cepat Sebelum Mengakhiri Sesi Kerja
 
-CI menjalankan checks berikut pada push dan pull request ke `main` atau `develop`:
+Sebelum Anda meninggalkan sesi kerja atau menandai tugas selesai, pastikan Anda mencentang semua hal berikut:
 
-```bash
-dart pub get
-dart run melos list
-dart run melos run format:check
-dart run melos run analyze
-dart run melos run test
-```
-
-Sebelum submit PR, jalankan dari root repo:
-
-```bash
-dart run melos run format:check
-dart run melos run analyze
-dart run melos run test
-```
-
-Jika format check gagal, jalankan:
-
-```bash
-dart run melos run format
-```
-
-Lalu commit hasil format.
-
----
-
-## Pull Request
-
-### Sebelum Submit PR
-
-- [ ] Kode sudah di-format (`dart run melos run format:check`).
-- [ ] Tidak ada warning/error dari analyzer (`dart run melos run analyze`).
-- [ ] Test otomatis pass (`dart run melos run test`).
-- [ ] Sudah test manual di device/emulator jika perubahan menyentuh UI atau platform.
-- [ ] Commit message mengikuti convention.
-- [ ] Sudah rebase ke branch target terbaru.
-
-### Judul PR
-
-Ikuti format commit convention:
-
-```text
-feat(auth): add biometric login support
-fix(network): handle 401 response on token expiry
-```
-
-### Target Branch
-
-| Jenis perubahan | Target branch |
-|---|---|
-| Fitur, fix, refactor | `develop` |
-| Hotfix production | `main` |
-
-### Merge Policy
-
-- Minimal **1 approval** dari reviewer sebelum merge.
-- Yang boleh merge: author PR sendiri setelah dapat approval, atau maintainer.
-- Gunakan **Squash and Merge** untuk `feature/*` dan `fix/*` ke `develop`.
-- Gunakan **Merge Commit** untuk `develop` ke `main` dan `hotfix/*` ke `main`.
-- Jangan merge PR yang masih memiliki unresolved comment.
-
----
-
-## Catatan Tambahan
-
-### Jika Ada Konflik Saat Rebase
-
-```bash
-# Selesaikan konflik, lalu lanjutkan
-git add <file-yang-konflik>
-git rebase --continue
-```
-
-### Rilis Versi
-
-Jika project berkembang ke tahap rilis versioned, buat branch `release/x.x.x` dari `develop`, lakukan finalisasi, lalu merge ke `main` dan `develop`.
+- [ ] Seluruh **Quality Gate** sudah berjalan dengan hasil hijau bersih (`melos run format`, `analyze`, `test`).
+- [ ] Riwayat commit dibuat secara **atomik** (kecil dan bertahap) dengan standar **Conventional Commits**.
+- [ ] `CHANGELOG.md` pada paket terdampak telah diperbarui di bawah bagian `## [Unreleased]`.
+- [ ] Localization di-regenerasi (`melos run l10n`) bila ada perubahan pada berkas `.arb`.
+- [ ] Tidak ada file kredensial/rahasia (keystore, `*.jks`, `key.properties`, `google-services.json`, secret) yang tidak sengaja ter-commit.
+- [ ] Konfigurasi environment baru didokumentasikan (proyek ini memakai `--dart-define=ENV=<env>`, bukan berkas `.env`).
+- [ ] Dokumentasi terkait (README paket atau dartdoc) telah diperbarui sesuai perubahan kode.
+- [ ] Seluruh kode lokal telah sukses di-`push` ke remote repository.

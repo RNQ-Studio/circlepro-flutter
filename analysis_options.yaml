@@ -1,0 +1,11 @@
+# Root-level analysis options for the Dart Analyzer.
+# Tells the IDE and Dart Analysis Server to exclude Mason templates in bricks/
+# from analysis scans to prevent syntax error reports on mustache templates.
+
+analyzer:
+  exclude:
+    - "bricks/**"
+    - "**/build/**"
+    - "**/.dart_tool/**"
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"

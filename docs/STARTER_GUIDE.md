@@ -2,7 +2,13 @@
 
 Panduan ini dipakai setelah repo di-fork atau dicopy untuk project baru. Tujuannya sederhana: ubah identitas project, pastikan dependency siap, lalu jalankan app tanpa harus menebak file mana yang perlu disentuh.
 
+> [!TIP]
+> **Baru mengenal monorepo, Clean Architecture, Riverpod Generator, Drift SQLite, atau Mason Bricks?**
+> Kami menyediakan seri panduan belajar interaktif khusus pemula di folder [docs/tutorial/](file:///c:/Users/62822/Documents/Work/flutter/flutter-starter/docs/tutorial/).
+> Silakan mulai dari **[00_overview.md (Peta Jalur Belajar)](file:///c:/Users/62822/Documents/Work/flutter/flutter-starter/docs/tutorial/00_overview.md)**!
+
 ---
+
 
 ## 1. Prasyarat
 
@@ -232,16 +238,15 @@ Token auth memakai `SecureStorageService` melalui `storageServiceProvider`. Prov
 
 ## 8. Firebase
 
-Starter ini menyebut Firebase di README, tetapi kode saat ini belum menginisialisasi Firebase. Jika project memakai Firebase, lakukan langkah berikut:
+Firebase Core dan Firebase Cloud Messaging (FCM) sudah terintegrasi di `packages/core`:
+- `FirebaseService` — wrapper untuk inisialisasi Firebase Core
+- `FCMNotificationService` — handler untuk permission, token, dan message listener
 
-- Tambahkan dependency Firebase yang dibutuhkan ke app atau package yang relevan.
-- Tambahkan `google-services.json` untuk Android.
-- Tambahkan `GoogleService-Info.plist` untuk iOS.
-- Tambahkan konfigurasi Gradle sesuai dokumentasi Firebase Flutter.
-- Panggil inisialisasi Firebase di `bootstrap.dart` sebelum `runApp`.
-- Dokumentasikan service Firebase yang dipakai, misalnya Analytics, Crashlytics, Messaging, atau Remote Config.
+Namun, inisialisasi masih ter-comment di `bootstrap.dart` karena memerlukan konfigurasi per-project melalui `flutterfire configure`.
 
-Jika project tidak memakai Firebase, hapus Firebase dari tech stack README agar dokumentasi tidak misleading.
+**Untuk panduan lengkap integrasi Firebase multi-flavor, lihat [Panduan Firebase Setup](firebase-setup.md).**
+
+Jika project tidak memakai Firebase, hapus dependency Firebase dari `packages/core/pubspec.yaml` dan bersihkan kode terkait.
 
 ---
 

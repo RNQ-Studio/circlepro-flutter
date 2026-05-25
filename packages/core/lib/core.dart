@@ -17,6 +17,8 @@ export 'src/l10n/app_localizations.dart';
 
 // network
 export 'src/network/dio_client.dart';
+export 'src/network/token_refresh_interceptor.dart';
+export 'src/network/certificate_pinning.dart';
 
 // responsive
 export 'src/responsive/breakpoints.dart';
@@ -26,10 +28,18 @@ export 'src/responsive/responsive_layout.dart';
 export 'src/router/app_navigator_observer.dart';
 export 'src/router/app_routes.dart';
 
+// services
+export 'src/services/firebase_service.dart';
+export 'src/services/fcm_notification_service.dart';
+export 'src/services/crashlytics_service.dart';
+export 'src/services/performance_service.dart';
+
 // storage
 export 'src/storage/secure_storage_service.dart';
 export 'src/storage/shared_preferences_storage.dart';
 export 'src/storage/storage_service.dart';
+export 'src/storage/app_database.dart';
+export 'src/storage/app_database_provider.dart';
 
 // theme
 export 'src/theme/app_colors.dart';

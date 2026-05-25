@@ -1,0 +1,80 @@
+import 'dart:async';
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import '../constants/app_constants.dart';
+import '../storage/storage_service.dart';
+
+/// Intercepts 401 responses and transparently refreshes the access token.
+///
+/// Uses [QueuedInterceptor] so that concurrent 401 errors are queued and only
+/// a single refresh request is issued. Subsequent queued requests are retried
+/// with the new token.
+class TokenRefreshInterceptor extends QueuedInterceptor {
+  TokenRefreshInterceptor({
+    required Dio dio,
+    required StorageService storage,
+    this.refreshEndpoint = '/api/auth/refresh',
+    this.onLogout,
+  })  : _dio = dio,
+        _storage = storage;
+
+  final Dio _dio;
+  final StorageService _storage;
+  final String refreshEndpoint;
+  final Future<void> Function()? onLogout;
+
+  @override
+  Future<void> onError(
+    DioException err,
+    ErrorInterceptorHandler handler,
+  ) async {
+    if (err.response?.statusCode != 401) {
+      return handler.next(err);
+    }
+
+    try {
+      // 1. Read the refresh token from secure storage.
+      final refreshToken = await _storage.read(AppConstants.keyRefreshToken);
+      if (refreshToken == null) {
+        await _forceLogout();
+        return handler.reject(err);
+      }
+
+      // 2. Use a separate Dio instance (no interceptors) to avoid loops.
+      final refreshDio = Dio(BaseOptions(baseUrl: _dio.options.baseUrl));
+      final response = await refreshDio.post(
+        refreshEndpoint,
+        options: Options(
+          headers: {'Authorization': 'Bearer $refreshToken'},
+        ),
+      );
+
+      // 3. Persist the new tokens.
+      final newAccessToken = response.data['access_token'] as String;
+      final newRefreshToken = response.data['refresh_token'] as String?;
+
+      await _storage.write(AppConstants.keyAuthToken, newAccessToken);
+      if (newRefreshToken != null) {
+        await _storage.write(AppConstants.keyRefreshToken, newRefreshToken);
+      }
+
+      // 4. Retry the original request with the new access token.
+      final opts = err.requestOptions;
+      opts.headers['Authorization'] = 'Bearer $newAccessToken';
+      final retryResponse = await _dio.fetch(opts);
+      return handler.resolve(retryResponse);
+    } catch (e) {
+      debugPrint('Token refresh failed: $e');
+      await _forceLogout();
+      return handler.reject(err);
+    }
+  }
+
+  Future<void> _forceLogout() async {
+    try {
+      await onLogout?.call();
+    } catch (_) {
+      // Swallow errors during logout to avoid masking the original error.
+    }
+  }
+}

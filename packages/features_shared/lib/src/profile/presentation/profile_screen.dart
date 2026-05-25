@@ -50,8 +50,7 @@ class ProfileScreen extends ConsumerWidget {
                   ListTile(
                     leading: const Icon(Icons.logout),
                     title: Text(l10n.logout),
-                    onTap: () =>
-                        ref.read(authNotifierProvider.notifier).logout(),
+                    onTap: () => ref.read(authProvider.notifier).logout(),
                   ),
                 ],
               ),

@@ -8,15 +8,17 @@ import 'dev/fake_auth_repository.dart';
 import 'router/app_router.dart';
 
 class App extends StatelessWidget {
-  const App({super.key, required this.storage});
+  const App({super.key, required this.storage, required this.database});
 
   final StorageService storage;
+  final AppDatabase database;
 
   @override
   Widget build(BuildContext context) {
     return ProviderScope(
       overrides: [
         storageServiceProvider.overrideWithValue(storage),
+        appDatabaseProvider.overrideWithValue(database),
         if (kDebugMode)
           authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
       ],
@@ -37,16 +39,16 @@ class _AppRouterState extends ConsumerState<_AppRouter> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(authNotifierProvider.notifier).checkCurrentUser();
+      ref.read(authProvider.notifier).checkCurrentUser();
     });
-    ref.listenManual(authNotifierProvider, (_, __) => appRouter.refresh());
+    ref.listenManual(authProvider, (_, __) => appRouter.refresh());
   }
 
   @override
   Widget build(BuildContext context) {
     final themeMode =
-        ref.watch(themeNotifierProvider).asData?.value ?? ThemeMode.system;
-    final locale = ref.watch(localeNotifierProvider).asData?.value;
+        ref.watch(themeProvider).asData?.value ?? ThemeMode.system;
+    final locale = ref.watch(localeProvider).asData?.value;
 
     return MaterialApp.router(
       title: 'Flutter Starter Variant',

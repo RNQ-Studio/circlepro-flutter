@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'settings_repository_provider.dart';
 
-class LocaleNotifier extends AsyncNotifier<Locale> {
+part 'locale_notifier.g.dart';
+
+@riverpod
+class LocaleNotifier extends _$LocaleNotifier {
   @override
   Future<Locale> build() async {
     final repo = await ref.watch(settingsRepositoryProvider.future);

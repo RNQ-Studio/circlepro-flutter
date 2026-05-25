@@ -39,6 +39,22 @@ build/
 
 .vscode/templates
 
-# Android release signing — never commit these
+# ===== Kredensial & Rahasia =====
+# Environment variables
+.env
+.env.*
+*.env
+
+# Firebase configuration
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+
+# Signing keys
 *.jks
 *.keystore
+key.properties
+upload-keystore.jks
+
+# FlutterFire CLI generated
+firebase_app_id_file.json
