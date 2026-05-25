@@ -198,6 +198,9 @@ Lihat [ARCHITECTURE.md](ARCHITECTURE.md) untuk dokumentasi lengkap arsitektur da
 - Ingin menambah app/flavor baru? Baca [Add App Flavor Guide](docs/ADD_APP_FLAVOR.md).
 - Ingin kontribusi lewat branch/PR? Baca [Contributing Guide](CONTRIBUTING.md).
 
+## 🤖 Panduan untuk AI Agent
+Lihat [CLAUDE.md](CLAUDE.md) untuk panduan lengkap bagi AI Agent yang bekerja di proyek ini.
+
 ---
 
 ## Cara Pakai Starter Ini
