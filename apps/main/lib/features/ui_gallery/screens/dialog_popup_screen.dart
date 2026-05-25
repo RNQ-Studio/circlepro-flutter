@@ -21,8 +21,7 @@ class _DialogPopupScreenState extends State<DialogPopupScreen> {
       action: SnackBarAction(
         label: 'TUTUP',
         textColor: Colors.white,
-        onPressed: () =>
-            ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+        onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
       ),
     ));
   }
@@ -70,8 +69,9 @@ class _DialogPopupScreenState extends State<DialogPopupScreen> {
               hintText: 'cth: Ahmad Rizki',
               prefixIcon: Icon(Icons.person_outline),
             ),
-            validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Nama tidak boleh kosong' : null,
+            validator: (v) => (v == null || v.trim().isEmpty)
+                ? 'Nama tidak boleh kosong'
+                : null,
           ),
         ),
         actions: [
@@ -203,8 +203,7 @@ class _DialogPopupScreenState extends State<DialogPopupScreen> {
   void _showCustomDialog() {
     showDialog(
       context: context,
-      builder: (ctx) =>
-          _CountdownDialog(onDismiss: () => Navigator.pop(ctx)),
+      builder: (ctx) => _CountdownDialog(onDismiss: () => Navigator.pop(ctx)),
     );
   }
 
@@ -231,7 +230,8 @@ class _DialogPopupScreenState extends State<DialogPopupScreen> {
       body: ListView(
         children: [
           SectionHeader(
-              title: l10n.gallerySectionAlertDialogs, subtitle: l10n.gallerySectionAlertDialogsDesc),
+              title: l10n.gallerySectionAlertDialogs,
+              subtitle: l10n.gallerySectionAlertDialogsDesc),
           DemoCard(
             title: '1. Alert Dialog Sederhana',
             subtitle: 'Konfirmasi dengan dua tombol',
@@ -249,7 +249,8 @@ class _DialogPopupScreenState extends State<DialogPopupScreen> {
                 color: AppColors.error),
           ),
           SectionHeader(
-              title: l10n.gallerySectionBottomSheets, subtitle: l10n.gallerySectionBottomSheetsDesc),
+              title: l10n.gallerySectionBottomSheets,
+              subtitle: l10n.gallerySectionBottomSheetsDesc),
           DemoCard(
             title: '4. Bottom Sheet Standard',
             subtitle: 'Daftar opsi dengan drag handle',
@@ -261,7 +262,8 @@ class _DialogPopupScreenState extends State<DialogPopupScreen> {
             child: _DemoBtn('LIHAT SHEET', _showDraggableSheet),
           ),
           SectionHeader(
-              title: l10n.gallerySectionCustomDialogs, subtitle: l10n.gallerySectionCustomDialogsDesc),
+              title: l10n.gallerySectionCustomDialogs,
+              subtitle: l10n.gallerySectionCustomDialogsDesc),
           DemoCard(
             title: '6. Custom Dialog + Countdown',
             subtitle: 'Dialog sukses, auto-close 3 detik',
@@ -273,26 +275,41 @@ class _DialogPopupScreenState extends State<DialogPopupScreen> {
             child: _DemoBtn('LIHAT DIALOG', _showLoadingDialog),
           ),
           SectionHeader(
-              title: l10n.gallerySectionSnackbarVariants, subtitle: l10n.gallerySectionSnackbarVariantsDesc),
+              title: l10n.gallerySectionSnackbarVariants,
+              subtitle: l10n.gallerySectionSnackbarVariantsDesc),
           DemoCard(
             title: '8. SnackBar Variants',
             subtitle: 'Tap salah satu tombol di bawah',
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _SnackBtn('Info', Icons.info_outline, AppColors.info,
-                    () => _snack('Info: Operasi sedang diproses', AppColors.info)),
+                _SnackBtn(
+                    'Info',
+                    Icons.info_outline,
+                    AppColors.info,
+                    () => _snack(
+                        'Info: Operasi sedang diproses', AppColors.info)),
                 const SizedBox(height: 8),
-                _SnackBtn('Sukses', Icons.check_circle_outline,
+                _SnackBtn(
+                    'Sukses',
+                    Icons.check_circle_outline,
                     AppColors.success,
-                    () => _snack('Sukses: Data berhasil disimpan', AppColors.success)),
+                    () => _snack(
+                        'Sukses: Data berhasil disimpan', AppColors.success)),
                 const SizedBox(height: 8),
-                _SnackBtn('Warning', Icons.warning_amber_outlined,
+                _SnackBtn(
+                    'Warning',
+                    Icons.warning_amber_outlined,
                     AppColors.warning,
-                    () => _snack('Warning: Stok hampir habis', AppColors.warning)),
+                    () => _snack(
+                        'Warning: Stok hampir habis', AppColors.warning)),
                 const SizedBox(height: 8),
-                _SnackBtn('Error', Icons.error_outline, AppColors.error,
-                    () => _snack('Error: Terjadi kesalahan server', AppColors.error)),
+                _SnackBtn(
+                    'Error',
+                    Icons.error_outline,
+                    AppColors.error,
+                    () => _snack(
+                        'Error: Terjadi kesalahan server', AppColors.error)),
               ],
             ),
           ),
@@ -428,9 +445,9 @@ class _CountdownDialogState extends State<_CountdownDialog>
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-        vsync: this, duration: const Duration(seconds: 3))
-      ..forward();
+    _ctrl =
+        AnimationController(vsync: this, duration: const Duration(seconds: 3))
+          ..forward();
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (!mounted) return;
       setState(() => _seconds--);
@@ -497,7 +514,8 @@ class _CountdownDialogState extends State<_CountdownDialog>
                     ?.copyWith(color: Colors.grey)),
             const SizedBox(height: 16),
             OutlinedButton(
-                onPressed: widget.onDismiss, child: const Text('Tutup Sekarang')),
+                onPressed: widget.onDismiss,
+                child: const Text('Tutup Sekarang')),
           ],
         ),
       ),
@@ -521,12 +539,13 @@ class _LoadingDialog extends StatelessWidget {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(height: 20),
-            Text('Memproses...',
-                style: Theme.of(context).textTheme.bodyLarge),
+            Text('Memproses...', style: Theme.of(context).textTheme.bodyLarge),
             const SizedBox(height: 8),
             Text('Mohon tunggu sebentar',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey)),
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(color: Colors.grey)),
           ],
         ),
       ),

@@ -2,23 +2,52 @@
 
 abstract final class DummyData {
   static const List<String> names = [
-    'Ahmad Rizki', 'Budi Santoso', 'Citra Dewi', 'Dian Pratama',
-    'Eka Wulandari', 'Faisal Hasan', 'Gita Rahayu', 'Hendra Wijaya',
-    'Intan Permata', 'Joko Susilo', 'Kartika Sari', 'Lukman Hakim',
-    'Maya Indah', 'Nanda Putra', 'Okta Kurnia',
+    'Ahmad Rizki',
+    'Budi Santoso',
+    'Citra Dewi',
+    'Dian Pratama',
+    'Eka Wulandari',
+    'Faisal Hasan',
+    'Gita Rahayu',
+    'Hendra Wijaya',
+    'Intan Permata',
+    'Joko Susilo',
+    'Kartika Sari',
+    'Lukman Hakim',
+    'Maya Indah',
+    'Nanda Putra',
+    'Okta Kurnia',
   ];
 
   static const List<String> roles = [
-    'Flutter Developer', 'Backend Engineer', 'UI/UX Designer',
-    'Product Manager', 'DevOps Engineer', 'Mobile Developer',
-    'Frontend Developer', 'Data Scientist', 'QA Engineer', 'Tech Lead',
-    'Scrum Master', 'Business Analyst', 'System Architect',
-    'Security Engineer', 'Cloud Engineer',
+    'Flutter Developer',
+    'Backend Engineer',
+    'UI/UX Designer',
+    'Product Manager',
+    'DevOps Engineer',
+    'Mobile Developer',
+    'Frontend Developer',
+    'Data Scientist',
+    'QA Engineer',
+    'Tech Lead',
+    'Scrum Master',
+    'Business Analyst',
+    'System Architect',
+    'Security Engineer',
+    'Cloud Engineer',
   ];
 
   static const List<String> techStacks = [
-    'Flutter', 'Laravel', 'Next.js', 'React Native', 'Vue.js',
-    'Node.js', 'Django', 'Spring Boot', 'FastAPI', 'NestJS',
+    'Flutter',
+    'Laravel',
+    'Next.js',
+    'React Native',
+    'Vue.js',
+    'Node.js',
+    'Django',
+    'Spring Boot',
+    'FastAPI',
+    'NestJS',
   ];
 
   static const List<String> faqs = [
@@ -38,10 +67,21 @@ abstract final class DummyData {
   ];
 
   static const List<String> searchItems = [
-    'Flutter Widget', 'Dart Async', 'State Management', 'Navigation Router',
-    'Material Design', 'Riverpod Provider', 'Go Router', 'Animations',
-    'Testing Widget', 'Platform Channel', 'Custom Painter', 'Gesture Detector',
-    'Bloc Pattern', 'Provider Pattern', 'Flutter Hooks',
+    'Flutter Widget',
+    'Dart Async',
+    'State Management',
+    'Navigation Router',
+    'Material Design',
+    'Riverpod Provider',
+    'Go Router',
+    'Animations',
+    'Testing Widget',
+    'Platform Channel',
+    'Custom Painter',
+    'Gesture Detector',
+    'Bloc Pattern',
+    'Provider Pattern',
+    'Flutter Hooks',
   ];
 
   static const List<String> comments = [

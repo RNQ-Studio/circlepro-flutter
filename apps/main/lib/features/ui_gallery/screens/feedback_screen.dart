@@ -13,17 +13,29 @@ class FeedbackScreen extends StatelessWidget {
       appBar: AppBar(title: Text(l10n.galleryFeedbackScreenTitle)),
       body: ListView(
         children: [
-          SectionHeader(title: l10n.gallerySectionStarRating, subtitle: l10n.gallerySectionStarRatingDesc),
+          SectionHeader(
+              title: l10n.gallerySectionStarRating,
+              subtitle: l10n.gallerySectionStarRatingDesc),
           const _StarRating(),
-          SectionHeader(title: l10n.gallerySectionLikeButton, subtitle: l10n.gallerySectionLikeButtonDesc),
+          SectionHeader(
+              title: l10n.gallerySectionLikeButton,
+              subtitle: l10n.gallerySectionLikeButtonDesc),
           const _LikeButton(),
-          SectionHeader(title: l10n.gallerySectionReactionPicker, subtitle: l10n.gallerySectionReactionPickerDesc),
+          SectionHeader(
+              title: l10n.gallerySectionReactionPicker,
+              subtitle: l10n.gallerySectionReactionPickerDesc),
           const _ReactionPicker(),
-          SectionHeader(title: l10n.gallerySectionCommentInput, subtitle: l10n.gallerySectionCommentInputDesc),
+          SectionHeader(
+              title: l10n.gallerySectionCommentInput,
+              subtitle: l10n.gallerySectionCommentInputDesc),
           const _CommentSection(),
-          SectionHeader(title: l10n.gallerySectionQuickPoll, subtitle: l10n.gallerySectionQuickPollDesc),
+          SectionHeader(
+              title: l10n.gallerySectionQuickPoll,
+              subtitle: l10n.gallerySectionQuickPollDesc),
           const _QuickPoll(),
-          SectionHeader(title: l10n.gallerySectionOtpInput, subtitle: l10n.gallerySectionOtpInputDesc),
+          SectionHeader(
+              title: l10n.gallerySectionOtpInput,
+              subtitle: l10n.gallerySectionOtpInputDesc),
           const _OtpInput(),
           const SizedBox(height: 32),
         ],
@@ -79,8 +91,7 @@ class _StarRatingState extends State<_StarRating> {
                   child: AnimatedScale(
                     scale: display >= starValue - 0.4 ? 1.2 : 1.0,
                     duration: const Duration(milliseconds: 150),
-                    child: Icon(icon,
-                        color: Colors.amber, size: 40),
+                    child: Icon(icon, color: Colors.amber, size: 40),
                   ),
                 );
               }),
@@ -89,8 +100,10 @@ class _StarRatingState extends State<_StarRating> {
           const SizedBox(height: 12),
           Text(
             '${_rating.toStringAsFixed(1)} / 5.0',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold, color: Colors.amber),
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge
+                ?.copyWith(fontWeight: FontWeight.bold, color: Colors.amber),
           ),
           Text(_ratingLabel(_rating),
               style: const TextStyle(fontSize: 12, color: Colors.grey)),
@@ -127,7 +140,8 @@ class _LikeButtonState extends State<_LikeButton>
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 200));
+    _ctrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 200));
     _scale = TweenSequence([
       TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.4), weight: 1),
       TweenSequenceItem(tween: Tween(begin: 1.4, end: 1.0), weight: 1),
@@ -158,7 +172,8 @@ class _LikeButtonState extends State<_LikeButton>
         children: [
           AnimatedBuilder(
             animation: _scale,
-            builder: (_, child) => Transform.scale(scale: _scale.value, child: child),
+            builder: (_, child) =>
+                Transform.scale(scale: _scale.value, child: child),
             child: IconButton(
               iconSize: 40,
               icon: Icon(
@@ -172,7 +187,9 @@ class _LikeButtonState extends State<_LikeButton>
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
             transitionBuilder: (child, anim) => SlideTransition(
-              position: Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(anim),
+              position:
+                  Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero)
+                      .animate(anim),
               child: FadeTransition(opacity: anim, child: child),
             ),
             child: Text(
@@ -210,7 +227,8 @@ class _ReactionPickerState extends State<_ReactionPicker>
     super.initState();
     _emojiCtrlrs = List.generate(
       _emojis.length,
-      (_) => AnimationController(vsync: this, duration: const Duration(milliseconds: 300)),
+      (_) => AnimationController(
+          vsync: this, duration: const Duration(milliseconds: 300)),
     );
   }
 
@@ -259,7 +277,8 @@ class _ReactionPickerState extends State<_ReactionPicker>
                   );
                   return AnimatedBuilder(
                     animation: anim,
-                    builder: (_, child) => ScaleTransition(scale: anim, child: child),
+                    builder: (_, child) =>
+                        ScaleTransition(scale: anim, child: child),
                     child: GestureDetector(
                       onTap: () => _selectEmoji(_emojis[i]),
                       child: Container(
@@ -269,7 +288,8 @@ class _ReactionPickerState extends State<_ReactionPicker>
                           color: Theme.of(context).colorScheme.surfaceVariant,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: Text(_emojis[i], style: const TextStyle(fontSize: 24)),
+                        child: Text(_emojis[i],
+                            style: const TextStyle(fontSize: 24)),
                       ),
                     ),
                   );
@@ -290,10 +310,13 @@ class _ReactionPickerState extends State<_ReactionPicker>
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(_current.split(' ')[0], style: const TextStyle(fontSize: 18)),
+                  Text(_current.split(' ')[0],
+                      style: const TextStyle(fontSize: 18)),
                   const SizedBox(width: 6),
                   Text(_current.contains(' ') ? _current.split(' ').last : '',
-                      style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600)),
+                      style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.w600)),
                 ],
               ),
             ),
@@ -346,31 +369,38 @@ class _CommentSectionState extends State<_CommentSection> {
       child: Column(
         children: [
           ...(_comments.map((c) => Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  radius: 16,
-                  backgroundColor: AppColors.primary.withOpacity(0.15),
-                  child: Text(c[0].toUpperCase(),
-                      style: const TextStyle(
-                          fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.bold)),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(12),
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: 16,
+                      backgroundColor: AppColors.primary.withOpacity(0.15),
+                      child: Text(c[0].toUpperCase(),
+                          style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold)),
                     ),
-                    child: Text(c, style: Theme.of(context).textTheme.bodySmall),
-                  ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceVariant
+                              .withOpacity(0.5),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(c,
+                            style: Theme.of(context).textTheme.bodySmall),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ))),
+              ))),
           const SizedBox(height: 8),
           ValueListenableBuilder(
             valueListenable: _ctrl,
@@ -382,7 +412,8 @@ class _CommentSectionState extends State<_CommentSection> {
                     decoration: const InputDecoration(
                       hintText: 'Tulis komentar...',
                       isDense: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     ),
                     onSubmitted: (_) => _send(),
                   ),
@@ -390,7 +421,9 @@ class _CommentSectionState extends State<_CommentSection> {
                 const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.send),
-                  color: value.text.trim().isNotEmpty ? AppColors.primary : Colors.grey,
+                  color: value.text.trim().isNotEmpty
+                      ? AppColors.primary
+                      : Colors.grey,
                   onPressed: value.text.trim().isNotEmpty ? _send : null,
                 ),
               ],
@@ -412,7 +445,12 @@ class _QuickPoll extends StatefulWidget {
 }
 
 class _QuickPollState extends State<_QuickPoll> {
-  static const _options = ['State Management', 'Navigation / Routing', 'Animasi Kompleks', 'Integrasi API'];
+  static const _options = [
+    'State Management',
+    'Navigation / Routing',
+    'Animasi Kompleks',
+    'Integrasi API'
+  ];
   static const _baseVotes = [45, 30, 15, 10];
   int? _selected;
 
@@ -421,7 +459,8 @@ class _QuickPollState extends State<_QuickPoll> {
     final totalVotes = _selected != null
         ? _baseVotes.reduce((a, b) => a + b) + 1
         : _baseVotes.reduce((a, b) => a + b);
-    final votes = List.generate(_options.length, (i) => _baseVotes[i] + (_selected == i ? 1 : 0));
+    final votes = List.generate(
+        _options.length, (i) => _baseVotes[i] + (_selected == i ? 1 : 0));
 
     return DemoCard(
       title: 'Quick Poll',
@@ -434,10 +473,14 @@ class _QuickPollState extends State<_QuickPoll> {
               padding: const EdgeInsets.only(bottom: 12),
               child: Row(
                 children: [
-                  const Icon(Icons.how_to_vote, size: 16, color: AppColors.success),
+                  const Icon(Icons.how_to_vote,
+                      size: 16, color: AppColors.success),
                   const SizedBox(width: 6),
                   Text('$totalVotes total suara',
-                      style: const TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w500)),
+                      style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.success,
+                          fontWeight: FontWeight.w500)),
                 ],
               ),
             ),
@@ -445,18 +488,23 @@ class _QuickPollState extends State<_QuickPoll> {
             final pct = votes[i] / totalVotes;
             final isSelected = _selected == i;
             return GestureDetector(
-              onTap: _selected == null ? () => setState(() => _selected = i) : null,
+              onTap: _selected == null
+                  ? () => setState(() => _selected = i)
+                  : null,
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   border: Border.all(
-                    color: isSelected ? AppColors.primary : Theme.of(context).colorScheme.outlineVariant,
+                    color: isSelected
+                        ? AppColors.primary
+                        : Theme.of(context).colorScheme.outlineVariant,
                     width: isSelected ? 2 : 1,
                   ),
                   borderRadius: BorderRadius.circular(10),
-                  color: isSelected ? AppColors.primary.withOpacity(0.06) : null,
+                  color:
+                      isSelected ? AppColors.primary.withOpacity(0.06) : null,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -466,7 +514,9 @@ class _QuickPollState extends State<_QuickPoll> {
                         Expanded(
                           child: Text(_options[i],
                               style: TextStyle(
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                                 fontSize: 13,
                               )),
                         ),
@@ -475,11 +525,14 @@ class _QuickPollState extends State<_QuickPoll> {
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
-                                color: isSelected ? AppColors.primary : Colors.grey,
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : Colors.grey,
                               )),
                         if (_selected != null && isSelected) ...[
                           const SizedBox(width: 6),
-                          const Icon(Icons.check_circle, color: AppColors.primary, size: 16),
+                          const Icon(Icons.check_circle,
+                              color: AppColors.primary, size: 16),
                         ],
                       ],
                     ),
@@ -533,7 +586,8 @@ class _OtpInputState extends State<_OtpInput>
   @override
   void initState() {
     super.initState();
-    _shakeCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 400));
+    _shakeCtrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 400));
     _shake = TweenSequence([
       TweenSequenceItem(tween: Tween(begin: 0.0, end: -8.0), weight: 1),
       TweenSequenceItem(tween: Tween(begin: -8.0, end: 8.0), weight: 2),
@@ -563,9 +617,15 @@ class _OtpInputState extends State<_OtpInput>
 
   void _verify(String pin) {
     if (pin == '123456') {
-      setState(() { _verified = true; _failed = false; });
+      setState(() {
+        _verified = true;
+        _failed = false;
+      });
     } else {
-      setState(() { _failed = true; _verified = false; });
+      setState(() {
+        _failed = true;
+        _verified = false;
+      });
       _shakeCtrl.forward().then((_) => _shakeCtrl.reset());
       Future.delayed(const Duration(milliseconds: 500), _clearPin);
     }
@@ -595,60 +655,70 @@ class _OtpInputState extends State<_OtpInput>
                   const Icon(Icons.check_circle, color: AppColors.success),
                   const SizedBox(width: 6),
                   const Text('PIN benar! Akses diberikan.',
-                      style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold)),
+                      style: TextStyle(
+                          color: AppColors.success,
+                          fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
           LayoutBuilder(
             builder: (context, constraints) {
-              final boxWidth = ((constraints.maxWidth - 80) / _length).clamp(36.0, 48.0);
+              final boxWidth =
+                  ((constraints.maxWidth - 80) / _length).clamp(36.0, 48.0);
               return AnimatedBuilder(
                 animation: _shake,
-                builder: (_, child) =>
-                    Transform.translate(offset: Offset(_shake.value, 0), child: child),
+                builder: (_, child) => Transform.translate(
+                    offset: Offset(_shake.value, 0), child: child),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(_length, (i) => Container(
-                    width: boxWidth,
-                    height: 52,
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    child: TextField(
-                      controller: _ctrlrs[i],
-                      focusNode: _nodes[i],
-                      textAlign: TextAlign.center,
-                      keyboardType: TextInputType.number,
-                      maxLength: 1,
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                      decoration: InputDecoration(
-                        counterText: '',
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: _failed
-                                ? AppColors.error
-                                : (_verified ? AppColors.success : AppColors.grey200),
-                            width: 2,
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(
-                            color: _failed
-                                ? AppColors.error
-                                : (_verified ? AppColors.success : AppColors.primary),
-                            width: 2,
-                          ),
-                        ),
-                        filled: true,
-                        fillColor: _verified
-                            ? AppColors.success.withOpacity(0.05)
-                            : _failed
-                                ? AppColors.error.withOpacity(0.05)
-                                : null,
-                      ),
-                      onChanged: (v) => _onChanged(i, v),
-                    ),
-                  )),
+                  children: List.generate(
+                      _length,
+                      (i) => Container(
+                            width: boxWidth,
+                            height: 52,
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            child: TextField(
+                              controller: _ctrlrs[i],
+                              focusNode: _nodes[i],
+                              textAlign: TextAlign.center,
+                              keyboardType: TextInputType.number,
+                              maxLength: 1,
+                              style: const TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
+                              decoration: InputDecoration(
+                                counterText: '',
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: _failed
+                                        ? AppColors.error
+                                        : (_verified
+                                            ? AppColors.success
+                                            : AppColors.grey200),
+                                    width: 2,
+                                  ),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: _failed
+                                        ? AppColors.error
+                                        : (_verified
+                                            ? AppColors.success
+                                            : AppColors.primary),
+                                    width: 2,
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: _verified
+                                    ? AppColors.success.withOpacity(0.05)
+                                    : _failed
+                                        ? AppColors.error.withOpacity(0.05)
+                                        : null,
+                              ),
+                              onChanged: (v) => _onChanged(i, v),
+                            ),
+                          )),
                 ),
               );
             },

@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../domain/usecases/get_current_user_use_case.dart';
 import '../domain/usecases/login_use_case.dart';
@@ -7,7 +7,10 @@ import '../domain/usecases/register_use_case.dart';
 import 'auth_repository_provider.dart';
 import 'auth_state.dart';
 
-class AuthNotifier extends Notifier<AuthState> {
+part 'auth_notifier.g.dart';
+
+@Riverpod(keepAlive: true)
+class AuthNotifier extends _$AuthNotifier {
   late GetCurrentUserUseCase _getCurrentUser;
   late LoginUseCase _login;
   late LogoutUseCase _logout;
@@ -70,6 +73,3 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 }
-
-final authNotifierProvider =
-    NotifierProvider<AuthNotifier, AuthState>(AuthNotifier.new);

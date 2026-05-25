@@ -117,8 +117,7 @@ class _FormInputScreenState extends State<FormInputScreen> {
               _summaryRow('Tipe Akun', _accountType),
               _summaryRow('Keahlian',
                   selectedSkills.isEmpty ? '-' : selectedSkills.join(', ')),
-              _summaryRow(
-                  'Notifikasi', _notifEnabled ? 'Aktif' : 'Nonaktif'),
+              _summaryRow('Notifikasi', _notifEnabled ? 'Aktif' : 'Nonaktif'),
               _summaryRow('Pengalaman', '${_experience.round()} tahun'),
             ],
           ),
@@ -157,7 +156,8 @@ class _FormInputScreenState extends State<FormInputScreen> {
           controller: _scrollCtrl,
           children: [
             SectionHeader(
-                title: l10n.gallerySectionTextFields, subtitle: l10n.gallerySectionTextFieldsDesc),
+                title: l10n.gallerySectionTextFields,
+                subtitle: l10n.gallerySectionTextFieldsDesc),
 
             // 1. TextField biasa
             DemoCard(
@@ -171,8 +171,9 @@ class _FormInputScreenState extends State<FormInputScreen> {
                   labelText: 'Nama Lengkap',
                   prefixIcon: Icon(Icons.person_outline),
                 ),
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Nama tidak boleh kosong' : null,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Nama tidak boleh kosong'
+                    : null,
               ),
             ),
 
@@ -187,8 +188,8 @@ class _FormInputScreenState extends State<FormInputScreen> {
                   labelText: 'Password',
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
-                    icon: Icon(
-                        _showPw ? Icons.visibility_off : Icons.visibility),
+                    icon:
+                        Icon(_showPw ? Icons.visibility_off : Icons.visibility),
                     onPressed: () => setState(() => _showPw = !_showPw),
                   ),
                 ),
@@ -259,7 +260,8 @@ class _FormInputScreenState extends State<FormInputScreen> {
             ),
 
             SectionHeader(
-                title: l10n.gallerySectionSelectors, subtitle: l10n.gallerySectionSelectorsDesc),
+                title: l10n.gallerySectionSelectors,
+                subtitle: l10n.gallerySectionSelectorsDesc),
 
             // 5. Dropdown
             DemoCard(
@@ -271,7 +273,13 @@ class _FormInputScreenState extends State<FormInputScreen> {
                   labelText: 'Tech Stack',
                   prefixIcon: Icon(Icons.code),
                 ),
-                items: const ['Flutter', 'Laravel', 'Next.js', 'React Native', 'Vue.js']
+                items: const [
+                  'Flutter',
+                  'Laravel',
+                  'Next.js',
+                  'React Native',
+                  'Vue.js'
+                ]
                     .map((s) => DropdownMenuItem(value: s, child: Text(s)))
                     .toList(),
                 onChanged: (v) => setState(() => _selectedStack = v),
@@ -341,15 +349,15 @@ class _FormInputScreenState extends State<FormInputScreen> {
                       value: entry.value,
                       dense: true,
                       contentPadding: EdgeInsets.zero,
-                      onChanged: (v) =>
-                          setState(() => _skills[entry.key] = v!),
+                      onChanged: (v) => setState(() => _skills[entry.key] = v!),
                     ),
                 ],
               ),
             ),
 
             SectionHeader(
-                title: l10n.gallerySectionTogglesSliders, subtitle: l10n.gallerySectionTogglesSlidersDesc),
+                title: l10n.gallerySectionTogglesSliders,
+                subtitle: l10n.gallerySectionTogglesSlidersDesc),
 
             // 9. Toggle Switch
             DemoCard(
@@ -374,14 +382,12 @@ class _FormInputScreenState extends State<FormInputScreen> {
                 children: [
                   Row(
                     children: [
-                      const Expanded(
-                          child: Text('Pengalaman (tahun)')),
+                      const Expanded(child: Text('Pengalaman (tahun)')),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color:
-                              Theme.of(context).colorScheme.primaryContainer,
+                          color: Theme.of(context).colorScheme.primaryContainer,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(

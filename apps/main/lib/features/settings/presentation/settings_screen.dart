@@ -10,8 +10,8 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final themeAsync = ref.watch(themeNotifierProvider);
-    final localeAsync = ref.watch(localeNotifierProvider);
+    final themeAsync = ref.watch(themeProvider);
+    final localeAsync = ref.watch(localeProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settings)),
@@ -22,7 +22,7 @@ class SettingsScreen extends ConsumerWidget {
             data: (mode) => _ThemeTile(
               current: mode,
               onChanged: (val) =>
-                  ref.read(themeNotifierProvider.notifier).setThemeMode(val),
+                  ref.read(themeProvider.notifier).setThemeMode(val),
             ),
             loading: () => const LinearProgressIndicator(),
             error: (_, __) => const SizedBox.shrink(),
@@ -33,7 +33,7 @@ class SettingsScreen extends ConsumerWidget {
             data: (locale) => _LanguageTile(
               current: locale,
               onChanged: (val) =>
-                  ref.read(localeNotifierProvider.notifier).setLocale(val),
+                  ref.read(localeProvider.notifier).setLocale(val),
             ),
             loading: () => const LinearProgressIndicator(),
             error: (_, __) => const SizedBox.shrink(),
@@ -70,7 +70,9 @@ class _ThemeTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return RadioGroup<ThemeMode>(
       groupValue: current,
-      onChanged: (val) { if (val != null) onChanged(val); },
+      onChanged: (val) {
+        if (val != null) onChanged(val);
+      },
       child: Column(
         children: ThemeMode.values
             .map((mode) => RadioListTile<ThemeMode>(
@@ -97,7 +99,9 @@ class _LanguageTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return RadioGroup<String>(
       groupValue: current.languageCode,
-      onChanged: (val) { if (val != null) onChanged(Locale(val)); },
+      onChanged: (val) {
+        if (val != null) onChanged(Locale(val));
+      },
       child: Column(
         children: [
           RadioListTile<String>(

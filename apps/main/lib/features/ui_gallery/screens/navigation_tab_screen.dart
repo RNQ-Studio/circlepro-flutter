@@ -16,10 +16,18 @@ class NavigationTabScreen extends StatelessWidget {
           bottom: TabBar(
             isScrollable: true,
             tabs: [
-              Tab(icon: const Icon(Icons.tab, size: 16), text: l10n.galleryTabTabBar),
-              Tab(icon: const Icon(Icons.view_quilt, size: 16), text: l10n.galleryTabBottomNav),
-              Tab(icon: const Icon(Icons.linear_scale, size: 16), text: l10n.galleryTabStepper),
-              Tab(icon: const Icon(Icons.menu, size: 16), text: l10n.galleryTabDrawer),
+              Tab(
+                  icon: const Icon(Icons.tab, size: 16),
+                  text: l10n.galleryTabTabBar),
+              Tab(
+                  icon: const Icon(Icons.view_quilt, size: 16),
+                  text: l10n.galleryTabBottomNav),
+              Tab(
+                  icon: const Icon(Icons.linear_scale, size: 16),
+                  text: l10n.galleryTabStepper),
+              Tab(
+                  icon: const Icon(Icons.menu, size: 16),
+                  text: l10n.galleryTabDrawer),
             ],
           ),
         ),
@@ -77,7 +85,7 @@ class _TabBarDemo extends StatelessWidget {
                   itemCount: 6,
                   itemBuilder: (_, i) => ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: colors[idx].withValues(alpha:0.2),
+                      backgroundColor: colors[idx].withValues(alpha: 0.2),
                       child: Text('${i + 1}',
                           style: TextStyle(
                               color: colors[idx], fontWeight: FontWeight.bold)),
@@ -86,7 +94,7 @@ class _TabBarDemo extends StatelessWidget {
                     subtitle: Text('Deskripsi untuk $label item ${i + 1}'),
                     trailing: Chip(
                       label: Text(label, style: const TextStyle(fontSize: 11)),
-                      backgroundColor: colors[idx].withValues(alpha:0.15),
+                      backgroundColor: colors[idx].withValues(alpha: 0.15),
                       padding: EdgeInsets.zero,
                     ),
                   ),

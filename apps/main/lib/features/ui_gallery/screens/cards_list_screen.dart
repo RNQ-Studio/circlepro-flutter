@@ -46,15 +46,23 @@ class _CardsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        const SectionHeader(title: '1. Basic Card', subtitle: 'Elevasi, border radius, header image'),
+        const SectionHeader(
+            title: '1. Basic Card',
+            subtitle: 'Elevasi, border radius, header image'),
         _buildBasicCard(context),
-        const SectionHeader(title: '2. Horizontal Card', subtitle: 'Gambar di kiri, konten di kanan'),
+        const SectionHeader(
+            title: '2. Horizontal Card',
+            subtitle: 'Gambar di kiri, konten di kanan'),
         _buildHorizontalCard(context),
-        const SectionHeader(title: '3. Stats Cards', subtitle: 'Tiga variant warna'),
+        const SectionHeader(
+            title: '3. Stats Cards', subtitle: 'Tiga variant warna'),
         _buildStatsCards(context),
-        const SectionHeader(title: '4. Profile Card', subtitle: 'Avatar, sosmed, tombol aksi'),
+        const SectionHeader(
+            title: '4. Profile Card', subtitle: 'Avatar, sosmed, tombol aksi'),
         _buildProfileCard(context),
-        const SectionHeader(title: '5. Expandable Card (FAQ)', subtitle: 'Tap untuk expand/collapse'),
+        const SectionHeader(
+            title: '5. Expandable Card (FAQ)',
+            subtitle: 'Tap untuk expand/collapse'),
         _buildExpandableCards(context),
         const SizedBox(height: 24),
       ],
@@ -62,83 +70,97 @@ class _CardsTab extends StatelessWidget {
   }
 
   Widget _buildBasicCard(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-    child: Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 3,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            child: AspectRatio(
-              aspectRatio: 16 / 7,
-              child: Container(
-                color: AppColors.primaryLight,
-                child: const Center(
-                  child: Icon(Icons.image_outlined, color: Colors.white70, size: 40),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: Card(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 3,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(12)),
+                child: AspectRatio(
+                  aspectRatio: 16 / 7,
+                  child: Container(
+                    color: AppColors.primaryLight,
+                    child: const Center(
+                      child: Icon(Icons.image_outlined,
+                          color: Colors.white70, size: 40),
+                    ),
+                  ),
                 ),
               ),
-            ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Judul Konten Card',
+                        style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 6),
+                    Text(
+                        'Ini adalah deskripsi singkat dari konten card yang ditampilkan di sini.',
+                        style: Theme.of(context).textTheme.bodySmall),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                        onPressed: () {},
+                        child: const Text('Baca Selengkapnya')),
+                  ],
+                ),
+              ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        ),
+      );
+
+  Widget _buildHorizontalCard(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: Card(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 1,
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
               children: [
-                Text('Judul Konten Card', style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 6),
-                Text('Ini adalah deskripsi singkat dari konten card yang ditampilkan di sini.',
-                    style: Theme.of(context).textTheme.bodySmall),
-                const SizedBox(height: 12),
-                ElevatedButton(onPressed: () {}, child: const Text('Baca Selengkapnya')),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    width: 80,
+                    height: 80,
+                    color: AppColors.secondary.withOpacity(0.3),
+                    child: const Icon(Icons.article_outlined,
+                        size: 36, color: AppColors.secondary),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Judul Artikel Berita',
+                          style: Theme.of(context).textTheme.titleSmall),
+                      const SizedBox(height: 4),
+                      Text('Subtitle atau ringkasan singkat dari artikel ini',
+                          style: Theme.of(context).textTheme.bodySmall,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 4),
+                      Text('5 menit yang lalu · Flutter Dev',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: Colors.grey)),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
-        ],
-      ),
-    ),
-  );
-
-  Widget _buildHorizontalCard(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-    child: Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 1,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                width: 80,
-                height: 80,
-                color: AppColors.secondary.withOpacity(0.3),
-                child: const Icon(Icons.article_outlined, size: 36, color: AppColors.secondary),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Judul Artikel Berita', style: Theme.of(context).textTheme.titleSmall),
-                  const SizedBox(height: 4),
-                  Text('Subtitle atau ringkasan singkat dari artikel ini',
-                      style: Theme.of(context).textTheme.bodySmall,
-                      maxLines: 2, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 4),
-                  Text('5 menit yang lalu · Flutter Dev',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
-                ],
-              ),
-            ),
-          ],
         ),
-      ),
-    ),
-  );
+      );
 
   Widget _buildStatsCards(BuildContext context) {
     final stats = [
@@ -149,105 +171,133 @@ class _CardsTab extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: Row(
-        children: stats.map((s) => Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: Card(
-              color: s.$4.withOpacity(0.12),
-              elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(color: s.$4.withOpacity(0.3))),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: Icon(s.$3, color: s.$4, size: 20),
+        children: stats
+            .map((s) => Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Card(
+                      color: s.$4.withOpacity(0.12),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: s.$4.withOpacity(0.3))),
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Align(
+                              alignment: Alignment.topRight,
+                              child: Icon(s.$3, color: s.$4, size: 20),
+                            ),
+                            const SizedBox(height: 8),
+                            FittedBox(
+                              child: Text(s.$2,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: s.$4)),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(s.$1,
+                                style: Theme.of(context).textTheme.bodySmall,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis),
+                          ],
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    FittedBox(
-                      child: Text(s.$2,
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold, color: s.$4)),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(s.$1,
-                        style: Theme.of(context).textTheme.bodySmall,
-                        maxLines: 2, overflow: TextOverflow.ellipsis),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        )).toList(),
+                  ),
+                ))
+            .toList(),
       ),
     );
   }
 
   Widget _buildProfileCard(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-    child: Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 36,
-              backgroundColor: AppColors.primary.withOpacity(0.15),
-              child: const Icon(Icons.person, size: 40, color: AppColors.primary),
-            ),
-            const SizedBox(height: 12),
-            Text('Ahmad Rizki', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-            Text('Senior Flutter Developer', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [Icons.language, Icons.mail_outline, Icons.link]
-                  .map((ic) => IconButton(
-                        icon: Icon(ic, color: AppColors.primary),
-                        onPressed: () {},
-                      ))
-                  .toList(),
-            ),
-            const SizedBox(height: 8),
-            Row(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: Card(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
               children: [
-                Expanded(
-                  child: OutlinedButton(onPressed: () {}, child: const Text('Ikuti')),
+                CircleAvatar(
+                  radius: 36,
+                  backgroundColor: AppColors.primary.withOpacity(0.15),
+                  child: const Icon(Icons.person,
+                      size: 40, color: AppColors.primary),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(onPressed: () {}, child: const Text('Pesan')),
+                const SizedBox(height: 12),
+                Text('Ahmad Rizki',
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(fontWeight: FontWeight.bold)),
+                Text('Senior Flutter Developer',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
+                        ?.copyWith(color: Colors.grey)),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [Icons.language, Icons.mail_outline, Icons.link]
+                      .map((ic) => IconButton(
+                            icon: Icon(ic, color: AppColors.primary),
+                            onPressed: () {},
+                          ))
+                      .toList(),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                          onPressed: () {}, child: const Text('Ikuti')),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                          onPressed: () {}, child: const Text('Pesan')),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
+          ),
         ),
-      ),
-    ),
-  );
+      );
 
   Widget _buildExpandableCards(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-    child: Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        children: List.generate(DummyData.faqs.length, (i) => ExpansionTile(
-          shape: const Border(),
-          title: Text(DummyData.faqs[i], style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Text(DummyData.faqAnswers[i], style: Theme.of(context).textTheme.bodySmall),
-            ),
-          ],
-        )),
-      ),
-    ),
-  );
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: Card(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Column(
+            children: List.generate(
+                DummyData.faqs.length,
+                (i) => ExpansionTile(
+                      shape: const Border(),
+                      title: Text(DummyData.faqs[i],
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(fontWeight: FontWeight.w500)),
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          child: Text(DummyData.faqAnswers[i],
+                              style: Theme.of(context).textTheme.bodySmall),
+                        ),
+                      ],
+                    )),
+          ),
+        ),
+      );
 }
 
 // Wrapper to pass state from parent
@@ -277,7 +327,9 @@ class _ListsTabWrapperState extends State<_ListsTabWrapper> {
   Widget build(BuildContext context) {
     return ListView(
       children: [
-        const SectionHeader(title: '1. ListTile Standard', subtitle: 'Avatar, title, subtitle, trailing icon'),
+        const SectionHeader(
+            title: '1. ListTile Standard',
+            subtitle: 'Avatar, title, subtitle, trailing icon'),
         Card(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: ListTile(
@@ -288,17 +340,22 @@ class _ListsTabWrapperState extends State<_ListsTabWrapper> {
             onTap: () {},
           ),
         ),
-        const SectionHeader(title: '2. ListTile dengan Switch', subtitle: 'Toggle di trailing'),
+        const SectionHeader(
+            title: '2. ListTile dengan Switch', subtitle: 'Toggle di trailing'),
         Card(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: _SwitchListItems(),
         ),
-        const SectionHeader(title: '3. ListTile dengan Checkbox', subtitle: 'Checkbox di leading'),
+        const SectionHeader(
+            title: '3. ListTile dengan Checkbox',
+            subtitle: 'Checkbox di leading'),
         Card(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: _CheckboxListItems(),
         ),
-        const SectionHeader(title: '4. Dismissible List', subtitle: 'Geser kanan = selesai, kiri = hapus'),
+        const SectionHeader(
+            title: '4. Dismissible List',
+            subtitle: 'Geser kanan = selesai, kiri = hapus'),
         ..._dismissItems.asMap().entries.map((entry) {
           final i = entry.key;
           final item = entry.value;
@@ -317,7 +374,9 @@ class _ListsTabWrapperState extends State<_ListsTabWrapper> {
                   children: [
                     Icon(Icons.check, color: Colors.white),
                     SizedBox(width: 8),
-                    Text('Selesai', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    Text('Selesai',
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -331,7 +390,9 @@ class _ListsTabWrapperState extends State<_ListsTabWrapper> {
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text('Hapus', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    Text('Hapus',
+                        style: TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold)),
                     SizedBox(width: 8),
                     Icon(Icons.delete, color: Colors.white),
                   ],
@@ -352,11 +413,13 @@ class _ListsTabWrapperState extends State<_ListsTabWrapper> {
                 ));
               },
               child: Card(
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: AppColors.primary.withOpacity(0.15),
-                    child: Text(item[0], style: const TextStyle(color: AppColors.primary)),
+                    child: Text(item[0],
+                        style: const TextStyle(color: AppColors.primary)),
                   ),
                   title: Text(item),
                   subtitle: Text(DummyData.roles[i % DummyData.roles.length]),
@@ -365,7 +428,9 @@ class _ListsTabWrapperState extends State<_ListsTabWrapper> {
             ),
           );
         }),
-        const SectionHeader(title: '5. Reorderable List', subtitle: 'Drag handle untuk ubah urutan'),
+        const SectionHeader(
+            title: '5. Reorderable List',
+            subtitle: 'Drag handle untuk ubah urutan'),
         Card(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: ReorderableListView.builder(
@@ -400,16 +465,22 @@ class _SwitchListItems extends StatefulWidget {
 
 class _SwitchListItemsState extends State<_SwitchListItems> {
   final List<bool> _values = [true, false, true];
-  final List<String> _labels = ['Notifikasi Push', 'Email Marketing', 'Dark Mode'];
+  final List<String> _labels = [
+    'Notifikasi Push',
+    'Email Marketing',
+    'Dark Mode'
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: List.generate(_labels.length, (i) => SwitchListTile(
-        title: Text(_labels[i]),
-        value: _values[i],
-        onChanged: (v) => setState(() => _values[i] = v),
-      )),
+      children: List.generate(
+          _labels.length,
+          (i) => SwitchListTile(
+                title: Text(_labels[i]),
+                value: _values[i],
+                onChanged: (v) => setState(() => _values[i] = v),
+              )),
     );
   }
 }
@@ -421,16 +492,23 @@ class _CheckboxListItems extends StatefulWidget {
 
 class _CheckboxListItemsState extends State<_CheckboxListItems> {
   final List<bool> _values = [true, false, true, false];
-  final List<String> _labels = ['Flutter SDK', 'Android Studio', 'VS Code', 'Xcode'];
+  final List<String> _labels = [
+    'Flutter SDK',
+    'Android Studio',
+    'VS Code',
+    'Xcode'
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: List.generate(_labels.length, (i) => CheckboxListTile(
-        title: Text(_labels[i]),
-        value: _values[i],
-        onChanged: (v) => setState(() => _values[i] = v!),
-      )),
+      children: List.generate(
+          _labels.length,
+          (i) => CheckboxListTile(
+                title: Text(_labels[i]),
+                value: _values[i],
+                onChanged: (v) => setState(() => _values[i] = v!),
+              )),
     );
   }
 }

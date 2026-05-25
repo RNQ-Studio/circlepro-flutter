@@ -1,32 +1,39 @@
 import 'package:core/core.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../data/datasources/auth_local_data_source.dart';
 import '../data/datasources/auth_remote_data_source.dart';
 import '../data/repositories/auth_repository_impl.dart';
 import '../domain/repositories/auth_repository.dart';
 
+part 'auth_repository_provider.g.dart';
+
 /// Must be overridden at app scope with a real [StorageService] implementation.
-final storageServiceProvider = Provider<StorageService>((ref) {
+@Riverpod(keepAlive: true)
+StorageService storageService(Ref ref) {
   throw UnimplementedError(
       'storageServiceProvider must be overridden in app scope');
-});
+}
 
-final _dioClientProvider = Provider<DioClient>(
-  (ref) => DioClient(ref.watch(storageServiceProvider)),
-);
+@Riverpod(keepAlive: true)
+DioClient _dioClient(Ref ref) {
+  return DioClient(ref.watch(storageServiceProvider));
+}
 
-final _authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>(
-  (ref) => AuthRemoteDataSource(ref.watch(_dioClientProvider).dio),
-);
+@Riverpod(keepAlive: true)
+AuthRemoteDataSource _authRemoteDataSource(Ref ref) {
+  return AuthRemoteDataSource(ref.watch(_dioClientProvider).dio);
+}
 
-final _authLocalDataSourceProvider = Provider<AuthLocalDataSource>(
-  (ref) => AuthLocalDataSource(ref.watch(storageServiceProvider)),
-);
+@Riverpod(keepAlive: true)
+AuthLocalDataSource _authLocalDataSource(Ref ref) {
+  return AuthLocalDataSource(ref.watch(storageServiceProvider));
+}
 
-final authRepositoryProvider = Provider<AuthRepository>(
-  (ref) => AuthRepositoryImpl(
+@Riverpod(keepAlive: true)
+AuthRepository authRepository(Ref ref) {
+  return AuthRepositoryImpl(
     remote: ref.watch(_authRemoteDataSourceProvider),
     local: ref.watch(_authLocalDataSourceProvider),
-  ),
-);
+  );
+}

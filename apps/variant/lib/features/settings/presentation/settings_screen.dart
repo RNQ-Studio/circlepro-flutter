@@ -10,8 +10,8 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final themeAsync = ref.watch(themeNotifierProvider);
-    final localeAsync = ref.watch(localeNotifierProvider);
+    final themeAsync = ref.watch(themeProvider);
+    final localeAsync = ref.watch(localeProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settings)),
@@ -23,7 +23,7 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: Text(l10n.themeDarkSubtitle),
               value: mode == ThemeMode.dark,
               onChanged: (val) => ref
-                  .read(themeNotifierProvider.notifier)
+                  .read(themeProvider.notifier)
                   .setThemeMode(val ? ThemeMode.dark : ThemeMode.light),
             ),
             loading: () => const LinearProgressIndicator(),
@@ -35,7 +35,7 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: Text(l10n.langEnglishSubtitle),
               value: locale.languageCode == 'en',
               onChanged: (val) => ref
-                  .read(localeNotifierProvider.notifier)
+                  .read(localeProvider.notifier)
                   .setLocale(Locale(val ? 'en' : 'id')),
             ),
             loading: () => const LinearProgressIndicator(),

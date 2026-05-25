@@ -13,17 +13,29 @@ class AnimationScreen extends StatelessWidget {
       appBar: AppBar(title: Text(l10n.galleryAnimScreenTitle)),
       body: ListView(
         children: [
-          SectionHeader(title: l10n.gallerySectionHeroAnim, subtitle: l10n.gallerySectionHeroAnimDesc),
+          SectionHeader(
+              title: l10n.gallerySectionHeroAnim,
+              subtitle: l10n.gallerySectionHeroAnimDesc),
           const _HeroSection(),
-          SectionHeader(title: l10n.gallerySectionAnimContainer, subtitle: l10n.gallerySectionAnimContainerDesc),
+          SectionHeader(
+              title: l10n.gallerySectionAnimContainer,
+              subtitle: l10n.gallerySectionAnimContainerDesc),
           const _AnimatedContainerSection(),
-          SectionHeader(title: l10n.gallerySectionPageTransition, subtitle: l10n.gallerySectionPageTransitionDesc),
+          SectionHeader(
+              title: l10n.gallerySectionPageTransition,
+              subtitle: l10n.gallerySectionPageTransitionDesc),
           const _PageTransitionSection(),
-          SectionHeader(title: l10n.gallerySectionAnimatedList, subtitle: l10n.gallerySectionAnimatedListDesc),
+          SectionHeader(
+              title: l10n.gallerySectionAnimatedList,
+              subtitle: l10n.gallerySectionAnimatedListDesc),
           const _AnimatedListSection(),
-          SectionHeader(title: l10n.gallerySectionAnimatedIcons, subtitle: l10n.gallerySectionAnimatedIconsDesc),
+          SectionHeader(
+              title: l10n.gallerySectionAnimatedIcons,
+              subtitle: l10n.gallerySectionAnimatedIconsDesc),
           const _AnimatedIconSection(),
-          SectionHeader(title: l10n.gallerySectionStaggered, subtitle: l10n.gallerySectionStaggeredDesc),
+          SectionHeader(
+              title: l10n.gallerySectionStaggered,
+              subtitle: l10n.gallerySectionStaggeredDesc),
           const _StaggeredSection(),
           const SizedBox(height: 32),
         ],
@@ -38,7 +50,10 @@ class _HeroSection extends StatelessWidget {
   const _HeroSection();
 
   static const _colors = [
-    Colors.indigo, Colors.teal, Colors.orange, Colors.pink,
+    Colors.indigo,
+    Colors.teal,
+    Colors.orange,
+    Colors.pink,
   ];
   static const _labels = ['Indigo', 'Teal', 'Orange', 'Pink'];
 
@@ -52,34 +67,41 @@ class _HeroSection extends StatelessWidget {
         crossAxisCount: 4,
         mainAxisSpacing: 8,
         crossAxisSpacing: 8,
-        children: List.generate(4, (i) => GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => _HeroDetailScreen(index: i, color: _colors[i], label: _labels[i]),
-            ),
-          ),
-          child: Hero(
-            tag: 'hero-$i',
-            child: Container(
-              decoration: BoxDecoration(
-                color: _colors[i],
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Text(_labels[i],
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-              ),
-            ),
-          ),
-        )),
+        children: List.generate(
+            4,
+            (i) => GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => _HeroDetailScreen(
+                          index: i, color: _colors[i], label: _labels[i]),
+                    ),
+                  ),
+                  child: Hero(
+                    tag: 'hero-$i',
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: _colors[i],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Center(
+                        child: Text(_labels[i],
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12)),
+                      ),
+                    ),
+                  ),
+                )),
       ),
     );
   }
 }
 
 class _HeroDetailScreen extends StatelessWidget {
-  const _HeroDetailScreen({required this.index, required this.color, required this.label});
+  const _HeroDetailScreen(
+      {required this.index, required this.color, required this.label});
   final int index;
   final Color color;
   final String label;
@@ -87,7 +109,10 @@ class _HeroDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Hero: $label'), backgroundColor: color, foregroundColor: Colors.white),
+      appBar: AppBar(
+          title: Text('Hero: $label'),
+          backgroundColor: color,
+          foregroundColor: Colors.white),
       body: Column(
         children: [
           Hero(
@@ -99,10 +124,14 @@ class _HeroDetailScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.touch_app, color: Colors.white70, size: 48),
+                    const Icon(Icons.touch_app,
+                        color: Colors.white70, size: 48),
                     const SizedBox(height: 12),
                     Text(label,
-                        style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold)),
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
@@ -128,7 +157,8 @@ class _AnimatedContainerSection extends StatefulWidget {
   const _AnimatedContainerSection();
 
   @override
-  State<_AnimatedContainerSection> createState() => _AnimatedContainerSectionState();
+  State<_AnimatedContainerSection> createState() =>
+      _AnimatedContainerSectionState();
 }
 
 class _AnimatedContainerSectionState extends State<_AnimatedContainerSection> {
@@ -229,13 +259,15 @@ class _PageTransitionSection extends StatelessWidget {
       title: 'Custom Page Transitions',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: ['Fade', 'Slide', 'Scale'].map((type) => Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: OutlinedButton(
-            onPressed: () => _navigate(context, type),
-            child: Text('Buka dengan $type'),
-          ),
-        )).toList(),
+        children: ['Fade', 'Slide', 'Scale']
+            .map((type) => Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: OutlinedButton(
+                    onPressed: () => _navigate(context, type),
+                    child: Text('Buka dengan $type'),
+                  ),
+                ))
+            .toList(),
       ),
     );
   }
@@ -288,7 +320,8 @@ class _AnimatedListSectionState extends State<_AnimatedListSection> {
   void _addItem() {
     final newItem = 'Item ke-$_counter';
     _items.insert(0, newItem);
-    _listKey.currentState?.insertItem(0, duration: const Duration(milliseconds: 350));
+    _listKey.currentState
+        ?.insertItem(0, duration: const Duration(milliseconds: 350));
     _counter++;
   }
 
@@ -368,8 +401,10 @@ class _AnimatedIconSectionState extends State<_AnimatedIconSection>
   @override
   void initState() {
     super.initState();
-    _playPauseCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
-    _menuCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
+    _playPauseCtrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 300));
+    _menuCtrl = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 300));
   }
 
   @override
@@ -391,10 +426,13 @@ class _AnimatedIconSectionState extends State<_AnimatedIconSection>
               GestureDetector(
                 onTap: () {
                   setState(() => _playing = !_playing);
-                  _playing ? _playPauseCtrl.forward() : _playPauseCtrl.reverse();
+                  _playing
+                      ? _playPauseCtrl.forward()
+                      : _playPauseCtrl.reverse();
                 },
                 child: Container(
-                  width: 64, height: 64,
+                  width: 64,
+                  height: 64,
                   decoration: BoxDecoration(
                     color: AppColors.primary.withOpacity(0.1),
                     shape: BoxShape.circle,
@@ -420,7 +458,8 @@ class _AnimatedIconSectionState extends State<_AnimatedIconSection>
                   _menuOpen ? _menuCtrl.forward() : _menuCtrl.reverse();
                 },
                 child: Container(
-                  width: 64, height: 64,
+                  width: 64,
+                  height: 64,
                   decoration: BoxDecoration(
                     color: AppColors.secondary.withOpacity(0.1),
                     shape: BoxShape.circle,
@@ -458,19 +497,35 @@ class _StaggeredSectionState extends State<_StaggeredSection>
   late final List<AnimationController> _controllers;
   static const _count = 5;
 
-  static const _titles = ['Flutter SDK', 'Riverpod', 'GoRouter', 'Material 3', 'Dio Client'];
-  static const _subtitles = [
-    'Framework multi-platform', 'State management', 'Deklaratif routing',
-    'Design system terbaru', 'HTTP client',
+  static const _titles = [
+    'Flutter SDK',
+    'Riverpod',
+    'GoRouter',
+    'Material 3',
+    'Dio Client'
   ];
-  static const _colors = [Colors.blue, Colors.purple, Colors.teal, Colors.orange, Colors.red];
+  static const _subtitles = [
+    'Framework multi-platform',
+    'State management',
+    'Deklaratif routing',
+    'Design system terbaru',
+    'HTTP client',
+  ];
+  static const _colors = [
+    Colors.blue,
+    Colors.purple,
+    Colors.teal,
+    Colors.orange,
+    Colors.red
+  ];
 
   @override
   void initState() {
     super.initState();
     _controllers = List.generate(
       _count,
-      (_) => AnimationController(vsync: this, duration: const Duration(milliseconds: 400)),
+      (_) => AnimationController(
+          vsync: this, duration: const Duration(milliseconds: 400)),
     );
     _startAnimation();
   }
@@ -520,10 +575,12 @@ class _StaggeredSectionState extends State<_StaggeredSection>
                 ),
                 child: Card(
                   margin: const EdgeInsets.only(bottom: 8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                   child: ListTile(
                     leading: Container(
-                      width: 40, height: 40,
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
                         color: _colors[i].withOpacity(0.15),
                         borderRadius: BorderRadius.circular(10),

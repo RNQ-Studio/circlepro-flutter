@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'settings_repository_provider.dart';
 
-class ThemeNotifier extends AsyncNotifier<ThemeMode> {
+part 'theme_notifier.g.dart';
+
+@riverpod
+class ThemeNotifier extends _$ThemeNotifier {
   @override
   Future<ThemeMode> build() async {
     final repo = await ref.watch(settingsRepositoryProvider.future);

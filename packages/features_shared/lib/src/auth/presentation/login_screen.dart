@@ -28,7 +28,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    await ref.read(authNotifierProvider.notifier).login(
+    await ref.read(authProvider.notifier).login(
           email: _emailCtrl.text.trim(),
           password: _passwordCtrl.text,
         );
@@ -37,9 +37,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final authState = ref.watch(authNotifierProvider);
+    final authState = ref.watch(authProvider);
 
-    ref.listen<AuthState>(authNotifierProvider, (_, next) {
+    ref.listen<AuthState>(authProvider, (_, next) {
       if (next is AuthAuthenticated) widget.onLoginSuccess?.call();
     });
 
@@ -72,8 +72,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   controller: _passwordCtrl,
                   obscureText: true,
                   decoration: InputDecoration(labelText: l10n.password),
-                  validator: (v) =>
-                      (v == null || v.length < 6) ? l10n.errorPasswordTooShort : null,
+                  validator: (v) => (v == null || v.length < 6)
+                      ? l10n.errorPasswordTooShort
+                      : null,
                 ),
                 const SizedBox(height: 24),
                 if (authState is AuthError)

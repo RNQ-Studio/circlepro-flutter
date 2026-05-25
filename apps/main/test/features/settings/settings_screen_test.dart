@@ -8,8 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   Widget buildSubject({ThemeMode mode = ThemeMode.system}) => ProviderScope(
         overrides: [
-          themeNotifierProvider.overrideWith(() => _FakeThemeNotifier(mode)),
-          localeNotifierProvider
+          themeProvider.overrideWith(() => _FakeThemeNotifier(mode)),
+          localeProvider
               .overrideWith(() => _FakeLocaleNotifier(const Locale('id'))),
         ],
         child: MaterialApp(

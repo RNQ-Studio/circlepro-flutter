@@ -16,7 +16,10 @@ class LoadingEmptyScreen extends StatelessWidget {
         appBar: AppBar(
           title: Text(l10n.galleryLoadingScreenTitle),
           bottom: TabBar(
-            tabs: [Tab(text: l10n.galleryTabLoading), Tab(text: l10n.galleryTabEmptyState)],
+            tabs: [
+              Tab(text: l10n.galleryTabLoading),
+              Tab(text: l10n.galleryTabEmptyState)
+            ],
           ),
         ),
         body: const TabBarView(
@@ -186,8 +189,12 @@ class _LoadingTabState extends State<_LoadingTab>
               Column(
                 children: [
                   Text('${(_progress * 100).round()}%',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold, color: AppColors.primary)),
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineMedium
+                          ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary)),
                   Text(_progressRunning ? 'Memuat...' : 'Tap Mulai di atas',
                       style: const TextStyle(fontSize: 12, color: Colors.grey)),
                 ],
@@ -203,8 +210,10 @@ class _LoadingTabState extends State<_LoadingTab>
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
           child: Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(
+                    color: Theme.of(context).colorScheme.outlineVariant)),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: SizedBox(
@@ -216,9 +225,12 @@ class _LoadingTabState extends State<_LoadingTab>
                     itemCount: _refreshItems.length,
                     itemBuilder: (_, i) => ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: Colors.primaries[i % Colors.primaries.length].withOpacity(0.2),
+                        backgroundColor: Colors
+                            .primaries[i % Colors.primaries.length]
+                            .withOpacity(0.2),
                         child: Icon(Icons.star,
-                            color: Colors.primaries[i % Colors.primaries.length],
+                            color:
+                                Colors.primaries[i % Colors.primaries.length],
                             size: 18),
                       ),
                       title: Text(_refreshItems[i]),
@@ -268,35 +280,43 @@ class _ShimmerContainer extends StatelessWidget {
   }
 
   Widget _shimmerCard() => Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: const Color(0xFFE0E0E0)),
-    ),
-    child: Row(
-      children: [
-        Container(
-          width: 48, height: 48,
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)),
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFE0E0E0)),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(height: 14, color: Colors.white, margin: const EdgeInsets.only(right: 60)),
-              const SizedBox(height: 6),
-              Container(height: 10, color: Colors.white, margin: const EdgeInsets.only(right: 20)),
-              const SizedBox(height: 4),
-              Container(height: 10, color: Colors.white, width: 80),
-            ],
-          ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                  color: Colors.white, borderRadius: BorderRadius.circular(24)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                      height: 14,
+                      color: Colors.white,
+                      margin: const EdgeInsets.only(right: 60)),
+                  const SizedBox(height: 6),
+                  Container(
+                      height: 10,
+                      color: Colors.white,
+                      margin: const EdgeInsets.only(right: 20)),
+                  const SizedBox(height: 4),
+                  Container(height: 10, color: Colors.white, width: 80),
+                ],
+              ),
+            ),
+          ],
         ),
-      ],
-    ),
-  );
+      );
 }
 
 class _SkeletonDemo extends StatelessWidget {
@@ -314,21 +334,36 @@ class _SkeletonDemo extends StatelessWidget {
           shaderCallback: (bounds) => LinearGradient(
             begin: Alignment(shimmerOffset - 0.5, 0),
             end: Alignment(shimmerOffset + 0.5, 0),
-            colors: const [Color(0xFFE0E0E0), Color(0xFFF8F8F8), Color(0xFFE0E0E0)],
+            colors: const [
+              Color(0xFFE0E0E0),
+              Color(0xFFF8F8F8),
+              Color(0xFFE0E0E0)
+            ],
           ).createShader(bounds),
           child: Row(
             children: [
-              Container(width: 56, height: 56, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(28))),
+              Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(28))),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(height: 16, color: Colors.white, margin: const EdgeInsets.only(right: 40)),
+                    Container(
+                        height: 16,
+                        color: Colors.white,
+                        margin: const EdgeInsets.only(right: 40)),
                     const SizedBox(height: 8),
                     Container(height: 12, color: Colors.white),
                     const SizedBox(height: 6),
-                    Container(height: 12, color: Colors.white, margin: const EdgeInsets.only(right: 80)),
+                    Container(
+                        height: 12,
+                        color: Colors.white,
+                        margin: const EdgeInsets.only(right: 80)),
                   ],
                 ),
               ),
@@ -344,38 +379,47 @@ class _RealContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: List.generate(3, (i) => Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-        ),
-        child: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: Colors.primaries[i * 2].withOpacity(0.2),
-              child: Icon(Icons.person, color: Colors.primaries[i * 2], size: 24),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    ['Ahmad Rizki', 'Budi Santoso', 'Citra Dewi'][i],
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    ['Flutter Developer', 'Backend Engineer', 'UI/UX Designer'][i],
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      )),
+      children: List.generate(
+          3,
+          (i) => Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                      color: Theme.of(context).colorScheme.outlineVariant),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.primaries[i * 2].withOpacity(0.2),
+                      child: Icon(Icons.person,
+                          color: Colors.primaries[i * 2], size: 24),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            ['Ahmad Rizki', 'Budi Santoso', 'Citra Dewi'][i],
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            [
+                              'Flutter Developer',
+                              'Backend Engineer',
+                              'UI/UX Designer'
+                            ][i],
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              )),
     );
   }
 }
@@ -386,15 +430,15 @@ class _CircularProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => SizedBox(
-    width: 80,
-    height: 80,
-    child: CircularProgressIndicator(
-      value: value,
-      strokeWidth: 7,
-      backgroundColor: Colors.grey[200],
-      color: AppColors.primary,
-    ),
-  );
+        width: 80,
+        height: 80,
+        child: CircularProgressIndicator(
+          value: value,
+          strokeWidth: 7,
+          backgroundColor: Colors.grey[200],
+          color: AppColors.primary,
+        ),
+      );
 }
 
 // ── Empty State Tab ────────────────────────────────────────────────────────
@@ -413,7 +457,11 @@ class _EmptyTabState extends State<_EmptyTab> {
   Future<void> _retry() async {
     setState(() => _retrying = true);
     await Future.delayed(const Duration(seconds: 2));
-    if (mounted) setState(() { _retrying = false; _showNormal = true; });
+    if (mounted)
+      setState(() {
+        _retrying = false;
+        _showNormal = true;
+      });
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) setState(() => _showNormal = false);
     });
@@ -425,25 +473,31 @@ class _EmptyTabState extends State<_EmptyTab> {
     return ListView(
       children: [
         // 6. No Data
-        SectionHeader(title: l10n.gallerySectionEmptyNoData, subtitle: l10n.gallerySectionEmptyNoDataDesc),
+        SectionHeader(
+            title: l10n.gallerySectionEmptyNoData,
+            subtitle: l10n.gallerySectionEmptyNoDataDesc),
         _EmptyStateCard(
           icon: Icons.inbox_outlined,
           iconColor: Colors.blueGrey,
           title: 'Belum Ada Data',
-          description: 'Kamu belum memiliki item apapun.\nTambahkan item baru untuk memulai.',
+          description:
+              'Kamu belum memiliki item apapun.\nTambahkan item baru untuk memulai.',
           actionLabel: 'Tambah Sekarang',
           onAction: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Navigasi ke form tambah data'))),
+              const SnackBar(content: Text('Navigasi ke form tambah data'))),
         ),
 
         // 7. No Internet
-        SectionHeader(title: l10n.gallerySectionEmptyNoInternet, subtitle: l10n.gallerySectionEmptyNoInternetDesc),
+        SectionHeader(
+            title: l10n.gallerySectionEmptyNoInternet,
+            subtitle: l10n.gallerySectionEmptyNoInternetDesc),
         DemoCard(
           title: 'No Internet',
           child: _showNormal
               ? Column(
                   children: [
-                    const Icon(Icons.check_circle, color: AppColors.success, size: 60),
+                    const Icon(Icons.check_circle,
+                        color: AppColors.success, size: 60),
                     const SizedBox(height: 12),
                     const Text('Koneksi tersambung kembali!',
                         style: TextStyle(fontWeight: FontWeight.bold)),
@@ -454,15 +508,21 @@ class _EmptyTabState extends State<_EmptyTab> {
                     const Icon(Icons.wifi_off, size: 72, color: Colors.grey),
                     const SizedBox(height: 12),
                     const Text('Tidak Ada Koneksi',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 6),
-                    const Text('Pastikan kamu terhubung ke internet\ndan coba lagi.',
+                    const Text(
+                        'Pastikan kamu terhubung ke internet\ndan coba lagi.',
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 13, color: Colors.grey)),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
                       icon: _retrying
-                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Colors.white))
                           : const Icon(Icons.refresh, size: 18),
                       label: Text(_retrying ? 'Menghubungkan...' : 'Coba Lagi'),
                       onPressed: _retrying ? null : _retry,
@@ -472,15 +532,18 @@ class _EmptyTabState extends State<_EmptyTab> {
         ),
 
         // 8. Error
-        SectionHeader(title: l10n.gallerySectionEmptyError, subtitle: l10n.gallerySectionEmptyErrorDesc),
+        SectionHeader(
+            title: l10n.gallerySectionEmptyError,
+            subtitle: l10n.gallerySectionEmptyErrorDesc),
         _EmptyStateCard(
           icon: Icons.error_outline,
           iconColor: AppColors.error,
           title: 'Terjadi Kesalahan',
-          description: 'Server merespons dengan kode 500:\nInternal Server Error. Silakan coba muat ulang.',
+          description:
+              'Server merespons dengan kode 500:\nInternal Server Error. Silakan coba muat ulang.',
           actionLabel: 'Muat Ulang',
           onAction: () => ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Simulasi reload...'))),
+              const SnackBar(content: Text('Simulasi reload...'))),
         ),
         const SizedBox(height: 24),
       ],
@@ -522,14 +585,21 @@ class _EmptyStateCard extends StatelessWidget {
               Icon(icon, size: 72, color: iconColor),
               const SizedBox(height: 16),
               Text(title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Text(description,
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey)),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(color: Colors.grey)),
               const SizedBox(height: 20),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 44)),
+                style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 44)),
                 onPressed: onAction,
                 child: Text(actionLabel),
               ),

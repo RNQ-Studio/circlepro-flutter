@@ -10,8 +10,7 @@ import 'auth_state.dart';
 /// Returns null during [AuthInitial] and [AuthLoading] to prevent a flash
 /// redirect to /login while the session check is still in progress.
 String? authRedirect(BuildContext context, GoRouterState state) {
-  final authState =
-      ProviderScope.containerOf(context).read(authNotifierProvider);
+  final authState = ProviderScope.containerOf(context).read(authProvider);
 
   if (authState is AuthInitial || authState is AuthLoading) return null;
 
@@ -30,7 +29,7 @@ class AuthGuard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(authNotifierProvider);
+    final authState = ref.watch(authProvider);
 
     if (authState is AuthAuthenticated) return child;
 

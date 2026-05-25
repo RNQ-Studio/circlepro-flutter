@@ -58,14 +58,12 @@ void main() {
 
   group('getLocale', () {
     test('returns stored locale', () async {
-      when(() => storage.read('settings_locale'))
-          .thenAnswer((_) async => 'en');
+      when(() => storage.read('settings_locale')).thenAnswer((_) async => 'en');
       expect(await repo.getLocale(), const Locale('en'));
     });
 
     test('returns Locale("id") as default when no value stored', () async {
-      when(() => storage.read('settings_locale'))
-          .thenAnswer((_) async => null);
+      when(() => storage.read('settings_locale')).thenAnswer((_) async => null);
       expect(await repo.getLocale(), const Locale('id'));
     });
   });
