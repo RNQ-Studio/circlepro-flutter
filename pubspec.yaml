@@ -10,7 +10,7 @@ dev_dependencies:
 workspace:
   - packages/core
   - packages/features_shared
-  - apps/main
+  - apps/manahpro
   - apps/variant
 
 melos:
@@ -19,8 +19,8 @@ melos:
     - packages/**
   scripts:
     dev:
-      run: cd apps/main && flutter run --dart-define=ENV=dev
-      description: Run the main app in dev environment.
+      run: cd apps/manahpro && flutter run --dart-define=ENV=dev
+      description: Run the manahpro app in dev environment.
 
     "dev:variant":
       run: cd apps/variant && flutter run --dart-define=ENV=dev
@@ -41,7 +41,7 @@ melos:
       description: Auto-generate l10n and run codegen after bootstrap
 
     analyze:
-      run: dart analyze packages/core packages/features_shared apps/main apps/variant
+      run: dart analyze packages/core packages/features_shared apps/manahpro apps/variant
       description: Analyze all packages and apps.
 
     format:
@@ -53,43 +53,43 @@ melos:
       description: Check Dart formatting without changing files.
 
     build:android:
-      run: cd apps/main && flutter build apk --dart-define=ENV=prod && cd ../variant && flutter build apk --dart-define=ENV=prod
+      run: cd apps/manahpro && flutter build apk --dart-define=ENV=prod && cd ../variant && flutter build apk --dart-define=ENV=prod
       description: Build Android APKs for all apps.
 
-    "build:android:main":
-      run: cd apps/main && flutter build apk --dart-define=ENV=prod
-      description: Build Android APK for the main app.
+    "build:android:manahpro":
+      run: cd apps/manahpro && flutter build apk --dart-define=ENV=prod
+      description: Build Android APK for the manahpro app.
 
     "build:android:variant":
       run: cd apps/variant && flutter build apk --dart-define=ENV=prod
       description: Build Android APK for the variant app.
 
     build:ios:
-      run: cd apps/main && flutter build ipa --dart-define=ENV=prod && cd ../variant && flutter build ipa --dart-define=ENV=prod
+      run: cd apps/manahpro && flutter build ipa --dart-define=ENV=prod && cd ../variant && flutter build ipa --dart-define=ENV=prod
       description: Build iOS IPAs for all apps.
 
-    "build:ios:main":
-      run: cd apps/main && flutter build ipa --dart-define=ENV=prod
-      description: Build iOS IPA for the main app.
+    "build:ios:manahpro":
+      run: cd apps/manahpro && flutter build ipa --dart-define=ENV=prod
+      description: Build iOS IPA for the manahpro app.
 
     "build:ios:variant":
       run: cd apps/variant && flutter build ipa --dart-define=ENV=prod
       description: Build iOS IPA for the variant app.
 
     build:web:
-      run: cd apps/main && flutter build web --dart-define=ENV=prod && cd ../variant && flutter build web --dart-define=ENV=prod
+      run: cd apps/manahpro && flutter build web --dart-define=ENV=prod && cd ../variant && flutter build web --dart-define=ENV=prod
       description: Build web output for all apps.
 
-    "build:web:main":
-      run: cd apps/main && flutter build web --dart-define=ENV=prod
-      description: Build web output for the main app.
+    "build:web:manahpro":
+      run: cd apps/manahpro && flutter build web --dart-define=ENV=prod
+      description: Build web output for the manahpro app.
 
     "build:web:variant":
       run: cd apps/variant && flutter build web --dart-define=ENV=prod
       description: Build web output for the variant app.
 
     test:
-      run: flutter test apps/main/test apps/variant/test packages/core/test packages/features_shared/test
+      run: flutter test apps/manahpro/test apps/variant/test packages/core/test packages/features_shared/test
       description: Run tests for all packages and apps.
 
     "test:core":
@@ -100,9 +100,9 @@ melos:
       run: flutter test packages/features_shared/test
       description: Run tests for the features_shared package.
 
-    "test:main":
-      run: flutter test apps/main/test
-      description: Run tests for the main app.
+    "test:manahpro":
+      run: flutter test apps/manahpro/test
+      description: Run tests for the manahpro app.
 
     "test:variant":
       run: flutter test apps/variant/test
