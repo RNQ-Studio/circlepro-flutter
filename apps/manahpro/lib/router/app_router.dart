@@ -8,13 +8,21 @@ import '../features/profile/presentation/profile_route.dart';
 import '../features/ui_gallery/screens/ui_gallery_home_screen.dart';
 import '../features/quotes/presentation/screens/quotes_screen.dart';
 import '../features/quotes/presentation/screens/quote_form_screen.dart';
+import '../features/onboarding/presentation/manah_onboarding_screen.dart';
+import '../features/scoring/presentation/scoring_routes.dart';
+import '../shared/routes/social_routes.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/splash',
   redirect: authRedirect,
   observers: [AppNavigatorObserver()],
   routes: [
-    ...authRoutes,
+    // Keep shared splash/login, but override onboarding with ManahPro content (task 2.4).
+    ...authRoutes.where((r) => r.path != '/onboarding'),
+    GoRoute(
+      path: '/onboarding',
+      builder: (context, state) => const ManahOnboardingScreen(),
+    ),
     settingsRoute,
     profileRoute,
     GoRoute(
@@ -42,5 +50,11 @@ final appRouter = GoRouter(
         return QuoteFormScreen(localId: localId);
       },
     ),
+
+    // ManahPro — Scoring (Module 1 / TRACK)
+    ...scoringRoutes,
+
+    // ManahPro — Phase 2: Identity & Social (profile, clubs, feed)
+    ...socialRoutes,
   ],
 );

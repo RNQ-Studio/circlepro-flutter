@@ -5,6 +5,8 @@ import 'package:core/core.dart';
 import 'package:features_shared/features_shared.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../../shared/routes/social_routes.dart';
+import '../../scoring/presentation/scoring_routes.dart';
 import 'home_provider.dart';
 import 'widgets/home_user_header.dart';
 import 'widgets/home_menu_grid.dart';
@@ -37,8 +39,22 @@ class HomeScreen extends ConsumerWidget {
                     context.push('/ui-gallery');
                   } else if (label == 'Kutipan') {
                     context.push(AppRoutes.quotes);
+                  } else if (label == 'Scoring') {
+                    context.push(ScoringRoutes.setup);
+                  } else if (label == 'Statistik') {
+                    context.push(ScoringRoutes.dashboard);
+                  } else if (label == 'Riwayat') {
+                    context.push(ScoringRoutes.history);
+                  } else if (label == 'Equipment') {
+                    context.push(ScoringRoutes.equipment);
                   } else if (label == 'Profil') {
-                    context.push(AppRoutes.profile);
+                    context.push(SocialRoutes.profile);
+                  } else if (label == 'Klub') {
+                    context.push(SocialRoutes.clubs);
+                  } else if (label == 'Komunitas') {
+                    context.push(SocialRoutes.feed);
+                  } else if (label == 'Notifikasi') {
+                    context.push(SocialRoutes.notifications);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('$label — Fitur belum tersedia')),

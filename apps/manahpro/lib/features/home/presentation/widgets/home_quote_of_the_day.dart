@@ -73,7 +73,7 @@ class _HomeQuoteOfTheDayState extends ConsumerState<HomeQuoteOfTheDay> {
               ],
             ),
             behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.green.shade600,
+            backgroundColor: Theme.of(context).colorScheme.primary,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),

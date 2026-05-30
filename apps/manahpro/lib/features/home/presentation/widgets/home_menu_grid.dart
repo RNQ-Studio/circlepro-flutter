@@ -23,15 +23,15 @@ const _menuItems = [
   _MenuItem(
       label: 'Kutipan', icon: Icons.format_quote_rounded, color: Colors.indigo),
   _MenuItem(
-      label: 'Menu 02', icon: Icons.military_tech, color: Colors.deepOrange),
-  _MenuItem(label: 'Menu 03', icon: Icons.show_chart, color: Colors.teal),
-  _MenuItem(label: 'Menu 04', icon: Icons.storage, color: Colors.amber),
-  _MenuItem(label: 'Menu 05', icon: Icons.group_add, color: Colors.green),
+      label: 'Scoring', icon: Icons.track_changes, color: Color(0xFF2E7D32)),
+  _MenuItem(label: 'Statistik', icon: Icons.show_chart, color: Colors.teal),
+  _MenuItem(label: 'Riwayat', icon: Icons.history, color: Colors.amber),
+  _MenuItem(label: 'Equipment', icon: Icons.sports, color: Colors.green),
   _MenuItem(
       label: 'Profil', icon: Icons.person_outline_rounded, color: Colors.cyan),
-  _MenuItem(label: 'Menu 07', icon: Icons.people, color: Color(0xFF00695C)),
-  _MenuItem(label: 'Menu 08', icon: Icons.bar_chart, color: Colors.deepPurple),
-  _MenuItem(label: 'Menu 09', icon: Icons.search, color: Colors.teal),
+  _MenuItem(label: 'Klub', icon: Icons.groups, color: Color(0xFF00695C)),
+  _MenuItem(label: 'Komunitas', icon: Icons.forum_outlined, color: Colors.deepPurple),
+  _MenuItem(label: 'Notifikasi', icon: Icons.notifications_outlined, color: Colors.teal),
   _MenuItem(label: 'Menu 10', icon: Icons.location_on, color: Colors.brown),
   _MenuItem(
       label: 'Menu 11', icon: Icons.lightbulb_outline, color: Colors.amber),

@@ -4,6 +4,12 @@ publish_to: none
 environment:
   sdk: ">=3.5.0 <4.0.0"
 
+# share_plus pins win32 ^5 (Windows desktop only), but package_info_plus needs
+# win32 ^6. The app targets Android/iOS where win32 is unused, so we force
+# win32 6 to let both coexist. (Re-evaluate if/when targeting Windows desktop.)
+dependency_overrides:
+  win32: ^6.0.1
+
 dev_dependencies:
   melos: ^7.7.0
 

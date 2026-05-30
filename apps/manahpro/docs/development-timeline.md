@@ -9,6 +9,39 @@
 
 ---
 
+## 🟢 Status Implementasi (update: 30 Mei 2026)
+
+> Repo: **`circlepro-flutter`** (app `apps/manahpro`) + **`circlepro-web`** (backend Laravel — _bukan_ `circlepro-laravel`; folder aktualnya `circlepro-web`).
+
+**Keputusan arsitektur (dikonfirmasi):**
+- **ID hybrid** — tabel domain ManahPro baru memakai **ULID `char(26)`** (offline-first); tabel `users` & tabel starter lama tetap **bigint** (Passport terikat ke sana). `user_id` = FK bigint, FK ManahPro lain = ULID.
+- **Tema app-level** — design system ManahPro (Forest Green/Amber) ada di `apps/manahpro/lib/theme/` (`Manah*`), tidak mengubah `packages/core` (dipakai `apps/variant`).
+- **Eksekusi vertical-slice** — fondasi + alur scoring inti end-to-end dulu, baru fitur turunan.
+
+**✅ Selesai & terverifikasi**
+
+| Area | Hasil |
+|------|-------|
+| **Phase 0 — Backend** | Migrasi **Modul 0** (organizations, user_profiles, user_settings, user_auth_providers, organization_members, user_verifications; `users` di-extend) + **Modul 8 inti** (media, notification_preferences) + **Modul 1** scoring. Model ULID, factory, seeder org platform. Enum domain di `app/Support/Enums`. **Migrasi sudah diterapkan ke DB `circlepro_new` + org platform ter-seed.** |
+| **Phase 1 — Backend (penuh)** | `ScoringService` (recompute agregat, deteksi PB, upsert idempotent) + endpoint: equipment-profiles CRUD (1.11a), sessions CRUD + score entry (1.1/1.2), summary (1.3), history+filter (1.7), dashboard (1.9), **sync idempotent by `client_uuid`** (1.13a). **Tes: seluruh suite 183 test hijau di PostgreSQL nyata; Pint bersih.** |
+| **Phase 0 — Mobile** | Design system ManahPro (`ManahColors/ManahSpacing/ManahRadius/ManahTextStyles/ManahTheme`, light/dark) ter-wire di `App`. `ScoringDatabase` (Drift) offline. |
+| **Phase 1 — Mobile (LENGKAP)** | Clean-arch fitur `scoring` (domain/data/presentation), offline-first via Drift + ULID device-generated, sync client. Layar: **Setup (+ equipment opsional) → Score Input (layar inti, M/1-10/X, slot panah, undo, haptic + sound, auto-advance) → Summary (total, agregat, bar per-end, animasi PB celebration)** · **History** (list + filter busur) · **Statistik** (1.10, line chart `fl_chart`, streak, derive lokal) · **Bow Setup** (1.11b, equipment CRUD online) · **Shareable Scorecard** (1.12, render → PNG → **Bagikan via OS share-sheet** `share_plus` + Simpan via `path_provider`). Entry di Home. **`flutter analyze` 0 error/0 warning; 7 unit test scoring hijau; codegen sukses.** |
+| **Phase 1 — Polish (1.14)** | Feedback per panah: `SystemSound.click` + haptic (mediumImpact untuk X/10, selectionClick lainnya); heavy haptic saat selesai/PB; animasi scale+fade pada PB banner di Summary. |
+| **Phase 2 — Backend (penuh)** | **Profile API** (2.2: `/v1/profile` GET/PUT + public + stats + age_group otomatis) · **Notification preferences** (2.5) · **Club API** (2.7: directory/search, CRUD, membership join/leave, roles, remove, activity klub) · **Feed API** (2.11: posts CRUD + like + komentar + auto-post `shared_type=scoring_session` 2.13a). Migrasi **Modul 5** (posts, post_likes, comments, comment_likes, follows). **Tes: seluruh suite 196 hijau di PostgreSQL nyata; Pint bersih; migrasi diterapkan ke `circlepro_new`.** |
+| **Phase 2 — Mobile (penuh)** | Online (Dio) clean-arch: **Profil** (view + edit) · **Klub** (direktori + search + "Klub Saya" + detail + anggota + gabung/keluar + buat klub) · **Komunitas/Feed** (list + buat post + like optimistik + komentar sheet + kartu scorecard) · **Share-to-Feed** dari Summary scoring (2.13b). Entry Home: Profil/Klub/Komunitas. **`flutter analyze` 0 error/0 warning.** |
+| **Phase 2 — Minor (selesai)** | **2.1 Google sign-in (backend)**: `SocialAuthService` verifikasi ID token Google (config-gated `GOOGLE_CLIENT_ID`) → upsert `user_auth_providers` → token Passport via `AuthService::issueTokenForUser`. Aktif begitu client ID diisi (terverifikasi via fake verifier). **2.4 Onboarding ManahPro** 3-layar (override route `/onboarding`). **2.6 Notification UI**: layar Notifikasi (list + mark read) + Preferensi (toggle push/email per kategori). |
+
+**🚧 Yang benar-benar belum (butuh perangkat fisik / kredensial / plugin):**
+- 1.15 uji keterbacaan outdoor **terukur** · 1.17 profiling 60fps · 2.1 tombol **Google sign-in di mobile** (perlu plugin `google_sign_in` + Firebase OAuth + uji device) & **Apple** sign-in (perlu Apple key).
+
+> **Base URL API:** `https://circlepro.web.id/api/` (3 environment) di `apps/manahpro/lib/config/main_config.dart`.
+
+> **Catatan dependency:** `share_plus` butuh `win32 ^5` (khusus Windows desktop) padahal `package_info_plus` butuh `win32 ^6`. Karena app menargetkan Android/iOS (win32 tak dipakai), ditambahkan `dependency_overrides: win32: ^6.0.1` di pubspec root. Evaluasi ulang bila kelak menargetkan Windows desktop.
+
+> Catatan: banyak butir Phase 0 (API base, auth Passport, CI, offline infra, error handling) **sudah ada di starter** dan dipakai-ulang/di-extend, bukan dibuat dari nol.
+
+---
+
 ## Daftar Isi
 
 1. [Asumsi & Estimation Framework](#1-asumsi--estimation-framework)
@@ -173,7 +206,7 @@ Revenue Launch: ~Desember 2026  |  Marketplace: ~Januari 2027
 |---|------|----|-----------------|--------|
 | 0.1 | **Setup Laravel API module di monorepo** | 2 | Backend | API routes, base controllers, middleware, CORS, rate limiting. Extend dari CirclePro structure |
 | 0.2 | **Database schema design & migration (core)** | 2 | Backend | Users, profiles, scoring_sessions, scores, clubs, events — design semua tabel inti di awal |
-| 0.3 | **API authentication system** | 1.5 | Backend | Laravel Sanctum/Passport, token management, refresh token, device tracking |
+| 0.3 | **API authentication system** | 1.5 | Backend | Laravel **Passport** (OAuth2 password grant), token + refresh, device tracking |
 | 0.4 | **Flutter project architecture setup** | 2 | Frontend | Feature-first folder structure, design system tokens (dari UI/UX guide), theme light/dark, routing (go_router), state management (Riverpod/Bloc) |
 | 0.5 | **Design system implementation** | 2 | Frontend | AppColors, AppSpacing, AppTypography, component tokens sesuai UI/UX Design Guide Section 3 |
 | 0.6 | **CI/CD pipeline** | 1.5 | DevOps | GitHub Actions atau Fastlane: auto build APK, run tests, deploy API ke VPS |

@@ -4,6 +4,7 @@ import 'package:core/core.dart';
 import 'package:features_shared/features_shared.dart';
 
 import 'router/app_router.dart';
+import 'theme/manah_theme.dart';
 
 class App extends StatelessWidget {
   const App({super.key, required this.storage, required this.database});
@@ -47,9 +48,9 @@ class _AppRouterState extends ConsumerState<_AppRouter> {
     final locale = ref.watch(localeProvider).asData?.value;
 
     return MaterialApp.router(
-      title: 'Starter Main',
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
+      title: 'ManahPro',
+      theme: ManahTheme.light,
+      darkTheme: ManahTheme.dark,
       themeMode: themeMode,
       locale: locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,

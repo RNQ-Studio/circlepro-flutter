@@ -48,7 +48,7 @@ final class HomeRepositoryProvider
   }
 }
 
-String _$homeRepositoryHash() => r'd19d802b7a2cf910424594aaea5c8a73b02f7265';
+String _$homeRepositoryHash() => r'647d95a23b1985eb24ba4f671e3c042158bd8758';
 
 @ProviderFor(getUserProfileUseCase)
 final getUserProfileUseCaseProvider = GetUserProfileUseCaseProvider._();
@@ -126,4 +126,4 @@ final class UserProfileProvider extends $FunctionalProvider<
   }
 }
 
-String _$userProfileHash() => r'ab1a865a81c55d7cd35dc0d6489678cea9948e20';
+String _$userProfileHash() => r'2b55b92e30d5ba56e7851afbd8a691ec0113445f';

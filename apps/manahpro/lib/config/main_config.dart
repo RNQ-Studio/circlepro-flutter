@@ -6,10 +6,12 @@ class MainConfig extends AppConfig {
         const String.fromEnvironment('ENV', defaultValue: 'dev'),
       );
 
+  // Note: the `/api/` suffix is required — the Laravel API is served under
+  // `/api/v1/...` and Dio request paths are relative (`v1/...`).
   @override
   String get baseUrl => switch (environment) {
-        Environment.dev => 'https://ramadhanrosihadi.web.id/api/',
-        Environment.staging => 'https://ramadhanrosihadi.web.id/api/',
-        Environment.prod => 'https://ramadhanrosihadi.web.id/api/',
+        Environment.dev => 'https://circlepro.web.id/api/',
+        Environment.staging => 'https://circlepro.web.id/api/',
+        Environment.prod => 'https://circlepro.web.id/api/',
       };
 }

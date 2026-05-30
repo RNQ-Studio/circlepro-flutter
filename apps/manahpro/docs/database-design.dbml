@@ -1,0 +1,2075 @@
+// =============================================================================
+// ManahPro — Database Design (PostgreSQL)
+// =============================================================================
+// Format    : DBML (https://dbml.dbdiagram.io) — render di https://dbdiagram.io
+// Stack      : Laravel (API) + Flutter + PostgreSQL
+// PK strategy : ULID (char(26)) — di-generate aplikasi/klien (offline-first friendly)
+// Tenancy     : Multi-tenant hybrid — lihat database-design.md Section "Model Tenancy"
+// Konvensi   :
+//   - Semua tabel punya created_at, updated_at (timestamptz).
+//   - deleted_at (soft delete) hanya di tabel yang butuh (ditandai eksplisit).
+//   - Uang disimpan sebagai bigint dalam Rupiah (IDR, tanpa desimal).
+//   - Kolom polymorphic (*_type/*_id) sengaja TANPA FK (didokumentasikan di .md).
+//   - organization_id menandai resource milik tenant; data personal user = global.
+// Last updated: 2026-05-29
+// =============================================================================
+
+Project manahpro {
+  database_type: 'PostgreSQL'
+  Note: '''
+    Desain database super-app komunitas panahan Indonesia (ManahPro).
+    Disusun dari: business-strategy.md, elo-ranking-system.md,
+    ui-ux-design-guide.md, development-timeline.md.
+    Modul: Identity & Tenancy, TRACK, COMPETE, RANKING, TRADE,
+    CONNECT, LEARN, MONETIZATION, PLATFORM.
+  '''
+}
+
+// =============================================================================
+// ENUMS
+// =============================================================================
+
+Enum organization_type {
+  platform        // ManahPro itu sendiri (root tenant, data "nasional"/global)
+  club            // klub / sasana
+  federation      // PERPANI / Pengprov / Pengcab
+  event_organizer // penyelenggara event
+  shop            // toko equipment (seller bisnis)
+  partner         // brand / white-label partner
+}
+
+Enum member_role {
+  owner
+  admin
+  coach
+  scorer
+  member
+}
+
+Enum auth_provider {
+  google
+  apple
+  phone
+  email
+}
+
+Enum verification_type {
+  phone
+  ktp
+  perpani
+  shop_license
+}
+
+Enum verification_status {
+  pending
+  verified
+  rejected
+}
+
+Enum system_role {
+  user
+  staff
+  superadmin
+}
+
+Enum bow_class {
+  recurve
+  compound
+  barebow_standard
+  barebow_tradisional
+  horsebow
+  jemparingan
+}
+
+Enum gender {
+  male
+  female
+  mixed       // hanya untuk team event
+}
+
+Enum age_group {
+  tk          // <6
+  sd_123      // 6-9
+  sd_456      // 9-12
+  smp         // 12-15
+  sma         // 15-18
+  dewasa      // >18
+}
+
+Enum distance_category {
+  5m
+  10m
+  15m
+  20m
+  25m
+  30m
+  40m
+  50m
+  70m
+  90m
+}
+
+Enum archery_environment {
+  indoor
+  outdoor
+}
+
+Enum scoring_session_status {
+  in_progress
+  completed
+  abandoned
+}
+
+Enum sync_source {
+  mobile
+  web
+  scorer      // diinput oleh scorer saat event
+  import
+}
+
+Enum event_format {
+  ranking_round
+  match_play
+  elimination
+  field
+  indoor_round
+}
+
+Enum event_tier {
+  S   // Nasional / PON / SEA Games Qualifier — mult 1.5
+  A   // Kejurda / Regional / National Series — mult 1.2
+  B   // Kota / Club Open — mult 1.0
+  C   // Latih tanding antar klub — mult 0.7
+  D   // Internal / friendly — mult 0.4
+}
+
+Enum event_status {
+  draft
+  published
+  registration_open
+  registration_closed
+  live
+  completed
+  rated
+  cancelled
+}
+
+Enum registration_status {
+  pending
+  waitlisted
+  confirmed
+  checked_in
+  cancelled
+  no_show
+}
+
+Enum rating_status {
+  provisional   // < 3 event
+  ranked        // 3-10 event
+  established   // 10+ event
+  inactive      // idle > 12 bulan
+}
+
+Enum rating_period_status {
+  open
+  computing
+  closed
+}
+
+Enum product_condition {
+  new
+  like_new
+  used_good
+  used_fair
+}
+
+Enum listing_status {
+  draft
+  active
+  sold
+  archived
+  suspended
+}
+
+Enum offer_status {
+  pending
+  countered
+  accepted
+  rejected
+  expired
+}
+
+Enum order_status {
+  pending_payment
+  paid
+  processing
+  shipped
+  delivered
+  completed
+  cancelled
+  refunded
+  disputed
+}
+
+Enum escrow_status {
+  holding
+  released
+  refunded
+  disputed
+}
+
+Enum shipment_status {
+  pending
+  label_created
+  shipped
+  in_transit
+  delivered
+  returned
+}
+
+Enum dispute_status {
+  open
+  under_review
+  resolved_buyer
+  resolved_seller
+  closed
+}
+
+Enum payment_status {
+  pending
+  paid
+  failed
+  expired
+  refunded
+  partially_refunded
+}
+
+Enum payment_method {
+  va
+  ewallet
+  qris
+  card
+  bank_transfer
+  store_credit
+}
+
+Enum payment_provider {
+  midtrans
+  xendit
+  google_play
+  apple_iap
+  manual
+}
+
+Enum payable_type {
+  event_registration
+  event_service       // sewa live scoring / paket manajemen event
+  subscription
+  marketplace_order
+  coaching_booking
+  promoted_listing
+  ad_campaign
+}
+
+Enum subscription_status {
+  trialing
+  active
+  past_due
+  grace
+  cancelled
+  expired
+}
+
+Enum plan_audience {
+  user
+  club
+}
+
+Enum plan_interval {
+  monthly
+  yearly
+}
+
+Enum payout_status {
+  pending
+  processing
+  paid
+  failed
+}
+
+Enum coaching_mode {
+  online
+  offline
+}
+
+Enum booking_status {
+  requested
+  confirmed
+  completed
+  cancelled
+  no_show
+}
+
+Enum content_category {
+  technique
+  mental
+  equipment
+  nutrition
+  sunnah
+  news
+}
+
+Enum publish_status {
+  draft
+  published
+  archived
+}
+
+Enum post_visibility {
+  public
+  followers
+  club
+  private
+}
+
+Enum conversation_type {
+  direct
+  club_group
+  event_group
+}
+
+Enum media_type {
+  image
+  video
+}
+
+Enum notification_channel {
+  push
+  in_app
+  email
+  sms
+}
+
+Enum report_status {
+  pending
+  reviewing
+  actioned
+  dismissed
+}
+
+Enum ad_status {
+  draft
+  active
+  paused
+  completed
+}
+
+// =============================================================================
+// MODULE 0 — IDENTITY & TENANCY
+// =============================================================================
+
+Table organizations {
+  id char(26) [pk]
+  parent_id char(26) [ref: > organizations.id, note: 'untuk Pengprov->Pengcab->Club hierarki']
+  type organization_type [not null]
+  name varchar(150) [not null]
+  slug varchar(160) [unique, not null]
+  description text
+  logo_url text
+  banner_url text
+  // kontak & lokasi (dipakai juga sebagai profil club / range owner)
+  email varchar(150)
+  phone varchar(30)
+  province varchar(100)
+  city varchar(100)
+  address text
+  latitude decimal(10,7)
+  longitude decimal(10,7)
+  is_verified boolean [not null, default: false]
+  is_active boolean [not null, default: true]
+  founded_at date
+  settings jsonb [note: 'preferensi/white-label config: theme, branding, fitur aktif']
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  deleted_at timestamptz
+
+  Indexes {
+    type
+    (province, city)
+    parent_id
+  }
+  Note: 'Tenant anchor. type=platform adalah root ManahPro (data nasional/global).'
+}
+
+Table users {
+  id char(26) [pk]
+  username varchar(40) [unique]
+  email varchar(150) [unique]
+  phone varchar(30) [unique]
+  password_hash varchar(255) [note: 'nullable jika hanya social/phone login']
+  full_name varchar(120) [not null]
+  email_verified_at timestamptz
+  phone_verified_at timestamptz
+  system_role system_role [not null, default: 'user']
+  is_active boolean [not null, default: true]
+  last_active_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  deleted_at timestamptz
+
+  Note: 'Identitas GLOBAL (lintas tenant). 1 manusia = 1 akun (anti-gaming).'
+}
+
+Table user_auth_providers {
+  id char(26) [pk]
+  user_id char(26) [not null, ref: > users.id]
+  provider auth_provider [not null]
+  provider_uid varchar(191) [not null, note: 'sub Google / Apple user id / no HP']
+  email varchar(150)
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (provider, provider_uid) [unique]
+    user_id
+  }
+}
+
+Table user_profiles {
+  id char(26) [pk]
+  user_id char(26) [unique, not null, ref: > users.id]
+  avatar_url text
+  banner_url text
+  bio text
+  gender gender
+  birth_date date
+  age_group age_group [note: 'dihitung dari birth_date; di-cache untuk filter ranking']
+  province varchar(100)
+  city varchar(100)
+  primary_bow_class bow_class
+  home_club_id char(26) [ref: > organizations.id, note: 'organizations.type=club']
+  social_links jsonb
+  peak_title varchar(50) [note: 'title rating tertinggi yang pernah dicapai']
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+Table user_settings {
+  id char(26) [pk]
+  user_id char(26) [unique, not null, ref: > users.id]
+  theme varchar(10) [not null, default: 'system', note: 'system|light|dark']
+  locale varchar(5) [not null, default: 'id']
+  measurement_unit varchar(10) [not null, default: 'metric']
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+Table organization_members {
+  id char(26) [pk]
+  organization_id char(26) [not null, ref: > organizations.id]
+  user_id char(26) [not null, ref: > users.id]
+  member_code varchar(30) [note: 'nomor/kode anggota unik PER organization (mis. "MPC-0001"); nullable, di-assign saat/after join']
+  role member_role [not null, default: 'member']
+  status varchar(20) [not null, default: 'active', note: 'pending|active|left|removed']
+  joined_at timestamptz
+  invited_by char(26) [ref: > users.id]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (organization_id, user_id) [unique]
+    (organization_id, member_code) [unique]
+    user_id
+    (organization_id, role)
+  }
+  Note: 'Keanggotaan user pada tenant (klub/federasi/toko/organizer). Termasuk membership klub. member_code unik per organization (PG memperbolehkan banyak NULL).'
+}
+
+Table user_verifications {
+  id char(26) [pk]
+  user_id char(26) [not null, ref: > users.id]
+  type verification_type [not null]
+  status verification_status [not null, default: 'pending']
+  document_url text [note: 'foto KTP / kartu PERPANI / izin usaha']
+  verified_by char(26) [ref: > users.id]
+  verified_at timestamptz
+  notes text
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (user_id, type)
+  }
+}
+
+Table user_devices {
+  id char(26) [pk]
+  user_id char(26) [not null, ref: > users.id]
+  app_identifier varchar(60) [not null, note: 'app mana token ini terdaftar (multi-app/white-label): bundle/package id atau flavor key, mis. "com.manahpro.app". Server map ke FCM credentials.']
+  fcm_token text [not null]
+  platform varchar(10) [note: 'ios|android|web']
+  device_model varchar(80)
+  app_version varchar(20)
+  last_seen_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    user_id
+    (app_identifier, fcm_token) [unique]
+    app_identifier
+  }
+  Note: 'Satu user bisa punya banyak baris: per device x per app. app_identifier menentukan FCM project tujuan push.'
+}
+
+// =============================================================================
+// MODULE 1 — TRACK (Scoring & Analytics)  [offline-first]
+// =============================================================================
+
+Table equipment_profiles {
+  id char(26) [pk]
+  user_id char(26) [not null, ref: > users.id]
+  name varchar(80) [not null, note: 'mis. "Recurve Latihan", "Compound Lomba"']
+  bow_class bow_class [not null]
+  bow_model varchar(100)
+  draw_weight_lbs decimal(5,1)
+  arrow_spec varchar(120)
+  tuning_notes text
+  is_default boolean [not null, default: false]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  deleted_at timestamptz
+
+  Indexes { user_id }
+}
+
+Table scoring_session_groups {
+  id char(26) [pk]
+  host_user_id char(26) [not null, ref: > users.id, note: 'pembuat/host sesi bersama']
+  organization_id char(26) [ref: > organizations.id, note: 'opsional: konteks klub (latihan bareng)']
+  title varchar(120)
+  // format ronde bersama (disepakati agar leaderboard adil); bow_class tetap per-peserta
+  distance_category distance_category [not null]
+  distance_m smallint [not null]
+  environment archery_environment [not null, default: 'outdoor']
+  target_face_cm smallint [note: 'mis. 122, 80, 40']
+  num_ends smallint [not null]
+  arrows_per_end smallint [not null, default: 6]
+  join_code varchar(12) [unique, not null, note: 'kode/QR untuk gabung sesi bersama']
+  status scoring_session_status [not null, default: 'in_progress']
+  started_at timestamptz [not null]
+  completed_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  deleted_at timestamptz
+
+  Indexes {
+    host_user_id
+    join_code [unique]
+    organization_id
+    status
+  }
+  Note: 'Scoring BERSAMA antar user (latihan grup/friendly). Peserta = baris scoring_sessions ber-scoring_session_group_id → statistik & PB pribadi tetap utuh, berbagi leaderboard sesi. Lebih ringan dari event (tanpa registrasi/biaya/hasil resmi).'
+}
+
+Table scoring_sessions {
+  id char(26) [pk]
+  user_id char(26) [not null, ref: > users.id]
+  equipment_profile_id char(26) [ref: > equipment_profiles.id]
+  organization_id char(26) [ref: > organizations.id, note: 'opsional: tag "latihan klub"']
+  event_division_id char(26) [ref: > event_divisions.id, note: 'set bila sesi ini bagian dari event']
+  scoring_session_group_id char(26) [ref: > scoring_session_groups.id, note: 'set bila sesi bagian dari scoring bersama (latihan grup/friendly)']
+  title varchar(120)
+  bow_class bow_class [not null]
+  distance_category distance_category [not null]
+  distance_m smallint [not null]
+  environment archery_environment [not null, default: 'outdoor']
+  target_face_cm smallint [note: 'mis. 122, 80, 40']
+  num_ends smallint [not null]
+  arrows_per_end smallint [not null, default: 6]
+  status scoring_session_status [not null, default: 'in_progress']
+  // agregat (di-cache dari scoring_arrows untuk dashboard cepat)
+  total_score int [not null, default: 0]
+  max_possible_score int [not null, default: 0]
+  arrows_shot int [not null, default: 0]
+  avg_per_arrow decimal(5,2)
+  x_count smallint [not null, default: 0]
+  ten_count smallint [not null, default: 0]
+  miss_count smallint [not null, default: 0]
+  is_personal_best boolean [not null, default: false]
+  notes text
+  started_at timestamptz [not null]
+  completed_at timestamptz
+  // offline-first sync
+  client_uuid uuid [unique, note: 'ID lokal dari device untuk idempotent sync']
+  source sync_source [not null, default: 'mobile']
+  synced_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  deleted_at timestamptz
+
+  Indexes {
+    (user_id, started_at)
+    (user_id, bow_class, distance_category)
+    organization_id
+    event_division_id
+    scoring_session_group_id
+    status
+  }
+  Note: 'Sesi scoring milik 1 user. Opsional tertaut event (event_division_id) atau scoring bersama (scoring_session_group_id). Inti North Star Metric.'
+}
+
+Table scoring_ends {
+  id char(26) [pk]
+  scoring_session_id char(26) [not null, ref: > scoring_sessions.id]
+  end_number smallint [not null]
+  end_total smallint [not null, default: 0]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (scoring_session_id, end_number) [unique]
+  }
+}
+
+Table scoring_arrows {
+  id char(26) [pk]
+  scoring_end_id char(26) [not null, ref: > scoring_ends.id]
+  arrow_index smallint [not null, note: 'urutan dalam end (0-based)']
+  score_value smallint [not null, note: '0-10; M direpresentasikan score_value=0 + is_miss']
+  is_x boolean [not null, default: false, note: 'inner-10']
+  is_miss boolean [not null, default: false]
+  pos_x decimal(6,3) [note: 'koordinat target (untuk arrow pattern / AI v2)']
+  pos_y decimal(6,3)
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (scoring_end_id, arrow_index) [unique]
+  }
+}
+
+Table personal_bests {
+  id char(26) [pk]
+  user_id char(26) [not null, ref: > users.id]
+  bow_class bow_class [not null]
+  distance_category distance_category [not null]
+  num_arrows smallint [not null, note: 'format (mis. 72) agar PB sebanding']
+  best_score int [not null]
+  scoring_session_id char(26) [ref: > scoring_sessions.id]
+  achieved_at timestamptz [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (user_id, bow_class, distance_category, num_arrows) [unique]
+  }
+}
+
+// =============================================================================
+// MODULE 2 — COMPETE (Events, Live Scoring, Certificates)
+// =============================================================================
+
+Table events {
+  id char(26) [pk]
+  organization_id char(26) [not null, ref: > organizations.id, note: 'organizer; event "nasional" = org platform']
+  created_by char(26) [not null, ref: > users.id]
+  title varchar(160) [not null]
+  slug varchar(170) [unique, not null]
+  description text
+  banner_url text
+  tier event_tier [not null]
+  format event_format [not null]
+  status event_status [not null, default: 'draft']
+  province varchar(100)
+  city varchar(100)
+  venue_name varchar(150)
+  address text
+  latitude decimal(10,7)
+  longitude decimal(10,7)
+  starts_at timestamptz [not null]
+  ends_at timestamptz
+  registration_opens_at timestamptz
+  registration_closes_at timestamptz
+  capacity int
+  schedule jsonb [note: 'rundown acara (waktu->kegiatan)']
+  rules text
+  is_external boolean [not null, default: false, note: 'true untuk data seeding PERPANI/legacy (ranking only)']
+  published_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  deleted_at timestamptz
+
+  Indexes {
+    organization_id
+    (status, starts_at)
+    (province, city)
+    tier
+  }
+}
+
+Table event_divisions {
+  id char(26) [pk]
+  event_id char(26) [not null, ref: > events.id]
+  bow_class bow_class [not null]
+  gender gender [not null]
+  age_group age_group [not null]
+  distance_category distance_category [not null]
+  distance_m smallint [not null]
+  num_arrows smallint [not null]
+  max_score int [not null]
+  entry_fee bigint [not null, default: 0, note: 'IDR']
+  capacity int
+  // metadata perhitungan rating (lihat MODULE 3)
+  num_participants int [not null, default: 0]
+  sof_avg_rating decimal(8,2) [note: 'Strength of Field = rata-rata mu peserta']
+  rating_status varchar(20) [not null, default: 'unrated', note: 'unrated|silent|rated']
+  rated_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    event_id
+    (event_id, bow_class, gender, age_group, distance_category) [unique]
+  }
+  Note: 'Granularitas "rated event" pada elo-ranking-system.md = 1 baris di sini.'
+}
+
+Table event_registrations {
+  id char(26) [pk]
+  event_division_id char(26) [not null, ref: > event_divisions.id]
+  user_id char(26) [not null, ref: > users.id]
+  status registration_status [not null, default: 'pending']
+  payment_id char(26) [ref: > payments.id]
+  bib_number varchar(20)
+  qr_code varchar(120) [unique, note: 'e-ticket untuk check-in']
+  checked_in_at timestamptz
+  registered_at timestamptz [not null]
+  cancelled_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (event_division_id, user_id) [unique]
+    user_id
+    status
+  }
+}
+
+Table event_staff {
+  id char(26) [pk]
+  event_id char(26) [not null, ref: > events.id]
+  user_id char(26) [not null, ref: > users.id]
+  role member_role [not null, default: 'scorer', note: 'scorer|admin (official)']
+  assigned_target varchar(40) [note: 'mis. bantalan/target yang ditangani']
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (event_id, user_id) [unique]
+  }
+}
+
+Table event_rounds {
+  id char(26) [pk]
+  event_division_id char(26) [not null, ref: > event_divisions.id]
+  name varchar(80) [not null, note: 'mis. "Ranking Round", "1/8 Elimination"']
+  sequence smallint [not null]
+  num_ends smallint [not null]
+  arrows_per_end smallint [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes { event_division_id }
+}
+
+Table event_scorecards {
+  id char(26) [pk]
+  event_round_id char(26) [not null, ref: > event_rounds.id]
+  registration_id char(26) [not null, ref: > event_registrations.id]
+  scorer_id char(26) [ref: > users.id, note: 'staff yang menginput / memvalidasi']
+  total_score int [not null, default: 0]
+  x_count smallint [not null, default: 0]
+  ten_count smallint [not null, default: 0]
+  // breakdown lengkap untuk countback (X,10,9,...,1,M) + display per kartu
+  score_distribution jsonb [note: 'jumlah per nilai: {"X":5,"10":12,"9":20,...,"1":0,"M":1}']
+  tiebreak_key varchar(40) [note: 'countback ter-encode fixed-width: lpad(X,3)|lpad(10s,3)|lpad(9s,3)|...|lpad(1s,3) → sort DESC bareng total_score']
+  is_finalized boolean [not null, default: false]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (event_round_id, registration_id) [unique]
+    (event_round_id, total_score, tiebreak_key) [name: 'idx_scorecard_standing', note: 'live standing ronde: total_score DESC, tiebreak_key DESC (index-ordered)']
+  }
+}
+
+Table event_scorecard_ends {
+  id char(26) [pk]
+  event_scorecard_id char(26) [not null, ref: > event_scorecards.id]
+  end_number smallint [not null]
+  end_total smallint [not null, default: 0]
+  // arrows disimpan ringkas sebagai array nilai untuk efisiensi live scoring
+  arrow_values jsonb [not null, note: 'mis. ["X","10","9"] — granular tapi 1 baris/end']
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (event_scorecard_id, end_number) [unique]
+  }
+}
+
+Table event_results {
+  id char(26) [pk]
+  event_division_id char(26) [not null, ref: > event_divisions.id]
+  registration_id char(26) [not null, ref: > event_registrations.id]
+  rank smallint [not null]
+  total_score int [not null]
+  // countback / tiebreak (Opsi C) — dihitung sekali saat finalisasi event
+  score_distribution jsonb [note: 'jumlah per nilai: {"X":5,"10":12,"9":20,...,"1":0,"M":1} (null utk data eksternal/seeding)']
+  tiebreak_key varchar(40) [note: 'countback ter-encode fixed-width: lpad(X,3)|lpad(10s,3)|...|lpad(1s,3); ORDER BY total_score DESC, tiebreak_key DESC = peringkat final 1-pass']
+  is_podium boolean [not null, default: false]
+  result_pdf_url text
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (event_division_id, rank)
+    (event_division_id, total_score, tiebreak_key) [name: 'idx_result_rank', note: 'leaderboard index-ordered: total_score DESC, tiebreak_key DESC']
+    registration_id
+  }
+  Note: 'rank = hasil resolusi countback; tiebreak_key bikin ORDER BY 1-pass, index-ordered & deterministik.'
+}
+
+Table digital_certificates {
+  id char(26) [pk]
+  user_id char(26) [not null, ref: > users.id]
+  event_id char(26) [not null, ref: > events.id]
+  event_division_id char(26) [ref: > event_divisions.id]
+  title varchar(150) [not null]
+  rank smallint
+  certificate_url text
+  verification_code varchar(40) [unique]
+  issued_at timestamptz [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes { user_id }
+}
+
+// =============================================================================
+// MODULE 3 — RANKING (Modified Glicko-2 + Score-Based)
+// =============================================================================
+
+Table ratings {
+  id char(26) [pk]
+  organization_id char(26) [not null, ref: > organizations.id, note: 'scope ranking: platform=nasional, federation=white-label']
+  user_id char(26) [not null, ref: > users.id]
+  // kunci divisi (lihat elo doc Section 6)
+  bow_class bow_class [not null]
+  gender gender [not null]
+  age_group age_group [not null]
+  distance_category distance_category [not null]
+  // parameter Glicko-2
+  mu decimal(8,4) [not null, default: 1500, note: 'internal rating']
+  phi decimal(8,4) [not null, default: 350, note: 'rating deviation']
+  sigma decimal(8,6) [not null, default: 0.06, note: 'volatility']
+  display_rating decimal(8,2) [not null, default: 800, note: 'mu - 2*phi (computed)']
+  status rating_status [not null, default: 'provisional']
+  events_count int [not null, default: 0]
+  peak_display_rating decimal(8,2)
+  last_event_date date
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (organization_id, user_id, bow_class, gender, age_group, distance_category) [unique, name: 'uq_rating_scope']
+    (organization_id, bow_class, gender, age_group, distance_category, display_rating) [name: 'idx_leaderboard']
+    user_id
+  }
+  Note: 'Satu baris per (user x divisi x tenant-scope). Leaderboard sort by display_rating.'
+}
+
+Table rating_history {
+  id char(26) [pk]
+  rating_id char(26) [not null, ref: > ratings.id]
+  user_id char(26) [not null, ref: > users.id]
+  event_division_id char(26) [ref: > event_divisions.id, note: 'sumber update (null bila seeding)']
+  rating_period_id char(26) [ref: > rating_periods.id]
+  mu_before decimal(8,4) [not null]
+  mu_after decimal(8,4) [not null]
+  phi_before decimal(8,4) [not null]
+  phi_after decimal(8,4) [not null]
+  sigma_before decimal(8,6) [not null]
+  sigma_after decimal(8,6) [not null]
+  display_before decimal(8,2) [not null]
+  display_after decimal(8,2) [not null]
+  score_achieved int
+  nps decimal(8,2) [note: 'Normalized Performance Score (0-1000)']
+  placement smallint
+  num_participants int
+  event_tier event_tier
+  k_effective decimal(8,4)
+  is_manual_override boolean [not null, default: false]
+  computed_at timestamptz [not null]
+  created_at timestamptz [not null]
+
+  Indexes {
+    rating_id
+    (user_id, computed_at)
+    event_division_id
+  }
+}
+
+Table rating_periods {
+  id char(26) [pk]
+  organization_id char(26) [not null, ref: > organizations.id]
+  period_month date [not null, note: 'tgl 1 tiap bulan; 1 period = 1 bulan']
+  status rating_period_status [not null, default: 'open']
+  decay_applied_at timestamptz
+  computed_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (organization_id, period_month) [unique]
+  }
+  Note: 'Batch update bulanan + job decay (phi inflation) — elo doc Section 8 & 11.3.'
+}
+
+Table rating_bands {
+  id char(26) [pk]
+  organization_id char(26) [ref: > organizations.id, note: 'null = default platform']
+  title varchar(50) [not null, note: 'Grand Archer, Master, Expert, ...']
+  badge varchar(40)
+  color varchar(20)
+  min_display_rating int [not null]
+  max_display_rating int
+  sort_order smallint [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (organization_id, min_display_rating)
+  }
+  Note: 'Konfigurasi band/title (Appendix A elo doc). Bisa di-override per tenant.'
+}
+
+// =============================================================================
+// MODULE 4 — TRADE (Marketplace)
+// =============================================================================
+
+Table stores {
+  id char(26) [pk]
+  user_id char(26) [not null, ref: > users.id, note: 'pemilik (C2C atau pengelola toko)']
+  organization_id char(26) [ref: > organizations.id, note: 'set bila seller bisnis (type=shop); null untuk C2C']
+  name varchar(120) [not null]
+  slug varchar(130) [unique, not null]
+  description text
+  logo_url text
+  is_business boolean [not null, default: false]
+  is_verified boolean [not null, default: false]
+  trust_score decimal(4,2) [not null, default: 0]
+  rating_avg decimal(3,2) [not null, default: 0]
+  rating_count int [not null, default: 0]
+  province varchar(100)
+  city varchar(100)
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  deleted_at timestamptz
+
+  Indexes {
+    user_id
+    organization_id
+    (province, city)
+  }
+}
+
+Table product_categories {
+  id char(26) [pk]
+  parent_id char(26) [ref: > product_categories.id]
+  name varchar(80) [not null]
+  slug varchar(90) [unique, not null]
+  icon_url text
+  sort_order smallint [not null, default: 0]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+Table products {
+  id char(26) [pk]
+  store_id char(26) [not null, ref: > stores.id]
+  category_id char(26) [not null, ref: > product_categories.id]
+  title varchar(160) [not null]
+  slug varchar(170) [unique, not null]
+  description text
+  brand varchar(80)
+  condition product_condition [not null]
+  bow_class bow_class [note: 'untuk rekomendasi berbasis tipe busur']
+  skill_level varchar(20) [note: 'beginner|intermediate|advanced']
+  price bigint [not null, note: 'IDR; harga dasar bila tanpa varian']
+  stock int [not null, default: 1]
+  status listing_status [not null, default: 'draft']
+  specs jsonb
+  weight_grams int [note: 'untuk kalkulasi ongkir']
+  province varchar(100)
+  city varchar(100)
+  view_count int [not null, default: 0]
+  published_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  deleted_at timestamptz
+
+  Indexes {
+    store_id
+    category_id
+    (status, published_at)
+    (bow_class, condition)
+    (province, city)
+  }
+}
+
+Table product_variants {
+  id char(26) [pk]
+  product_id char(26) [not null, ref: > products.id]
+  name varchar(80) [not null, note: 'mis. "Ukuran M / 28 inch"']
+  sku varchar(60)
+  price bigint [not null]
+  stock int [not null, default: 0]
+  attributes jsonb
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes { product_id }
+}
+
+Table product_offers {
+  id char(26) [pk]
+  product_id char(26) [not null, ref: > products.id]
+  buyer_id char(26) [not null, ref: > users.id]
+  amount bigint [not null]
+  status offer_status [not null, default: 'pending']
+  counter_amount bigint
+  message text
+  expires_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    product_id
+    buyer_id
+  }
+}
+
+Table shipping_addresses {
+  id char(26) [pk]
+  user_id char(26) [not null, ref: > users.id]
+  recipient_name varchar(120) [not null]
+  phone varchar(30) [not null]
+  province varchar(100) [not null]
+  city varchar(100) [not null]
+  district varchar(100)
+  postal_code varchar(10)
+  address_line text [not null]
+  rajaongkir_city_id varchar(20) [note: 'mapping ke RajaOngkir']
+  is_default boolean [not null, default: false]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes { user_id }
+}
+
+Table shopping_carts {
+  id char(26) [pk]
+  user_id char(26) [not null, ref: > users.id]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes { user_id [unique] }
+}
+
+Table cart_items {
+  id char(26) [pk]
+  cart_id char(26) [not null, ref: > shopping_carts.id]
+  product_id char(26) [not null, ref: > products.id]
+  product_variant_id char(26) [ref: > product_variants.id]
+  quantity int [not null, default: 1]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (cart_id, product_id, product_variant_id) [unique]
+  }
+}
+
+Table orders {
+  id char(26) [pk]
+  order_number varchar(30) [unique, not null]
+  buyer_id char(26) [not null, ref: > users.id]
+  store_id char(26) [not null, ref: > stores.id]
+  status order_status [not null, default: 'pending_payment']
+  payment_id char(26) [ref: > payments.id]
+  shipping_address_id char(26) [ref: > shipping_addresses.id]
+  subtotal bigint [not null]
+  shipping_cost bigint [not null, default: 0]
+  platform_fee bigint [not null, default: 0]
+  total bigint [not null]
+  buyer_note text
+  placed_at timestamptz [not null]
+  completed_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    buyer_id
+    store_id
+    status
+  }
+  Note: '1 order = 1 store (multi-store checkout dipecah jadi beberapa order).'
+}
+
+Table order_items {
+  id char(26) [pk]
+  order_id char(26) [not null, ref: > orders.id]
+  product_id char(26) [not null, ref: > products.id]
+  product_variant_id char(26) [ref: > product_variants.id]
+  title_snapshot varchar(160) [not null, note: 'snapshot saat beli']
+  unit_price bigint [not null]
+  quantity int [not null]
+  subtotal bigint [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes { order_id }
+}
+
+Table escrow_transactions {
+  id char(26) [pk]
+  order_id char(26) [unique, not null, ref: > orders.id]
+  payment_id char(26) [ref: > payments.id]
+  amount_held bigint [not null]
+  status escrow_status [not null, default: 'holding']
+  held_at timestamptz
+  released_at timestamptz
+  refunded_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Note: 'Dana ditahan sampai buyer konfirmasi terima — TRADE pain point #3.'
+}
+
+Table order_shipments {
+  id char(26) [pk]
+  order_id char(26) [not null, ref: > orders.id]
+  courier varchar(40) [note: 'jne|jnt|sicepat ...']
+  service varchar(40)
+  tracking_number varchar(60)
+  cost bigint [not null, default: 0]
+  status shipment_status [not null, default: 'pending']
+  shipped_at timestamptz
+  delivered_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes { order_id }
+}
+
+Table product_reviews {
+  id char(26) [pk]
+  product_id char(26) [not null, ref: > products.id]
+  store_id char(26) [not null, ref: > stores.id]
+  order_item_id char(26) [unique, not null, ref: > order_items.id, note: 'hanya pembeli terverifikasi bisa review']
+  reviewer_id char(26) [not null, ref: > users.id]
+  rating smallint [not null, note: '1-5']
+  comment text
+  is_moderated boolean [not null, default: false]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    product_id
+    store_id
+  }
+}
+
+Table marketplace_disputes {
+  id char(26) [pk]
+  order_id char(26) [not null, ref: > orders.id]
+  raised_by char(26) [not null, ref: > users.id]
+  reason varchar(120) [not null]
+  description text
+  status dispute_status [not null, default: 'open']
+  resolved_by char(26) [ref: > users.id]
+  resolution_note text
+  resolved_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    order_id
+    status
+  }
+}
+
+Table dispute_evidences {
+  id char(26) [pk]
+  dispute_id char(26) [not null, ref: > marketplace_disputes.id]
+  uploaded_by char(26) [not null, ref: > users.id]
+  file_url text [not null]
+  note text
+  created_at timestamptz [not null]
+
+  Indexes { dispute_id }
+}
+
+Table promoted_listings {
+  id char(26) [pk]
+  product_id char(26) [not null, ref: > products.id]
+  store_id char(26) [not null, ref: > stores.id]
+  payment_id char(26) [ref: > payments.id]
+  starts_at timestamptz [not null]
+  ends_at timestamptz [not null]
+  is_active boolean [not null, default: true]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (is_active, ends_at)
+    product_id
+  }
+}
+
+// =============================================================================
+// MODULE 5 — CONNECT (Community, Social, Clubs, Coaches, Ranges)
+// =============================================================================
+
+Table posts {
+  id char(26) [pk]
+  author_id char(26) [not null, ref: > users.id]
+  organization_id char(26) [ref: > organizations.id, note: 'post dalam konteks klub (opsional)']
+  body text
+  visibility post_visibility [not null, default: 'public']
+  // referensi konten yang dibagikan (scorecard, hasil event, dll) — polymorphic
+  shared_type varchar(40) [note: 'scoring_session|event|product|... (tanpa FK)']
+  shared_id char(26)
+  like_count int [not null, default: 0]
+  comment_count int [not null, default: 0]
+  is_pinned boolean [not null, default: false]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  deleted_at timestamptz
+
+  Indexes {
+    (organization_id, created_at)
+    (author_id, created_at)
+    visibility
+  }
+}
+
+Table post_likes {
+  id char(26) [pk]
+  post_id char(26) [not null, ref: > posts.id]
+  user_id char(26) [not null, ref: > users.id]
+  created_at timestamptz [not null]
+
+  Indexes {
+    (post_id, user_id) [unique]
+  }
+}
+
+Table comments {
+  id char(26) [pk]
+  post_id char(26) [not null, ref: > posts.id]
+  parent_id char(26) [ref: > comments.id, note: 'reply berjenjang']
+  author_id char(26) [not null, ref: > users.id]
+  body text [not null]
+  like_count int [not null, default: 0]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  deleted_at timestamptz
+
+  Indexes {
+    (post_id, created_at)
+    parent_id
+  }
+}
+
+Table comment_likes {
+  id char(26) [pk]
+  comment_id char(26) [not null, ref: > comments.id]
+  user_id char(26) [not null, ref: > users.id]
+  created_at timestamptz [not null]
+
+  Indexes {
+    (comment_id, user_id) [unique]
+  }
+}
+
+Table follows {
+  id char(26) [pk]
+  follower_id char(26) [not null, ref: > users.id]
+  followee_id char(26) [not null, ref: > users.id]
+  created_at timestamptz [not null]
+
+  Indexes {
+    (follower_id, followee_id) [unique]
+    followee_id
+  }
+}
+
+Table conversations {
+  id char(26) [pk]
+  type conversation_type [not null, default: 'direct']
+  organization_id char(26) [ref: > organizations.id, note: 'untuk club_group']
+  event_id char(26) [ref: > events.id, note: 'untuk event_group']
+  title varchar(120)
+  last_message_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    organization_id
+    last_message_at
+  }
+}
+
+Table conversation_participants {
+  id char(26) [pk]
+  conversation_id char(26) [not null, ref: > conversations.id]
+  user_id char(26) [not null, ref: > users.id]
+  last_read_at timestamptz
+  created_at timestamptz [not null]
+
+  Indexes {
+    (conversation_id, user_id) [unique]
+    user_id
+  }
+}
+
+Table messages {
+  id char(26) [pk]
+  conversation_id char(26) [not null, ref: > conversations.id]
+  sender_id char(26) [not null, ref: > users.id]
+  body text
+  attachment_url text
+  created_at timestamptz [not null]
+  deleted_at timestamptz
+
+  Indexes {
+    (conversation_id, created_at)
+  }
+}
+
+Table club_schedules {
+  id char(26) [pk]
+  organization_id char(26) [not null, ref: > organizations.id, note: 'type=club']
+  title varchar(120) [not null]
+  description text
+  starts_at timestamptz [not null]
+  ends_at timestamptz
+  recurrence_rule varchar(120) [note: 'iCal RRULE untuk jadwal rutin']
+  location varchar(150)
+  created_by char(26) [not null, ref: > users.id]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (organization_id, starts_at)
+  }
+}
+
+Table club_attendances {
+  id char(26) [pk]
+  club_schedule_id char(26) [not null, ref: > club_schedules.id]
+  user_id char(26) [not null, ref: > users.id]
+  status varchar(20) [not null, default: 'present', note: 'present|absent|excused']
+  checked_in_at timestamptz
+  created_at timestamptz [not null]
+
+  Indexes {
+    (club_schedule_id, user_id) [unique]
+  }
+}
+
+Table coaches {
+  id char(26) [pk]
+  user_id char(26) [unique, not null, ref: > users.id]
+  headline varchar(150)
+  bio text
+  specializations jsonb [note: 'mis. ["recurve","mental"]']
+  years_experience smallint
+  hourly_rate bigint [note: 'IDR per sesi/jam']
+  is_verified boolean [not null, default: false]
+  rating_avg decimal(3,2) [not null, default: 0]
+  rating_count int [not null, default: 0]
+  province varchar(100)
+  city varchar(100)
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (province, city)
+    is_verified
+  }
+}
+
+Table coach_reviews {
+  id char(26) [pk]
+  coach_id char(26) [not null, ref: > coaches.id]
+  reviewer_id char(26) [not null, ref: > users.id]
+  coaching_booking_id char(26) [ref: > coaching_bookings.id]
+  rating smallint [not null]
+  comment text
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes { coach_id }
+}
+
+Table ranges {
+  id char(26) [pk]
+  organization_id char(26) [ref: > organizations.id, note: 'pemilik/pengelola (opsional)']
+  name varchar(150) [not null]
+  description text
+  province varchar(100)
+  city varchar(100)
+  address text
+  latitude decimal(10,7)
+  longitude decimal(10,7)
+  facilities jsonb [note: 'mis. ["indoor","outdoor 70m","parkir"]']
+  opening_hours jsonb
+  phone varchar(30)
+  is_verified boolean [not null, default: false]
+  created_by char(26) [ref: > users.id]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  deleted_at timestamptz
+
+  Indexes {
+    (province, city)
+    (latitude, longitude)
+  }
+}
+
+// =============================================================================
+// MODULE 6 — LEARN (Content, Coaching, Achievements, Gamification)
+// =============================================================================
+
+Table article_categories {
+  id char(26) [pk]
+  name varchar(80) [not null]
+  slug varchar(90) [unique, not null]
+  category content_category [not null]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+Table articles {
+  id char(26) [pk]
+  author_id char(26) [not null, ref: > users.id]
+  category_id char(26) [ref: > article_categories.id]
+  title varchar(180) [not null]
+  slug varchar(190) [unique, not null]
+  excerpt text
+  body text [not null, note: 'rich text / markdown']
+  cover_url text
+  reading_minutes smallint
+  is_islamic boolean [not null, default: false, note: 'konten panahan Sunnah']
+  is_sponsored boolean [not null, default: false]
+  sponsored_content_id char(26) [ref: > sponsored_contents.id]
+  status publish_status [not null, default: 'draft']
+  view_count int [not null, default: 0]
+  published_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  deleted_at timestamptz
+
+  Indexes {
+    (status, published_at)
+    category_id
+  }
+}
+
+Table tutorials {
+  id char(26) [pk]
+  author_id char(26) [not null, ref: > users.id, note: 'coach pembuat']
+  title varchar(180) [not null]
+  description text
+  category content_category [not null]
+  video_url text [not null]
+  thumbnail_url text
+  duration_seconds int
+  is_premium boolean [not null, default: false]
+  status publish_status [not null, default: 'draft']
+  view_count int [not null, default: 0]
+  published_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (status, category)
+    author_id
+  }
+}
+
+Table training_programs {
+  id char(26) [pk]
+  author_id char(26) [not null, ref: > users.id]
+  title varchar(180) [not null]
+  description text
+  level varchar(20) [note: 'beginner|intermediate|advanced']
+  duration_days smallint
+  is_premium boolean [not null, default: false]
+  status publish_status [not null, default: 'draft']
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+Table training_program_items {
+  id char(26) [pk]
+  training_program_id char(26) [not null, ref: > training_programs.id]
+  day_number smallint [not null]
+  title varchar(150) [not null]
+  instructions text
+  target_arrows int
+  tutorial_id char(26) [ref: > tutorials.id]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (training_program_id, day_number)
+  }
+}
+
+Table program_enrollments {
+  id char(26) [pk]
+  training_program_id char(26) [not null, ref: > training_programs.id]
+  user_id char(26) [not null, ref: > users.id]
+  started_at timestamptz [not null]
+  completed_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (training_program_id, user_id) [unique]
+  }
+}
+
+Table program_progress {
+  id char(26) [pk]
+  program_enrollment_id char(26) [not null, ref: > program_enrollments.id]
+  training_program_item_id char(26) [not null, ref: > training_program_items.id]
+  is_completed boolean [not null, default: false]
+  scoring_session_id char(26) [ref: > scoring_sessions.id]
+  completed_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (program_enrollment_id, training_program_item_id) [unique]
+  }
+}
+
+Table coach_availabilities {
+  id char(26) [pk]
+  coach_id char(26) [not null, ref: > coaches.id]
+  starts_at timestamptz [not null]
+  ends_at timestamptz [not null]
+  mode coaching_mode [not null, default: 'offline']
+  is_booked boolean [not null, default: false]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (coach_id, starts_at)
+  }
+}
+
+Table coaching_bookings {
+  id char(26) [pk]
+  coach_id char(26) [not null, ref: > coaches.id]
+  student_id char(26) [not null, ref: > users.id]
+  coach_availability_id char(26) [ref: > coach_availabilities.id]
+  payment_id char(26) [ref: > payments.id]
+  mode coaching_mode [not null]
+  scheduled_at timestamptz [not null]
+  duration_minutes smallint
+  price bigint [not null]
+  commission bigint [not null, default: 0, note: 'potongan platform']
+  meeting_url text
+  status booking_status [not null, default: 'requested']
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    coach_id
+    student_id
+    status
+  }
+}
+
+Table achievements {
+  id char(26) [pk]
+  code varchar(50) [unique, not null, note: 'mis. first_300, streak_10, sessions_100']
+  name varchar(100) [not null]
+  description text
+  icon_url text
+  xp_reward int [not null, default: 0]
+  criteria jsonb [note: 'definisi syarat unlock']
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+Table user_achievements {
+  id char(26) [pk]
+  user_id char(26) [not null, ref: > users.id]
+  achievement_id char(26) [not null, ref: > achievements.id]
+  unlocked_at timestamptz [not null]
+  created_at timestamptz [not null]
+
+  Indexes {
+    (user_id, achievement_id) [unique]
+  }
+}
+
+Table user_gamification {
+  id char(26) [pk]
+  user_id char(26) [unique, not null, ref: > users.id]
+  xp int [not null, default: 0]
+  level smallint [not null, default: 1]
+  current_streak_days smallint [not null, default: 0]
+  longest_streak_days smallint [not null, default: 0]
+  last_activity_date date
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+Table challenges {
+  id char(26) [pk]
+  organization_id char(26) [ref: > organizations.id, note: 'null = challenge platform (mis. Sunnah Challenge)']
+  title varchar(150) [not null]
+  description text
+  starts_at timestamptz [not null]
+  ends_at timestamptz [not null]
+  goal jsonb [note: 'mis. {type:"sessions", target:5}']
+  reward_xp int [not null, default: 0]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (starts_at, ends_at)
+  }
+}
+
+Table challenge_participations {
+  id char(26) [pk]
+  challenge_id char(26) [not null, ref: > challenges.id]
+  user_id char(26) [not null, ref: > users.id]
+  progress jsonb
+  is_completed boolean [not null, default: false]
+  completed_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (challenge_id, user_id) [unique]
+  }
+}
+
+// =============================================================================
+// MODULE 7 — MONETIZATION & BILLING
+// =============================================================================
+
+Table subscription_plans {
+  id char(26) [pk]
+  code varchar(40) [unique, not null, note: 'free|pro|elite|club_starter|...']
+  name varchar(80) [not null]
+  audience plan_audience [not null]
+  price bigint [not null, note: 'IDR per interval']
+  interval plan_interval [not null, default: 'monthly']
+  features jsonb [note: 'daftar fitur']
+  limits jsonb [note: 'mis. {scoring_per_week: 3, max_members: 50}']
+  is_active boolean [not null, default: true]
+  sort_order smallint [not null, default: 0]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+Table subscriptions {
+  id char(26) [pk]
+  subscription_plan_id char(26) [not null, ref: > subscription_plans.id]
+  // subscriber polymorphic: user (individual) ATAU organization (club SaaS)
+  subscriber_type varchar(20) [not null, note: 'user|organization']
+  user_id char(26) [ref: > users.id]
+  organization_id char(26) [ref: > organizations.id]
+  status subscription_status [not null, default: 'active']
+  provider payment_provider [not null]
+  provider_subscription_id varchar(191)
+  current_period_start timestamptz
+  current_period_end timestamptz
+  trial_ends_at timestamptz
+  grace_ends_at timestamptz
+  cancelled_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    user_id
+    organization_id
+    (status, current_period_end)
+  }
+}
+
+Table subscription_invoices {
+  id char(26) [pk]
+  subscription_id char(26) [not null, ref: > subscriptions.id]
+  payment_id char(26) [ref: > payments.id]
+  amount bigint [not null]
+  period_start timestamptz [not null]
+  period_end timestamptz [not null]
+  status payment_status [not null, default: 'pending']
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes { subscription_id }
+}
+
+Table payments {
+  id char(26) [pk]
+  payment_number varchar(30) [unique, not null]
+  user_id char(26) [not null, ref: > users.id, note: 'pihak yang membayar']
+  // payable polymorphic — apa yang dibayar (TANPA FK; lihat payable_type)
+  payable_type payable_type [not null]
+  payable_id char(26) [not null]
+  provider payment_provider [not null]
+  method payment_method
+  amount bigint [not null]
+  fee bigint [not null, default: 0, note: 'biaya gateway']
+  currency char(3) [not null, default: 'IDR']
+  status payment_status [not null, default: 'pending']
+  provider_ref varchar(191) [note: 'order_id / transaction_id gateway']
+  paid_at timestamptz
+  expired_at timestamptz
+  raw_payload jsonb [note: 'callback mentah dari Midtrans/Xendit']
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    user_id
+    (payable_type, payable_id)
+    status
+    provider_ref
+  }
+  Note: 'Tabel pembayaran terpusat untuk SEMUA alur (event, subscription, order, coaching, ads).'
+}
+
+Table payouts {
+  id char(26) [pk]
+  // penerima polymorphic: store / coach / event organizer (organization)
+  recipient_type varchar(20) [not null, note: 'store|coach|organization']
+  recipient_id char(26) [not null]
+  user_id char(26) [ref: > users.id, note: 'PIC penerima']
+  amount bigint [not null]
+  status payout_status [not null, default: 'pending']
+  bank_account jsonb
+  period_start date
+  period_end date
+  processed_at timestamptz
+  notes text
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (recipient_type, recipient_id)
+    status
+  }
+}
+
+Table platform_fees {
+  id char(26) [pk]
+  payment_id char(26) [not null, ref: > payments.id]
+  source_type payable_type [not null]
+  source_id char(26) [not null]
+  fee_type varchar(30) [not null, note: 'commission|ticketing|service']
+  rate decimal(5,2) [note: 'persen, mis. 5.00']
+  amount bigint [not null]
+  created_at timestamptz [not null]
+
+  Indexes {
+    (source_type, source_id)
+  }
+  Note: 'Ledger pendapatan platform (komisi marketplace, ticketing fee, dll).'
+}
+
+Table ad_campaigns {
+  id char(26) [pk]
+  advertiser_org_id char(26) [ref: > organizations.id, note: 'brand/partner']
+  user_id char(26) [ref: > users.id, note: 'pemasang individu']
+  payment_id char(26) [ref: > payments.id]
+  name varchar(150) [not null]
+  budget bigint
+  starts_at timestamptz [not null]
+  ends_at timestamptz [not null]
+  status ad_status [not null, default: 'draft']
+  targeting jsonb [note: 'mis. {province, bow_class, age_group}']
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (status, starts_at, ends_at)
+  }
+}
+
+Table ads {
+  id char(26) [pk]
+  ad_campaign_id char(26) [not null, ref: > ad_campaigns.id]
+  placement varchar(40) [not null, note: 'feed|event_list|push|banner']
+  image_url text
+  title varchar(150)
+  body text
+  click_url text
+  impression_count int [not null, default: 0]
+  click_count int [not null, default: 0]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes { ad_campaign_id }
+}
+
+Table sponsored_contents {
+  id char(26) [pk]
+  advertiser_org_id char(26) [ref: > organizations.id]
+  payment_id char(26) [ref: > payments.id]
+  title varchar(160) [not null]
+  content_type varchar(30) [note: 'article|tutorial|event_highlight']
+  amount bigint
+  starts_at timestamptz
+  ends_at timestamptz
+  status ad_status [not null, default: 'draft']
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+}
+
+// =============================================================================
+// MODULE 8 — PLATFORM (Cross-cutting)
+// =============================================================================
+
+Table media {
+  id char(26) [pk]
+  // polymorphic owner — galeri untuk posts/products/events/articles/ranges (TANPA FK)
+  mediable_type varchar(40) [not null]
+  mediable_id char(26) [not null]
+  type media_type [not null, default: 'image']
+  url text [not null]
+  thumbnail_url text
+  width int
+  height int
+  position smallint [not null, default: 0]
+  meta jsonb
+  created_at timestamptz [not null]
+
+  Indexes {
+    (mediable_type, mediable_id)
+  }
+  Note: 'Galeri media generik (banyak gambar/video per entitas).'
+}
+
+Table notifications {
+  id char(26) [pk]
+  user_id char(26) [not null, ref: > users.id]
+  type varchar(50) [not null, note: 'rating_update|event_reminder|order_update|social|...']
+  title varchar(150) [not null]
+  body text
+  channel notification_channel [not null, default: 'push']
+  data jsonb [note: 'deep-link payload']
+  read_at timestamptz
+  created_at timestamptz [not null]
+
+  Indexes {
+    (user_id, read_at)
+    (user_id, created_at)
+  }
+}
+
+Table notification_preferences {
+  id char(26) [pk]
+  user_id char(26) [not null, ref: > users.id]
+  category varchar(40) [not null, note: 'rating|event|social|market|marketing']
+  push_enabled boolean [not null, default: true]
+  email_enabled boolean [not null, default: false]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (user_id, category) [unique]
+  }
+}
+
+Table bookmarks {
+  id char(26) [pk]
+  user_id char(26) [not null, ref: > users.id]
+  // polymorphic: event|product|article|post (TANPA FK)
+  bookmarkable_type varchar(40) [not null]
+  bookmarkable_id char(26) [not null]
+  created_at timestamptz [not null]
+
+  Indexes {
+    (user_id, bookmarkable_type, bookmarkable_id) [unique]
+  }
+}
+
+Table reports {
+  id char(26) [pk]
+  reporter_id char(26) [not null, ref: > users.id]
+  // polymorphic: post|comment|product|user|message (TANPA FK)
+  reportable_type varchar(40) [not null]
+  reportable_id char(26) [not null]
+  reason varchar(120) [not null]
+  description text
+  status report_status [not null, default: 'pending']
+  reviewed_by char(26) [ref: > users.id]
+  reviewed_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (reportable_type, reportable_id)
+    status
+  }
+}
+
+Table audit_logs {
+  id char(26) [pk]
+  actor_id char(26) [ref: > users.id]
+  organization_id char(26) [ref: > organizations.id]
+  action varchar(80) [not null, note: 'mis. rating.override, event.publish, dispute.resolve']
+  // target polymorphic (TANPA FK)
+  auditable_type varchar(40)
+  auditable_id char(26)
+  changes jsonb [note: 'before/after']
+  ip_address varchar(45)
+  created_at timestamptz [not null]
+
+  Indexes {
+    (auditable_type, auditable_id)
+    actor_id
+    action
+  }
+  Note: 'Jejak audit aksi admin — termasuk manual rating override (elo doc 11.4).'
+}
+
+// =============================================================================
+// TABLE GROUPS (modul)
+// =============================================================================
+
+TableGroup "0 · Identity & Tenancy" {
+  organizations
+  users
+  user_auth_providers
+  user_profiles
+  user_settings
+  organization_members
+  user_verifications
+  user_devices
+}
+
+TableGroup "1 · TRACK (Scoring)" {
+  equipment_profiles
+  scoring_session_groups
+  scoring_sessions
+  scoring_ends
+  scoring_arrows
+  personal_bests
+}
+
+TableGroup "2 · COMPETE (Events)" {
+  events
+  event_divisions
+  event_registrations
+  event_staff
+  event_rounds
+  event_scorecards
+  event_scorecard_ends
+  event_results
+  digital_certificates
+}
+
+TableGroup "3 · RANKING (Glicko-2)" {
+  ratings
+  rating_history
+  rating_periods
+  rating_bands
+}
+
+TableGroup "4 · TRADE (Marketplace)" {
+  stores
+  product_categories
+  products
+  product_variants
+  product_offers
+  shipping_addresses
+  shopping_carts
+  cart_items
+  orders
+  order_items
+  escrow_transactions
+  order_shipments
+  product_reviews
+  marketplace_disputes
+  dispute_evidences
+  promoted_listings
+}
+
+TableGroup "5 · CONNECT (Community)" {
+  posts
+  post_likes
+  comments
+  comment_likes
+  follows
+  conversations
+  conversation_participants
+  messages
+  club_schedules
+  club_attendances
+  coaches
+  coach_reviews
+  ranges
+}
+
+TableGroup "6 · LEARN (Content & Coaching)" {
+  article_categories
+  articles
+  tutorials
+  training_programs
+  training_program_items
+  program_enrollments
+  program_progress
+  coach_availabilities
+  coaching_bookings
+  achievements
+  user_achievements
+  user_gamification
+  challenges
+  challenge_participations
+}
+
+TableGroup "7 · MONETIZATION & BILLING" {
+  subscription_plans
+  subscriptions
+  subscription_invoices
+  payments
+  payouts
+  platform_fees
+  ad_campaigns
+  ads
+  sponsored_contents
+}
+
+TableGroup "8 · PLATFORM (Cross-cutting)" {
+  media
+  notifications
+  notification_preferences
+  bookmarks
+  reports
+  audit_logs
+}

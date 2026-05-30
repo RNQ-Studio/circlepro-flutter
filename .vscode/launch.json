@@ -2,26 +2,26 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "main dev",
+      "name": "manahpro dev",
       "request": "launch",
       "type": "dart",
-      "cwd": "apps/main",
+      "cwd": "apps/manahpro",
       "program": "lib/main.dart",
       "toolArgs": ["--dart-define=ENV=dev"]
     },
     {
-      "name": "main staging",
+      "name": "manahpro staging",
       "request": "launch",
       "type": "dart",
-      "cwd": "apps/main",
+      "cwd": "apps/manahpro",
       "program": "lib/main.dart",
       "toolArgs": ["--dart-define=ENV=staging"]
     },
     {
-      "name": "main prod",
+      "name": "manahpro prod",
       "request": "launch",
       "type": "dart",
-      "cwd": "apps/main",
+      "cwd": "apps/manahpro",
       "program": "lib/main.dart",
       "toolArgs": ["--dart-define=ENV=prod"]
     },
