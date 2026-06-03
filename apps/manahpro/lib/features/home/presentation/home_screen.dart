@@ -6,8 +6,10 @@ import 'package:features_shared/features_shared.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../shared/routes/social_routes.dart';
+import '../../../theme/manah_colors.dart';
 import '../../scoring/presentation/scoring_routes.dart';
 import '../../events/presentation/events_routes.dart';
+import '../../gamification/presentation/gamification_providers.dart';
 import 'home_provider.dart';
 import 'widgets/home_user_header.dart';
 import 'widgets/home_menu_grid.dart';
@@ -20,58 +22,80 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final isAuthenticated = authState is AuthAuthenticated;
+    final theme = Theme.of(context);
 
     return Scaffold(
       body: SafeArea(
         bottom: false,
         child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
           slivers: [
+            // Welcoming User Banner
             SliverToBoxAdapter(
               child: isAuthenticated
                   ? _buildAuthenticatedHeader(context, ref)
                   : _buildGuestHeader(context),
             ),
-            const SliverToBoxAdapter(child: HomeQuoteOfTheDay()),
-            const SliverToBoxAdapter(child: Divider(height: 24)),
+            
+            // Mulai Latihan Quick Card
+            const SliverToBoxAdapter(
+              child: _QuickStartCard(),
+            ),
+
+            // Feature Menu Grid
             SliverToBoxAdapter(
-              child: HomeMenuGrid(
-                onMenuTap: (label) {
-                  if (label == 'UI Gallery') {
-                    context.push('/ui-gallery');
-                  } else if (label == 'Kutipan') {
-                    context.push(AppRoutes.quotes);
-                  } else if (label == 'Scoring') {
-                    context.push(ScoringRoutes.setup);
-                  } else if (label == 'Statistik') {
-                    context.push(ScoringRoutes.dashboard);
-                  } else if (label == 'Riwayat') {
-                    context.push(ScoringRoutes.history);
-                  } else if (label == 'Equipment') {
-                    context.push(ScoringRoutes.equipment);
-                  } else if (label == 'Profil') {
-                    context.push(SocialRoutes.profile);
-                  } else if (label == 'Klub') {
-                    context.push(SocialRoutes.clubs);
-                  } else if (label == 'Komunitas') {
-                    context.push(SocialRoutes.feed);
-                  } else if (label == 'Notifikasi') {
-                    context.push(SocialRoutes.notifications);
-                  } else if (label == 'Event') {
-                    context.push(EventsRoutes.discovery);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('$label — Fitur belum tersedia')),
-                    );
-                  }
-                },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 20.0, top: 16.0, bottom: 4.0),
+                    child: Text(
+                      'Layanan Utama',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.3,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                  HomeMenuGrid(
+                    onMenuTap: (label) {
+                      if (label == 'Scoring') {
+                        context.push(ScoringRoutes.setup);
+                      } else if (label == 'Statistik') {
+                        context.push(ScoringRoutes.dashboard);
+                      } else if (label == 'Riwayat') {
+                        context.push(ScoringRoutes.history);
+                      } else if (label == 'Klub') {
+                        context.push(SocialRoutes.clubs);
+                      } else if (label == 'Event') {
+                        context.push(EventsRoutes.discovery);
+                      } else if (label == 'Pelatih') {
+                        context.push(SocialRoutes.coaches);
+                      } else if (label == 'Lapangan') {
+                        context.push(SocialRoutes.ranges);
+                      } else if (label == 'Artikel') {
+                        context.push(SocialRoutes.articles);
+                      }
+                    },
+                  ),
+                ],
               ),
             ),
+
+            // Quote of the Day
+            const SliverToBoxAdapter(
+              child: HomeQuoteOfTheDay(),
+            ),
+
+            // Version Footer
             const SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.symmetric(vertical: 24),
                 child: _HomeFooter(),
               ),
             ),
+
             SliverToBoxAdapter(
               child: SizedBox(
                 height: 16 + MediaQuery.of(context).padding.bottom,
@@ -85,6 +109,8 @@ class HomeScreen extends ConsumerWidget {
 
   Widget _buildAuthenticatedHeader(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(userProfileProvider);
+    final statsAsync = ref.watch(gamificationStatsProvider);
+
     return profileAsync.when(
       loading: () => const Padding(
         padding: EdgeInsets.all(32),
@@ -94,80 +120,218 @@ class HomeScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(20),
         child: Text('Gagal memuat profil: $e'),
       ),
-      data: (profile) => HomeUserHeader(
-        profile: profile,
-        onEditTap: () => context.push(AppRoutes.editProfile),
-        onProfileTap: () => context.push(AppRoutes.profile),
-        onSettingsTap: () => context.push(AppRoutes.settings),
-      ),
+      data: (profile) {
+        final stats = statsAsync.asData?.value;
+        return HomeUserHeader(
+          profile: profile,
+          stats: stats,
+          onProfileTap: () => context.push(AppRoutes.profile),
+          onSettingsTap: () => context.push(AppRoutes.settings),
+        );
+      },
     );
   }
 
   Widget _buildGuestHeader(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [
+                  const Color(0xFF1E1E38),
+                  const Color(0xFF152A4A),
+                ]
+              : [
+                  ManahColors.brand,
+                  const Color(0xFF0D47A1),
+                ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isDark ? 0.3 : 0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Mock Guest Avatar
           Container(
             width: 56,
             height: 56,
             decoration: BoxDecoration(
-              color: colorScheme.primaryContainer,
+              color: Colors.white.withOpacity(0.15),
               shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withOpacity(0.9),
+                width: 2.5,
+              ),
             ),
-            child: Icon(
-              Icons.person_outline_rounded,
+            child: const Icon(
+              Icons.person_rounded,
               size: 28,
-              color: colorScheme.onPrimaryContainer,
+              color: Colors.white,
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   l10n.welcome,
-                  style: theme.textTheme.titleMedium?.copyWith(
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
+                    letterSpacing: 0.1,
                   ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
                 Text(
-                  'Guest',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                  'Masuk untuk mencatat skor & naik level!',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.75),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
             ),
           ),
-          IconButton(
-            onPressed: () => context.push(AppRoutes.settings),
-            icon: const Icon(Icons.settings_outlined),
-            tooltip: l10n.settings,
-          ),
           const SizedBox(width: 8),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              minimumSize: const Size(72, 36),
+              minimumSize: const Size(80, 36),
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              backgroundColor: colorScheme.primary,
-              foregroundColor: colorScheme.onPrimary,
+              backgroundColor: Colors.white,
+              foregroundColor: ManahColors.brand,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
               ),
               elevation: 0,
             ),
             onPressed: () => context.push('/login'),
             child: Text(
               l10n.login,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickStartCard extends StatelessWidget {
+  const _QuickStartCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isDark
+              ? [
+                  const Color(0xFF152A4A),
+                  const Color(0xFF0D47A1),
+                ]
+              : [
+                  const Color(0xFF1E88E5), // Sky/Ocean Blue
+                  ManahColors.brand,
+                ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: ManahColors.brand.withOpacity(isDark ? 0.2 : 0.15),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Mulai Scoring Latihan',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.1,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Catat skor anak panah Anda secara instan dan dapatkan analisis prestasinya.',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.85),
+                    fontSize: 11,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: ManahColors.brand,
+                    minimumSize: const Size(120, 36),
+                    padding: const EdgeInsets.symmetric(horizontal: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  onPressed: () => context.push(ScoringRoutes.setup),
+                  child: const Text(
+                    'Mulai Sekarang',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.18),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.track_changes_rounded,
+              size: 40,
+              color: Colors.white,
             ),
           ),
         ],
@@ -198,7 +362,7 @@ class _HomeFooterState extends State<_HomeFooter> {
       final info = await PackageInfo.fromPlatform();
       if (mounted) {
         setState(() {
-          _appName = info.appName.isNotEmpty ? info.appName : 'Starter App';
+          _appName = info.appName.isNotEmpty ? info.appName : 'ManahPro';
           _appVersion = '${info.version}+${info.buildNumber}';
         });
       }
@@ -220,8 +384,8 @@ class _HomeFooterState extends State<_HomeFooter> {
                 borderRadius: BorderRadius.circular(6),
                 child: Image.asset(
                   'packages/features_shared/assets/logo.png',
-                  width: 24,
-                  height: 24,
+                  width: 20,
+                  height: 20,
                   fit: BoxFit.cover,
                 ),
               ),
@@ -242,7 +406,7 @@ class _HomeFooterState extends State<_HomeFooter> {
                   color: Theme.of(context)
                       .colorScheme
                       .onSurface
-                      .withValues(alpha: 0.4),
+                      .withOpacity(0.4),
                 ),
           ),
         ],

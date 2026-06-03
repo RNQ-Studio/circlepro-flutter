@@ -45,6 +45,9 @@ class ProfileEntity {
     this.homeClubId,
     this.peakTitle,
     this.stats = const ProfileStats(),
+    this.isFollowing = false,
+    this.followersCount = 0,
+    this.followingCount = 0,
   });
 
   final int id;
@@ -64,8 +67,57 @@ class ProfileEntity {
   final String? homeClubId;
   final String? peakTitle;
   final ProfileStats stats;
+  final bool isFollowing;
+  final int followersCount;
+  final int followingCount;
 
   String get displayName => (fullName?.isNotEmpty ?? false) ? fullName! : (username ?? 'Pemanah');
+
+  ProfileEntity copyWith({
+    int? id,
+    String? username,
+    String? fullName,
+    String? email,
+    String? phone,
+    String? avatarUrl,
+    String? bannerUrl,
+    String? bio,
+    String? gender,
+    String? birthDate,
+    String? ageGroup,
+    String? province,
+    String? city,
+    BowClass? primaryBowClass,
+    String? homeClubId,
+    String? peakTitle,
+    ProfileStats? stats,
+    bool? isFollowing,
+    int? followersCount,
+    int? followingCount,
+  }) {
+    return ProfileEntity(
+      id: id ?? this.id,
+      username: username ?? this.username,
+      fullName: fullName ?? this.fullName,
+      email: email ?? this.email,
+      phone: phone ?? this.phone,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      bannerUrl: bannerUrl ?? this.bannerUrl,
+      bio: bio ?? this.bio,
+      gender: gender ?? this.gender,
+      birthDate: birthDate ?? this.birthDate,
+      ageGroup: ageGroup ?? this.ageGroup,
+      province: province ?? this.province,
+      city: city ?? this.city,
+      primaryBowClass: primaryBowClass ?? this.primaryBowClass,
+      homeClubId: homeClubId ?? this.homeClubId,
+      peakTitle: peakTitle ?? this.peakTitle,
+      stats: stats ?? this.stats,
+      isFollowing: isFollowing ?? this.isFollowing,
+      followersCount: followersCount ?? this.followersCount,
+      followingCount: followingCount ?? this.followingCount,
+    );
+  }
 
   factory ProfileEntity.fromJson(Map<String, dynamic> json) {
     return ProfileEntity(
@@ -87,6 +139,9 @@ class ProfileEntity {
       homeClubId: json['home_club_id'] as String?,
       peakTitle: json['peak_title'] as String?,
       stats: ProfileStats.fromJson(json['stats'] as Map<String, dynamic>?),
+      isFollowing: json['is_following'] as bool? ?? false,
+      followersCount: json['followers_count'] as int? ?? 0,
+      followingCount: json['following_count'] as int? ?? 0,
     );
   }
 }

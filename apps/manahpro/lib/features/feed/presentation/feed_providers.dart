@@ -11,12 +11,21 @@ FeedRepository feedRepository(Ref ref) {
   return FeedRepository(ref.watch(manahDioProvider));
 }
 
+@riverpod
+class FeedFilter extends _$FeedFilter {
+  @override
+  String? build() => null;
+
+  void setFilter(String? value) => state = value;
+}
+
 /// Community feed (Module 5, task 2.12).
 @riverpod
 class Feed extends _$Feed {
   @override
   Future<List<PostEntity>> build() {
-    return ref.watch(feedRepositoryProvider).feed();
+    final filter = ref.watch(feedFilterProvider);
+    return ref.watch(feedRepositoryProvider).feed(filter: filter);
   }
 
   /// Optimistic like/unlike toggle.
@@ -42,7 +51,8 @@ class Feed extends _$Feed {
 
   Future<void> refreshFeed() async {
     state = const AsyncLoading();
-    state = await AsyncValue.guard(() => ref.read(feedRepositoryProvider).feed());
+    final filter = ref.read(feedFilterProvider);
+    state = await AsyncValue.guard(() => ref.read(feedRepositoryProvider).feed(filter: filter));
   }
 
   List<PostEntity> _replace(List<PostEntity> list, PostEntity post) {

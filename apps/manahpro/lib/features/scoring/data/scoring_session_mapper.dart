@@ -1,4 +1,5 @@
 import '../domain/scoring_entities.dart';
+import '../domain/scoring_enums.dart';
 
 /// Maps a [ScoringSessionEntity] to the JSON body expected by the backend
 /// scoring sync/store endpoints (snake_case, nested ends/arrows).
@@ -36,4 +37,53 @@ Map<String, dynamic> scoringSessionToSyncJson(ScoringSessionEntity s) {
             })
         .toList(),
   };
+}
+
+/// Parses a [ScoringSessionEntity] from JSON (network response).
+ScoringSessionEntity scoringSessionFromJson(Map<String, dynamic> json) {
+  final endsJson = json['ends'] as List<dynamic>? ?? [];
+  final ends = endsJson.map((e) {
+    final endMap = e as Map<String, dynamic>;
+    final arrowsJson = endMap['arrows'] as List<dynamic>? ?? [];
+    final arrows = arrowsJson.map((a) {
+      final arrowMap = a as Map<String, dynamic>;
+      return ArrowScore(
+        id: arrowMap['id'] as String? ?? '',
+        arrowIndex: arrowMap['arrow_index'] as int? ?? 0,
+        scoreValue: arrowMap['score_value'] as int? ?? 0,
+        isX: arrowMap['is_x'] as bool? ?? false,
+        isMiss: arrowMap['is_miss'] as bool? ?? false,
+      );
+    }).toList();
+    return ScoringEndEntity(
+      id: endMap['id'] as String? ?? '',
+      endNumber: endMap['end_number'] as int? ?? 0,
+      arrows: arrows,
+    );
+  }).toList();
+
+  return ScoringSessionEntity(
+    id: json['id'] as String? ?? '',
+    clientUuid: json['client_uuid'] as String? ?? '',
+    equipmentProfileId: json['equipment_profile_id'] as String?,
+    title: json['title'] as String?,
+    bowClass: BowClass.fromValue(json['bow_class'] as String?),
+    distanceCategory: DistanceCategory.fromValue(json['distance_category'] as String?),
+    distanceM: json['distance_m'] as int? ?? 0,
+    environment: ArcheryEnvironment.fromValue(json['environment'] as String?),
+    targetFaceCm: json['target_face_cm'] as int?,
+    numEnds: json['num_ends'] as int? ?? 0,
+    arrowsPerEnd: json['arrows_per_end'] as int? ?? 6,
+    status: ScoringSessionStatus.fromValue(json['status'] as String?),
+    notes: json['notes'] as String?,
+    startedAt: json['started_at'] != null
+        ? DateTime.parse(json['started_at'] as String)
+        : DateTime.now(),
+    completedAt: json['completed_at'] != null
+        ? DateTime.parse(json['completed_at'] as String)
+        : null,
+    isPersonalBest: json['is_personal_best'] as bool? ?? false,
+    isSynced: true,
+    ends: ends,
+  );
 }

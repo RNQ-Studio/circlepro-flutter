@@ -1,8 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_text_styles.dart';
 import '../../../../theme/manah_tokens.dart';
@@ -299,9 +297,7 @@ class TicketDetailScreen extends ConsumerWidget {
       color: isDark ? ManahColors.darkSurface : Colors.grey[100],
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(ManahBorderRadius.card),
-        side: Border.all(
-          color: isDark ? Colors.grey[850]! : Colors.grey[300]!,
-        ),
+        side: BorderSide(color: isDark ? Colors.grey[850]! : Colors.grey[300]!),
       ),
       child: Padding(
         padding: const EdgeInsets.all(ManahSpacing.base),

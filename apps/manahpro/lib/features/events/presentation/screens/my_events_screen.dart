@@ -156,7 +156,7 @@ class _MyEventsScreenState extends ConsumerState<MyEventsScreen> with SingleTick
             color: isDark ? ManahColors.darkSurface : Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(ManahBorderRadius.card),
-              side: Border.all(color: isDark ? Colors.grey[850]! : Colors.grey[200]!),
+              side: BorderSide(color: isDark ? Colors.grey[850]! : Colors.grey[200]!),
             ),
             child: InkWell(
               borderRadius: BorderRadius.circular(ManahBorderRadius.card),
@@ -301,7 +301,7 @@ class _MyEventsScreenState extends ConsumerState<MyEventsScreen> with SingleTick
 
   // ─── SHARDS ───────────────────────────────────────────────────────────────
 
-  Widget _buildErrorState(String message, ProviderOrFamily provider) {
+  Widget _buildErrorState(String message, dynamic provider) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(ManahSpacing.lg),

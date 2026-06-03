@@ -18,6 +18,8 @@ EventRegistrationEntity eventRegistrationFromJson(Map<String, dynamic> json) {
     userAvatarUrl: json['user_avatar_url'] as String?,
     division: json['division'] != null ? eventDivisionFromJson(json['division'] as Map<String, dynamic>) : null,
     event: json['event'] != null ? eventFromJson(json['event'] as Map<String, dynamic>) : null,
+    targetButt: json['target_butt'] as int?,
+    targetLetter: json['target_letter'] as String?,
   );
 }
 
@@ -33,5 +35,7 @@ Map<String, dynamic> eventRegistrationToJson(EventRegistrationEntity reg) {
     if (reg.checkedInAt != null) 'checked_in_at': reg.checkedInAt!.toUtc().toIso8601String(),
     'created_at': reg.createdAt.toUtc().toIso8601String(),
     'updated_at': reg.updatedAt.toUtc().toIso8601String(),
+    if (reg.targetButt != null) 'target_butt': reg.targetButt,
+    if (reg.targetLetter != null) 'target_letter': reg.targetLetter,
   };
 }

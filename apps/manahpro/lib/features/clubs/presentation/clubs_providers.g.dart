@@ -344,3 +344,288 @@ final class ClubMembersFamily extends $Family
   @override
   String toString() => r'clubMembersProvider';
 }
+
+/// List of schedules for a club.
+
+@ProviderFor(clubSchedules)
+final clubSchedulesProvider = ClubSchedulesFamily._();
+
+/// List of schedules for a club.
+
+final class ClubSchedulesProvider extends $FunctionalProvider<
+        AsyncValue<List<ClubScheduleEntity>>,
+        List<ClubScheduleEntity>,
+        FutureOr<List<ClubScheduleEntity>>>
+    with
+        $FutureModifier<List<ClubScheduleEntity>>,
+        $FutureProvider<List<ClubScheduleEntity>> {
+  /// List of schedules for a club.
+  ClubSchedulesProvider._(
+      {required ClubSchedulesFamily super.from, required String super.argument})
+      : super(
+          retry: null,
+          name: r'clubSchedulesProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$clubSchedulesHash();
+
+  @override
+  String toString() {
+    return r'clubSchedulesProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<ClubScheduleEntity>> $createElement(
+          $ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<ClubScheduleEntity>> create(Ref ref) {
+    final argument = this.argument as String;
+    return clubSchedules(
+      ref,
+      argument,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ClubSchedulesProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$clubSchedulesHash() => r'5647004087f4bb7cb78d7cdf46ec3ce05c43ebe3';
+
+/// List of schedules for a club.
+
+final class ClubSchedulesFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<ClubScheduleEntity>>, String> {
+  ClubSchedulesFamily._()
+      : super(
+          retry: null,
+          name: r'clubSchedulesProvider',
+          dependencies: null,
+          $allTransitiveDependencies: null,
+          isAutoDispose: true,
+        );
+
+  /// List of schedules for a club.
+
+  ClubSchedulesProvider call(
+    String clubId,
+  ) =>
+      ClubSchedulesProvider._(argument: clubId, from: this);
+
+  @override
+  String toString() => r'clubSchedulesProvider';
+}
+
+/// Attendance sheet for a specific club schedule.
+
+@ProviderFor(scheduleAttendance)
+final scheduleAttendanceProvider = ScheduleAttendanceFamily._();
+
+/// Attendance sheet for a specific club schedule.
+
+final class ScheduleAttendanceProvider extends $FunctionalProvider<
+        AsyncValue<List<ClubAttendanceEntity>>,
+        List<ClubAttendanceEntity>,
+        FutureOr<List<ClubAttendanceEntity>>>
+    with
+        $FutureModifier<List<ClubAttendanceEntity>>,
+        $FutureProvider<List<ClubAttendanceEntity>> {
+  /// Attendance sheet for a specific club schedule.
+  ScheduleAttendanceProvider._(
+      {required ScheduleAttendanceFamily super.from,
+      required (
+        String,
+        String,
+      )
+          super.argument})
+      : super(
+          retry: null,
+          name: r'scheduleAttendanceProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$scheduleAttendanceHash();
+
+  @override
+  String toString() {
+    return r'scheduleAttendanceProvider'
+        ''
+        '$argument';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<ClubAttendanceEntity>> $createElement(
+          $ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<ClubAttendanceEntity>> create(Ref ref) {
+    final argument = this.argument as (
+      String,
+      String,
+    );
+    return scheduleAttendance(
+      ref,
+      argument.$1,
+      argument.$2,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ScheduleAttendanceProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$scheduleAttendanceHash() =>
+    r'71948a60eed5e4670360ade1e1021830fb94d19c';
+
+/// Attendance sheet for a specific club schedule.
+
+final class ScheduleAttendanceFamily extends $Family
+    with
+        $FunctionalFamilyOverride<
+            FutureOr<List<ClubAttendanceEntity>>,
+            (
+              String,
+              String,
+            )> {
+  ScheduleAttendanceFamily._()
+      : super(
+          retry: null,
+          name: r'scheduleAttendanceProvider',
+          dependencies: null,
+          $allTransitiveDependencies: null,
+          isAutoDispose: true,
+        );
+
+  /// Attendance sheet for a specific club schedule.
+
+  ScheduleAttendanceProvider call(
+    String clubId,
+    String scheduleId,
+  ) =>
+      ScheduleAttendanceProvider._(argument: (
+        clubId,
+        scheduleId,
+      ), from: this);
+
+  @override
+  String toString() => r'scheduleAttendanceProvider';
+}
+
+/// Logged in user's attendance history in a club.
+
+@ProviderFor(myAttendanceHistory)
+final myAttendanceHistoryProvider = MyAttendanceHistoryFamily._();
+
+/// Logged in user's attendance history in a club.
+
+final class MyAttendanceHistoryProvider extends $FunctionalProvider<
+        AsyncValue<List<ClubMyAttendanceHistoryEntity>>,
+        List<ClubMyAttendanceHistoryEntity>,
+        FutureOr<List<ClubMyAttendanceHistoryEntity>>>
+    with
+        $FutureModifier<List<ClubMyAttendanceHistoryEntity>>,
+        $FutureProvider<List<ClubMyAttendanceHistoryEntity>> {
+  /// Logged in user's attendance history in a club.
+  MyAttendanceHistoryProvider._(
+      {required MyAttendanceHistoryFamily super.from,
+      required String super.argument})
+      : super(
+          retry: null,
+          name: r'myAttendanceHistoryProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$myAttendanceHistoryHash();
+
+  @override
+  String toString() {
+    return r'myAttendanceHistoryProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<ClubMyAttendanceHistoryEntity>> $createElement(
+          $ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<ClubMyAttendanceHistoryEntity>> create(Ref ref) {
+    final argument = this.argument as String;
+    return myAttendanceHistory(
+      ref,
+      argument,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is MyAttendanceHistoryProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$myAttendanceHistoryHash() =>
+    r'1e29f687ac58d82cadf10f930f41d05c203959ff';
+
+/// Logged in user's attendance history in a club.
+
+final class MyAttendanceHistoryFamily extends $Family
+    with
+        $FunctionalFamilyOverride<FutureOr<List<ClubMyAttendanceHistoryEntity>>,
+            String> {
+  MyAttendanceHistoryFamily._()
+      : super(
+          retry: null,
+          name: r'myAttendanceHistoryProvider',
+          dependencies: null,
+          $allTransitiveDependencies: null,
+          isAutoDispose: true,
+        );
+
+  /// Logged in user's attendance history in a club.
+
+  MyAttendanceHistoryProvider call(
+    String clubId,
+  ) =>
+      MyAttendanceHistoryProvider._(argument: clubId, from: this);
+
+  @override
+  String toString() => r'myAttendanceHistoryProvider';
+}

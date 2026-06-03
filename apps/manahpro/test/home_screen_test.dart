@@ -3,6 +3,8 @@ import 'package:manahpro/features/home/presentation/home_provider.dart';
 import 'package:manahpro/features/home/presentation/home_screen.dart';
 import 'package:manahpro/features/quotes/presentation/quotes_notifier.dart';
 import 'package:manahpro/features/quotes/domain/entities/quote_entity.dart';
+import 'package:manahpro/features/gamification/presentation/gamification_providers.dart';
+import 'package:manahpro/features/gamification/domain/gamification_entities.dart';
 import 'package:core/core.dart';
 import 'package:features_shared/features_shared.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +34,15 @@ void main() {
     role: 'Member',
   );
 
+  const testStats = UserStatsEntity(
+    xp: 650,
+    level: 2,
+    currentStreak: 3,
+    longestStreak: 5,
+    lastSessionAt: null,
+    badges: [],
+  );
+
   Widget buildSubject() => ProviderScope(
         overrides: [
           authProvider.overrideWith(() => FakeAuthNotifier(
@@ -45,6 +56,7 @@ void main() {
               )),
           quotesProvider.overrideWith(() => FakeQuotesNotifier()),
           userProfileProvider.overrideWith((_) async => testProfile),
+          gamificationStatsProvider.overrideWith((_) async => testStats),
         ],
         child: MaterialApp.router(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -68,23 +80,29 @@ void main() {
   testWidgets('shows user header after profile loads', (tester) async {
     await tester.pumpWidget(buildSubject());
     await tester.pumpAndSettle();
-    expect(find.textContaining('Hi, Test User'), findsOneWidget);
-    expect(find.text('test@example.com'), findsOneWidget);
+    expect(find.textContaining('Selamat datang,'), findsOneWidget);
+    expect(find.text('Test User'), findsOneWidget);
   });
 
-  testWidgets('shows all 15 menu items', (tester) async {
+  testWidgets('shows level, streak and progress bar', (tester) async {
     await tester.pumpWidget(buildSubject());
     await tester.pumpAndSettle();
-    expect(find.text('Kutipan'), findsOneWidget);
-    expect(find.text('Menu 15'), findsOneWidget);
+    expect(find.text('Level 2'), findsOneWidget);
+    expect(find.textContaining('3 Hari Streak'), findsOneWidget);
+    expect(find.text('150 / 500 XP'), findsOneWidget); // 650 % 500 = 150
   });
 
-  testWidgets('tap menu shows snackbar', (tester) async {
+  testWidgets('shows all 8 main menu items', (tester) async {
     await tester.pumpWidget(buildSubject());
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Menu 02'));
-    await tester.pump();
-    expect(find.textContaining('Fitur belum tersedia'), findsOneWidget);
+    expect(find.text('Scoring'), findsOneWidget);
+    expect(find.text('Statistik'), findsOneWidget);
+    expect(find.text('Riwayat'), findsOneWidget);
+    expect(find.text('Klub'), findsOneWidget);
+    expect(find.text('Event'), findsOneWidget);
+    expect(find.text('Pelatih'), findsOneWidget);
+    expect(find.text('Lapangan'), findsOneWidget);
+    expect(find.text('Artikel'), findsOneWidget);
   });
 
   testWidgets('settings icon navigates to settings route', (tester) async {

@@ -5,8 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../shared/routes/social_routes.dart';
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
+import '../../../events/presentation/events_providers.dart';
 import '../../domain/profile_entity.dart';
 import '../profile_providers.dart';
+import '../../../gamification/presentation/widgets/achievement_dashboard_widget.dart';
+import '../../../gamification/presentation/gamification_providers.dart';
 
 /// ManahPro athlete profile (task 2.3): avatar, identity, stats and bow setup.
 class ProfileScreen extends ConsumerWidget {
@@ -35,10 +38,20 @@ class ProfileScreen extends ConsumerWidget {
           ),
         ),
         data: (p) => RefreshIndicator(
-          onRefresh: () async => ref.invalidate(myProfileProvider),
+          onRefresh: () async {
+            ref.invalidate(myProfileProvider);
+            ref.invalidate(myRatingsProvider);
+            ref.invalidate(gamificationStatsProvider);
+          },
           child: ListView(
             padding: const EdgeInsets.all(ManahSpacing.base),
-            children: [_Header(profile: p), const SizedBox(height: ManahSpacing.lg), _StatsRow(stats: p.stats)],
+            children: [
+              _Header(profile: p),
+              const SizedBox(height: ManahSpacing.lg),
+              _StatsRow(stats: p.stats),
+              const AchievementDashboardWidget(),
+              _RatingsSection(userId: p.id.toString()),
+            ],
           ),
         ),
       ),
@@ -132,6 +145,128 @@ class _Stat extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _RatingsSection extends ConsumerWidget {
+  const _RatingsSection({required this.userId});
+  final String userId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ratingsAsync = ref.watch(myRatingsProvider);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: ManahSpacing.lg),
+        Text('Rating & Gelar', style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: ManahSpacing.xs),
+        ratingsAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (err, _) => Text('Gagal memuat rating: $err'),
+          data: (ratings) {
+            if (ratings.isEmpty) {
+              return Card(
+                elevation: 0,
+                color: Theme.of(context).colorScheme.surfaceContainerLowest,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(ManahRadius.md),
+                  side: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.2)),
+                ),
+                child: const Padding(
+                  padding: EdgeInsets.all(ManahSpacing.base),
+                  child: Center(
+                    child: Text(
+                      'Belum ada rating resmi. Silakan ikuti event resmi untuk mendapatkan kalkulasi rating.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 12, color: ManahColors.mediumGrey),
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            return ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: ratings.length,
+              separatorBuilder: (_, __) => const SizedBox(height: ManahSpacing.xs),
+              itemBuilder: (context, index) {
+                final r = ratings[index];
+                Color bandColor = ManahColors.rankIron;
+                if (r.color == 'gold') {
+                  bandColor = ManahColors.rankGold;
+                } else if (r.color == 'diamond' || r.color == 'blue') {
+                  bandColor = ManahColors.rankDiamond;
+                } else if (r.color == 'silver') {
+                  bandColor = ManahColors.rankSilver;
+                } else if (r.color == 'bronze') {
+                  bandColor = ManahColors.rankBronze;
+                }
+
+                return Card(
+                  elevation: 1,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(ManahRadius.md),
+                    side: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.2)),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    title: Text(
+                      '${r.bowClass.toUpperCase()} - ${r.distanceCategory}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: bandColor.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(color: bandColor.withValues(alpha: 0.3), width: 0.5),
+                          ),
+                          child: Text(
+                            r.title,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 9,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${r.eventsCount} Event',
+                          style: const TextStyle(fontSize: 11, color: ManahColors.mediumGrey),
+                        ),
+                      ],
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          r.displayRating.round().toString(),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: ManahColors.brand,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.chevron_right, color: ManahColors.mediumGrey),
+                      ],
+                    ),
+                    onTap: () {
+                      context.push('/profiles/$userId/ratings/${r.id}');
+                    },
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      ],
     );
   }
 }

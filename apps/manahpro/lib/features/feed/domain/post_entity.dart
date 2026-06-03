@@ -32,6 +32,7 @@ class SharedSnapshot {
 class PostEntity {
   const PostEntity({
     required this.id,
+    this.authorId,
     this.authorName,
     this.authorUsername,
     this.authorAvatar,
@@ -46,6 +47,7 @@ class PostEntity {
   });
 
   final String id;
+  final int? authorId;
   final String? authorName;
   final String? authorUsername;
   final String? authorAvatar;
@@ -60,6 +62,7 @@ class PostEntity {
 
   PostEntity copyWith({int? likeCount, bool? isLiked, int? commentCount}) => PostEntity(
         id: id,
+        authorId: authorId,
         authorName: authorName,
         authorUsername: authorUsername,
         authorAvatar: authorAvatar,
@@ -78,6 +81,7 @@ class PostEntity {
     final shared = json['shared'] as Map<String, dynamic>?;
     return PostEntity(
       id: json['id'] as String,
+      authorId: author?['id'] as int?,
       authorName: author?['full_name'] as String?,
       authorUsername: author?['username'] as String?,
       authorAvatar: author?['avatar_url'] as String?,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
@@ -90,6 +91,14 @@ class _ClubDetailScreenState extends ConsumerState<ClubDetailScreen> {
                 icon: Icon(club.isMember ? Icons.check : Icons.add),
                 label: Text(club.isMember ? 'Keluar dari Klub' : 'Gabung Klub'),
               ),
+              if (club.isMember) ...[
+                const SizedBox(height: ManahSpacing.base),
+                OutlinedButton.icon(
+                  onPressed: () => context.push('/clubs/${club.id}/schedules'),
+                  icon: const Icon(Icons.calendar_month),
+                  label: const Text('Jadwal & Kehadiran Latihan'),
+                ),
+              ],
               const SizedBox(height: ManahSpacing.lg),
               Text('Anggota', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: ManahSpacing.sm),

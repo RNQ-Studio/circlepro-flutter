@@ -15,10 +15,43 @@ class FeedScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final activeFilter = ref.watch(feedFilterProvider);
     final async = ref.watch(feedProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Komunitas')),
+      appBar: AppBar(
+        title: const Text('Komunitas'),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(48),
+          child: Container(
+            margin: const EdgeInsets.only(left: ManahSpacing.base, right: ManahSpacing.base, bottom: ManahSpacing.sm),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(ManahRadius.md),
+              border: Border.all(color: theme.dividerColor.withValues(alpha: 0.1)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _FeedTabButton(
+                    label: 'Semua',
+                    isActive: activeFilter == null,
+                    onTap: () => ref.read(feedFilterProvider.notifier).setFilter(null),
+                  ),
+                ),
+                Expanded(
+                  child: _FeedTabButton(
+                    label: 'Diikuti',
+                    isActive: activeFilter == 'following',
+                    onTap: () => ref.read(feedFilterProvider.notifier).setFilter('following'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(SocialRoutes.createPost),
         icon: const Icon(Icons.edit),
@@ -35,9 +68,17 @@ class FeedScreen extends ConsumerWidget {
         data: (posts) => RefreshIndicator(
           onRefresh: () => ref.read(feedProvider.notifier).refreshFeed(),
           child: posts.isEmpty
-              ? ListView(children: const [
-                  SizedBox(height: 120),
-                  Center(child: Text('Belum ada postingan. Jadilah yang pertama!')),
+              ? ListView(children: [
+                  const SizedBox(height: 120),
+                  Center(
+                    child: Text(
+                      activeFilter == 'following'
+                          ? 'Belum ada postingan dari pemanah yang Anda ikuti.'
+                          : 'Belum ada postingan. Jadilah yang pertama!',
+                      style: const TextStyle(color: ManahColors.mediumGrey),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
                 ])
               : ListView.separated(
                   padding: const EdgeInsets.all(ManahSpacing.base),
@@ -45,6 +86,42 @@ class FeedScreen extends ConsumerWidget {
                   separatorBuilder: (_, __) => const SizedBox(height: ManahSpacing.sm),
                   itemBuilder: (context, i) => _PostCard(post: posts[i]),
                 ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FeedTabButton extends StatelessWidget {
+  const _FeedTabButton({
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: isActive ? ManahColors.brandSurface : Colors.transparent,
+          borderRadius: BorderRadius.circular(ManahRadius.sm),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isActive ? ManahColors.brand : theme.textTheme.bodyMedium?.color,
+            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
       ),
     );
@@ -65,27 +142,35 @@ class _PostCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 18,
-                  backgroundColor: ManahColors.brandSurface,
-                  backgroundImage: post.authorAvatar != null ? NetworkImage(post.authorAvatar!) : null,
-                  child: post.authorAvatar == null ? const Icon(Icons.person, size: 18, color: ManahColors.brand) : null,
-                ),
-                const SizedBox(width: ManahSpacing.sm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(post.authorName ?? post.authorUsername ?? 'Pemanah',
-                          style: theme.textTheme.titleSmall),
-                      if (post.createdAt != null)
-                        Text(_relative(post.createdAt!), style: theme.textTheme.bodySmall),
-                    ],
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                if (post.authorId != null) {
+                  context.push('/profiles/${post.authorId}');
+                }
+              },
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: ManahColors.brandSurface,
+                    backgroundImage: post.authorAvatar != null ? NetworkImage(post.authorAvatar!) : null,
+                    child: post.authorAvatar == null ? const Icon(Icons.person, size: 18, color: ManahColors.brand) : null,
                   ),
-                ),
-              ],
+                  const SizedBox(width: ManahSpacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(post.authorName ?? post.authorUsername ?? 'Pemanah',
+                            style: theme.textTheme.titleSmall),
+                        if (post.createdAt != null)
+                          Text(_relative(post.createdAt!), style: theme.textTheme.bodySmall),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
             if (post.body != null && post.body!.isNotEmpty) ...[
               const SizedBox(height: ManahSpacing.sm),

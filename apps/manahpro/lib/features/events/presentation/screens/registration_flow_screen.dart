@@ -6,9 +6,8 @@ import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_text_styles.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../../domain/event_division_entity.dart';
-import '../../domain/event_enums.dart';
 import '../../domain/event_registration_entity.dart';
-import '../../identity/presentation/profile_providers.dart';
+import '../../../identity/presentation/profile_providers.dart';
 import '../events_providers.dart';
 
 class RegistrationFlowScreen extends ConsumerStatefulWidget {

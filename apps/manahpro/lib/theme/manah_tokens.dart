@@ -23,3 +23,11 @@ abstract final class ManahRadius {
   static const double xl = 24;
   static const double full = 9999;
 }
+
+/// Border Radii mapping (card, button, badge, small)
+abstract final class ManahBorderRadius {
+  static const double small = 8;
+  static const double badge = 9999;
+  static const double card = 16;
+  static const double button = 12;
+}

@@ -1,8 +1,16 @@
 import 'package:dio/dio.dart';
 import '../domain/event_entity.dart';
 import '../domain/event_registration_entity.dart';
+import '../domain/target_scorecard_item.dart';
+import '../domain/event_leaderboard_entry.dart';
+import '../domain/user_rating_entity.dart';
+import '../domain/rating_history_entry.dart';
 import 'event_model.dart';
 import 'event_registration_model.dart';
+import 'target_scorecard_item_model.dart';
+import 'event_leaderboard_entry_model.dart';
+import 'user_rating_model.dart';
+import 'rating_history_entry_model.dart';
 
 /// Online events API client (Module 2, Phase 3).
 class EventsRepository {
@@ -91,5 +99,95 @@ class EventsRepository {
       data: {'status': status},
     );
     return eventRegistrationFromJson(response.data['data'] as Map<String, dynamic>);
+  }
+
+  // ─── Target & Scoring methods (Phase 3 COMPETE) ────────────────────────────
+
+  Future<void> assignTargets(String eventId, List<Map<String, dynamic>> assignments) async {
+    await _dio.post(
+      'v1/events/$eventId/assign-targets',
+      data: {'assignments': assignments},
+    );
+  }
+
+  Future<List<TargetScorecardItem>> getTargetScorecard(
+    String eventId,
+    String divisionId,
+    int targetButt,
+  ) async {
+    final response = await _dio.get(
+      'v1/events/$eventId/divisions/$divisionId/targets/$targetButt/scorecard',
+    );
+    final data = response.data['data'] as List<dynamic>;
+    return data.map((e) => targetScorecardItemFromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<void> saveTargetEndScores(
+    String eventId,
+    String divisionId,
+    int targetButt,
+    int endNumber,
+    List<Map<String, dynamic>> scores,
+  ) async {
+    await _dio.post(
+      'v1/events/$eventId/divisions/$divisionId/targets/$targetButt/ends/$endNumber',
+      data: {'scores': scores},
+    );
+  }
+
+  Future<List<EventLeaderboardEntry>> getEventLeaderboard(
+    String eventId,
+    String divisionId,
+  ) async {
+    final response = await _dio.get(
+      'v1/events/$eventId/divisions/$divisionId/leaderboard',
+    );
+    final data = response.data['data'] as List<dynamic>;
+    return data.map((e) => eventLeaderboardEntryFromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<List<UserRatingEntity>> getNationalLeaderboard({
+    required String bowClass,
+    required String gender,
+    required String ageGroup,
+    required String distanceCategory,
+    String? province,
+    String? city,
+  }) async {
+    final response = await _dio.get(
+      'v1/leaderboard',
+      queryParameters: {
+        'bow_class': bowClass,
+        'gender': gender,
+        'age_group': ageGroup,
+        'distance_category': distanceCategory,
+        if (province != null && province.isNotEmpty) 'province': province,
+        if (city != null && city.isNotEmpty) 'city': city,
+      },
+    );
+    final data = response.data['data'] as List<dynamic>;
+    return data.map((e) => userRatingFromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<List<UserRatingEntity>> getUserRatings(String userId) async {
+    final response = await _dio.get('v1/users/$userId/ratings');
+    final data = response.data['data'] as List<dynamic>;
+    return data.map((e) => userRatingFromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<List<RatingHistoryEntry>> getRatingHistory(String userId, String ratingId) async {
+    final response = await _dio.get('v1/users/$userId/ratings/$ratingId/history');
+    final data = response.data['data'] as List<dynamic>;
+    return data.map((e) => ratingHistoryEntryFromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<List<UserRatingEntity>> getMyRatings() async {
+    final response = await _dio.get('v1/my-ratings');
+    final data = response.data['data'] as List<dynamic>;
+    return data.map((e) => userRatingFromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<void> finalizeEventRatings(String eventId, String divisionId) async {
+    await _dio.post('v1/events/$eventId/divisions/$divisionId/finalize-ratings');
   }
 }

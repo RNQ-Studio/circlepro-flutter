@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:core/core.dart';
 
+import '../../../../theme/manah_colors.dart';
 import 'package:manahpro/features/quotes/domain/entities/quote_entity.dart';
 import 'package:manahpro/features/quotes/presentation/quotes_notifier.dart';
 
@@ -156,35 +157,23 @@ class _HomeQuoteOfTheDayState extends ConsumerState<HomeQuoteOfTheDay> {
     ThemeData theme,
     bool isDark,
   ) {
-    final colorScheme = theme.colorScheme;
-
-    // Premium gradients:
-    // Light mode uses a vibrant indigo/purple gradient
-    // Dark mode uses a sleek, rich deep blue/violet gradient
-    final gradientColors = isDark
-        ? [
-            const Color(0xFF1E1E38),
-            const Color(0xFF2C1E4A),
-          ]
-        : [
-            colorScheme.primary,
-            colorScheme.primary
-                .withBlue((colorScheme.primary.blue + 40).clamp(0, 255)),
-          ];
+    final cardBgColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+    final borderColor = isDark ? Colors.white.withOpacity(0.08) : ManahColors.brand.withOpacity(0.08);
+    final primaryTextColor = isDark ? Colors.white : ManahColors.nearBlack;
+    final secondaryTextColor = isDark ? Colors.white70 : ManahColors.darkGrey;
 
     return Container(
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: gradientColors,
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: cardBgColor,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: borderColor,
+          width: 1.2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: (isDark ? Colors.black : colorScheme.primary)
-                .withOpacity(isDark ? 0.4 : 0.25),
-            blurRadius: 12,
+            color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
+            blurRadius: 16,
             offset: const Offset(0, 6),
           ),
         ],
@@ -200,7 +189,7 @@ class _HomeQuoteOfTheDayState extends ConsumerState<HomeQuoteOfTheDay> {
               child: Icon(
                 Icons.format_quote_rounded,
                 size: 150,
-                color: Colors.white.withOpacity(0.06),
+                color: ManahColors.brand.withOpacity(isDark ? 0.04 : 0.02),
               ),
             ),
 
@@ -210,8 +199,8 @@ class _HomeQuoteOfTheDayState extends ConsumerState<HomeQuoteOfTheDay> {
               child: InkWell(
                 borderRadius: BorderRadius.circular(24),
                 onTap: () => context.push(AppRoutes.quotes),
-                splashColor: Colors.white.withOpacity(0.08),
-                highlightColor: Colors.white.withOpacity(0.04),
+                splashColor: ManahColors.brand.withOpacity(0.04),
+                highlightColor: ManahColors.brand.withOpacity(0.02),
                 child: Padding(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -226,10 +215,10 @@ class _HomeQuoteOfTheDayState extends ConsumerState<HomeQuoteOfTheDay> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.12),
+                              color: isDark ? Colors.white.withOpacity(0.06) : ManahColors.brandSurface,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.15),
+                                color: isDark ? Colors.white.withOpacity(0.1) : ManahColors.brand.withOpacity(0.12),
                                 width: 1,
                               ),
                             ),
@@ -240,7 +229,7 @@ class _HomeQuoteOfTheDayState extends ConsumerState<HomeQuoteOfTheDay> {
                                   isQotd
                                       ? Icons.auto_awesome_rounded
                                       : Icons.lightbulb_outline_rounded,
-                                  color: Colors.amber,
+                                  color: Colors.amber.shade700,
                                   size: 14,
                                 ),
                                 const SizedBox(width: 6),
@@ -249,8 +238,8 @@ class _HomeQuoteOfTheDayState extends ConsumerState<HomeQuoteOfTheDay> {
                                           ? l10n.quoteOfTheDayTitle
                                           : 'Kutipan Pilihan')
                                       .toUpperCase(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  style: TextStyle(
+                                    color: isDark ? Colors.white : ManahColors.brand,
                                     fontSize: 10,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: 1.1,
@@ -262,12 +251,12 @@ class _HomeQuoteOfTheDayState extends ConsumerState<HomeQuoteOfTheDay> {
                           const Spacer(),
                           // Elegant Copy Button
                           Material(
-                            color: Colors.white.withOpacity(0.1),
+                            color: isDark ? Colors.white.withOpacity(0.06) : ManahColors.brandSurface,
                             shape: const CircleBorder(),
                             child: IconButton(
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.copy_rounded,
-                                color: Colors.white,
+                                color: isDark ? Colors.white70 : ManahColors.brand,
                                 size: 16,
                               ),
                               tooltip: l10n.quotesSave,
@@ -289,19 +278,12 @@ class _HomeQuoteOfTheDayState extends ConsumerState<HomeQuoteOfTheDay> {
                               padding: const EdgeInsets.symmetric(vertical: 4),
                               child: Text(
                                 quote.text,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15,
+                                style: TextStyle(
+                                  color: primaryTextColor,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  height: 1.4,
+                                  height: 1.5,
                                   fontStyle: FontStyle.italic,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black26,
-                                      offset: Offset(0, 1),
-                                      blurRadius: 3,
-                                    ),
-                                  ],
                                 ),
                               ),
                             ),
@@ -318,8 +300,8 @@ class _HomeQuoteOfTheDayState extends ConsumerState<HomeQuoteOfTheDay> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
-                            fontSize: 12,
+                            color: secondaryTextColor,
+                            fontSize: 11,
                             fontWeight: FontWeight.bold,
                             height: 1.2,
                           ),

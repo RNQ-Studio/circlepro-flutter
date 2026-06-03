@@ -40,6 +40,13 @@ abstract final class ManahTextStyles {
     height: 1.3,
   );
 
+  /// 16 / SemiBold — small headers, subheadings.
+  static const TextStyle h4 = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+    height: 1.3,
+  );
+
   /// 16 / Regular — primary body (minimum body size).
   static const TextStyle bodyL = TextStyle(
     fontSize: 16,
@@ -68,6 +75,8 @@ abstract final class ManahTextStyles {
     height: 1.0,
     letterSpacing: 0.5,
   );
+
+  static const TextStyle badge = label;
 
   /// 40 / Bold / tabular — scores, rankings, stats.
   static const TextStyle number = TextStyle(

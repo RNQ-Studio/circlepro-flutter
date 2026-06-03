@@ -18,6 +18,8 @@ class EventRegistrationEntity {
     this.event,
     this.userName,
     this.userAvatarUrl,
+    this.targetButt,
+    this.targetLetter,
   });
 
   final String id;
@@ -36,6 +38,8 @@ class EventRegistrationEntity {
   final EventEntity? event;
   final String? userName;
   final String? userAvatarUrl;
+  final int? targetButt;
+  final String? targetLetter;
 
   EventRegistrationEntity copyWith({
     String? id,
@@ -52,6 +56,8 @@ class EventRegistrationEntity {
     EventEntity? event,
     String? userName,
     String? userAvatarUrl,
+    int? targetButt,
+    String? targetLetter,
   }) {
     return EventRegistrationEntity(
       id: id ?? this.id,
@@ -68,6 +74,8 @@ class EventRegistrationEntity {
       event: event ?? this.event,
       userName: userName ?? this.userName,
       userAvatarUrl: userAvatarUrl ?? this.userAvatarUrl,
+      targetButt: targetButt ?? this.targetButt,
+      targetLetter: targetLetter ?? this.targetLetter,
     );
   }
 }

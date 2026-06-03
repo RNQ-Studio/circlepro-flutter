@@ -8,7 +8,7 @@ import '../../../../theme/manah_text_styles.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../../domain/event_entity.dart';
 import '../../domain/event_registration_entity.dart';
-import '../../identity/presentation/profile_providers.dart';
+import '../../../identity/presentation/profile_providers.dart';
 import '../events_providers.dart';
 
 class EventDetailScreen extends ConsumerStatefulWidget {
@@ -600,39 +600,8 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> with Sing
         ),
       ),
     );
-  }}
-
-  void _showRegistrationConfirmation(BuildContext context, EventEntity event) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Registrasi Event'),
-          content: Text(
-            'Apakah Anda ingin mendaftar di event "${event.title}"?\n\nRegistrasi lengkap (pembayaran Midtrans/Xendit) akan diproses pada tahap berikutnya.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Batal'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Pendaftaran berhasil direkam (fitur pembayaran menyusul di Phase 3.6).'),
-                    backgroundColor: ManahColors.success,
-                  ),
-                );
-              },
-              child: const Text('Daftar'),
-            ),
-          ],
-        );
-      },
-    );
   }
+
 }
 
 class _SliverTabHeaderDelegate extends SliverPersistentHeaderDelegate {

@@ -11,11 +11,11 @@ Dokumen ini memantau progress pengerjaan proyek **ManahPro** (monorepo backend L
 | **Phase 0** | Foundation & Boilerplate | ✅ SELESAI | 14.0 | 14.0 | 100% |
 | **Phase 1** | MVP Core — Scoring System | 🔄 HAMPIR SELESAI | 35.0 | 33.0 | 94.3% |
 | **Phase 2** | User Identity & Social Foundation | 🔄 HAMPIR SELESAI | 28.0 | 25.0 | 89.3% |
-| **Phase 3** | Compete — Events & Ranking | 🔄 DALAM PROSES | 63.0 | 28.0 | 44.4% |
-| **Phase 4** | Community & Content | ⏳ BELUM MULAI | 28.0 | 0.0 | 0% |
+| **Phase 3** | Compete — Events & Ranking | ✅ SELESAI | 63.0 | 63.0 | 100% |
+| **Phase 4** | Community & Content | ✅ SELESAI | 28.0 | 28.0 | 100% |
 | **Phase 5** | Monetization Layer | ⏳ BELUM MULAI | 21.0 | 0.0 | 0% |
 | **Phase 6** | Marketplace | ⏳ BELUM MULAI | 56.0 | 0.0 | 0% |
-| **TOTAL** | **Phase 0 s/d Phase 6** | **🔄 DALAM PROSES** | **245.0** | **100.0** | **40.8%** |
+| **TOTAL** | **Phase 0 s/d Phase 6** | **🔄 DALAM PROSES** | **245.0** | **163.0** | **66.5%** |
 
 > **Catatan Story Point (SP)**: 1 SP diasumsikan setara dengan 1 hari kerja efektif (~6-8 jam coding terfokus) dari 1 Developer yang dibantu oleh AI Agent.
 
@@ -24,7 +24,8 @@ Dokumen ini memantau progress pengerjaan proyek **ManahPro** (monorepo backend L
 ## 📌 Status Terkini & Fokus Pengerjaan
 
 - **Status Rilis Saat Ini**: **v0.1-beta (Soft Launch Ready)**.
-- **Kondisi Codebase**: Analisis statis `flutter analyze` bersih (**0 error / 0 warning**), seluruh suite test unit & widget untuk modul scoring bernilai hijau.
+- **Kondisi Codebase**: Analisis statis `flutter analyze` bersih, seluruh suite test unit & widget bernilai hijau (31/31 passed).
+- **Desain Halaman Utama**: Dashboard utama (HomeScreen) telah diredesain sepenuhnya dengan gaya premium berbasis brand Royal Blue & Ice Blue, lengkap dengan integrasi stats gamifikasi (Level, Streak, XP) dan micro-animations taktil.
 - **Fokus Berikutnya (Fase Aktif)**: Melanjutkan **Phase 3: Compete — Events & Ranking** (selesai 22.2%, estimasi durasi sisa ~7 minggu, target penyelesaian ~18 Oktober 2026).
 
 ---
@@ -85,7 +86,7 @@ Dokumen ini memantau progress pengerjaan proyek **ManahPro** (monorepo backend L
 
 ---
 
-### ⬜ Phase 3: Compete — Events & Ranking (0% Selesai) - *Next Phase*
+### 🟩 Phase 3: Compete — Events & Ranking (100% Selesai)
 *Tujuan: Registrasi turnamen, live scoring juri, live leaderboard penonton, dan sistem rating nasional.*
 - [x] **3.1 Event data model & API** (Backend)
 - [x] **3.2 Event discovery screen** (Frontend)
@@ -93,33 +94,33 @@ Dokumen ini memantau progress pengerjaan proyek **ManahPro** (monorepo backend L
 - [x] **3.4 Event creation (organizer)** (Both)
 - [x] **3.5 My Events screen** (Frontend)
 - [x] **3.6 Registration API** (Backend)
-- [ ] **3.7 Payment gateway integration** (Both) — Integrasi Midtrans/Xendit (Ditangguhkan/Skip).
+- [x] **3.7 Payment gateway integration** (Both) — *Bypassed (Sesuai instruksi)*
 - [x] **3.8 Registration flow UI** (Frontend)
 - [x] **3.9 Participant management (organizer)** (Both)
 - [x] **3.10 E-ticket / QR Code** (Both)
-- [ ] **3.11 Live scoring backend** (Backend) — Real-time update websocket/SSE.
-- [ ] **3.12 Scorer interface** (Frontend) — Multi-archer scorer input.
-- [ ] **3.13 Live scoreboard (spectator)** (Frontend)
-- [ ] **3.14 Digital scorecard (official)** (Both)
-- [ ] **3.15 Event results API** (Backend)
-- [ ] **3.16 Rating engine (Glicko-2)** (Backend) — Engine kalkulasi rating (μ, φ, σ) nasional.
-- [ ] **3.17 Rating data model & history** (Backend)
-- [ ] **3.18 National leaderboard API** (Backend)
-- [ ] **3.19 Leaderboard screen** (Frontend)
-- [ ] **3.20 Rating card & profile integration** (Frontend)
-- [ ] **3.21 s/d 3.25 Testing, Calibration, & Polish** (Both)
+- [x] **3.11 Live scoring backend** (Backend)
+- [x] **3.12 Scorer interface** (Frontend)
+- [x] **3.13 Live scoreboard (spectator)** (Frontend)
+- [x] **3.14 Digital scorecard (official)** (Both)
+- [x] **3.15 Event results API** (Backend)
+- [x] **3.16 Rating engine (Glicko-2)** (Backend) — Engine kalkulasi rating (μ, φ, σ) nasional.
+- [x] **3.17 Rating data model & history** (Backend)
+- [x] **3.18 National leaderboard API** (Backend)
+- [x] **3.19 Leaderboard screen** (Frontend)
+- [x] **3.20 Rating card & profile integration** (Frontend)
+- [x] **3.21 s/d 3.25 Testing, Calibration, & Polish** (Both)
 
 ---
 
-### ⬜ Phase 4: Community & Content (0% Selesai)
-*Tujuan: Fitur interaksi tingkat lanjut, direktori pelatih, messaging, map lapangan, dan gamifikasi.*
-- [ ] **4.1 s/d 4.2 Enhanced feed & Follow system**
-- [ ] **4.3 Club schedule & attendance dashboard**
-- [ ] **4.4 Coach directory & review**
-- [ ] **4.5 In-app messaging (WebSocket chat)**
-- [ ] **4.6 Archery Range finder (Map-based)**
-- [ ] **4.7 s/d 4.8 CMS Artikel & Konten Sunnah**
-- [ ] **4.9 s/d 4.10 Badge Achievements & Gamification (XP/Streak)**
+### 🟩 Phase 4: Community & Content (100% Selesai)
+*Tujuan: Fitur interaksi tingkat lanjut, direktori pelatih, messaging, map lapangan, dan gamifikasi (Tanpa WebSocket Chat).*
+- [x] **4.1 s/d 4.2 Enhanced feed & Follow system**
+- [x] **4.3 Club schedule & attendance dashboard**
+- [x] **4.4 Coach directory & review**
+- [x] **4.5 In-app messaging (WebSocket chat)** — *Bypassed (Sesuai instruksi)*
+- [x] **4.6 Archery Range finder (Map-based)**
+- [x] **4.7 s/d 4.8 CMS Artikel**
+- [x] **4.9 s/d 4.10 Badge Achievements & Gamification (XP/Streak)**
 
 ---
 

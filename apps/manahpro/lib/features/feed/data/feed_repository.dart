@@ -8,8 +8,11 @@ class FeedRepository {
 
   final Dio _dio;
 
-  Future<List<PostEntity>> feed() async {
-    final response = await _dio.get('v1/posts');
+  Future<List<PostEntity>> feed({String? filter}) async {
+    final response = await _dio.get(
+      'v1/posts',
+      queryParameters: filter != null ? {'feed': filter} : null,
+    );
     final data = response.data['data'] as List<dynamic>;
     return data.map((e) => PostEntity.fromJson(e as Map<String, dynamic>)).toList();
   }

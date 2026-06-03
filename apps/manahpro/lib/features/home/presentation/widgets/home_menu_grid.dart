@@ -1,45 +1,50 @@
 import 'package:flutter/material.dart';
 
+import '../../../../theme/manah_colors.dart';
+
 class _MenuItem {
   const _MenuItem({
     required this.label,
     required this.icon,
-    required this.color,
-    this.isGallery = false,
   });
+
   final String label;
   final IconData icon;
-  final Color color;
-  final bool isGallery;
 }
 
 const _menuItems = [
   _MenuItem(
-    label: 'UI Gallery',
-    icon: Icons.widgets_outlined,
-    color: Colors.indigo,
-    isGallery: true,
+    label: 'Scoring',
+    icon: Icons.track_changes_rounded,
   ),
   _MenuItem(
-      label: 'Kutipan', icon: Icons.format_quote_rounded, color: Colors.indigo),
+    label: 'Statistik',
+    icon: Icons.analytics_rounded,
+  ),
   _MenuItem(
-      label: 'Scoring', icon: Icons.track_changes, color: Color(0xFF2E7D32)),
-  _MenuItem(label: 'Statistik', icon: Icons.show_chart, color: Colors.teal),
-  _MenuItem(label: 'Riwayat', icon: Icons.history, color: Colors.amber),
-  _MenuItem(label: 'Equipment', icon: Icons.sports, color: Colors.green),
+    label: 'Riwayat',
+    icon: Icons.history_rounded,
+  ),
   _MenuItem(
-      label: 'Profil', icon: Icons.person_outline_rounded, color: Colors.cyan),
-  _MenuItem(label: 'Klub', icon: Icons.groups, color: Color(0xFF00695C)),
-  _MenuItem(label: 'Komunitas', icon: Icons.forum_outlined, color: Colors.deepPurple),
-  _MenuItem(label: 'Notifikasi', icon: Icons.notifications_outlined, color: Colors.teal),
-  _MenuItem(label: 'Event', icon: Icons.emoji_events_outlined, color: Colors.blue),
+    label: 'Klub',
+    icon: Icons.groups_rounded,
+  ),
   _MenuItem(
-      label: 'Menu 11', icon: Icons.lightbulb_outline, color: Colors.amber),
-  _MenuItem(label: 'Menu 12', icon: Icons.calculate, color: Colors.blueGrey),
-  _MenuItem(label: 'Menu 13', icon: Icons.timer, color: Colors.red),
+    label: 'Event',
+    icon: Icons.emoji_events_rounded,
+  ),
   _MenuItem(
-      label: 'Menu 14', icon: Icons.feedback_outlined, color: Colors.orange),
-  _MenuItem(label: 'Menu 15', icon: Icons.star_outline, color: Colors.indigo),
+    label: 'Pelatih',
+    icon: Icons.person_search_rounded,
+  ),
+  _MenuItem(
+    label: 'Lapangan',
+    icon: Icons.map_rounded,
+  ),
+  _MenuItem(
+    label: 'Artikel',
+    icon: Icons.menu_book_rounded,
+  ),
 ];
 
 class HomeMenuGrid extends StatelessWidget {
@@ -50,13 +55,13 @@ class HomeMenuGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
         childAspectRatio: 0.85,
       ),
       itemCount: _menuItems.length,
@@ -68,46 +73,102 @@ class HomeMenuGrid extends StatelessWidget {
   }
 }
 
-class _MenuCell extends StatelessWidget {
+class _MenuCell extends StatefulWidget {
   const _MenuCell({required this.item, required this.onTap});
 
   final _MenuItem item;
   final VoidCallback onTap;
 
   @override
+  State<_MenuCell> createState() => _MenuCellState();
+}
+
+class _MenuCellState extends State<_MenuCell> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 80),
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.90).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
-    final cellBgColor = colorScheme.primaryContainer;
-    final iconColor = colorScheme.onPrimaryContainer;
+    final cellBgColor = isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF5F9FD);
+    final borderColor = isDark ? Colors.white.withOpacity(0.08) : ManahColors.brand.withOpacity(0.08);
+    final iconColor = isDark ? ManahColors.brandLight : ManahColors.brand;
 
     return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: cellBgColor,
-              borderRadius: BorderRadius.circular(16),
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) {
+        _controller.reverse();
+        widget.onTap();
+      },
+      onTapCancel: () => _controller.reverse(),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) => Transform.scale(
+          scale: _scaleAnimation.value,
+          child: child,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 58,
+              height: 58,
+              decoration: BoxDecoration(
+                color: cellBgColor,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: borderColor,
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(isDark ? 0.05 : 0.02),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Icon(
+                widget.item.icon,
+                color: iconColor,
+                size: 26,
+              ),
             ),
-            child: Icon(item.icon, color: iconColor, size: 26),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            item.label,
-            style: theme.textTheme.labelMedium?.copyWith(
-              fontWeight: FontWeight.w500,
-              color: colorScheme.onSurface.withValues(alpha: 0.8),
+            const SizedBox(height: 8),
+            Text(
+              widget.item.label,
+              style: theme.textTheme.labelMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
+                color: theme.colorScheme.onSurface.withOpacity(0.85),
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
