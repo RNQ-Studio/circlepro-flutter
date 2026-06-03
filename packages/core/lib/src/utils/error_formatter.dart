@@ -1,6 +1,6 @@
 class ErrorFormatter {
   /// Maps any dynamic error/exception to a user-friendly corporate Indonesian message.
-  static String getFriendlyMessage(dynamic error) {
+  static String getFriendlyMessage(dynamic error, {bool isLogin = false}) {
     if (error == null) {
       return 'Terjadi kendala yang tidak terduga. Silakan coba beberapa saat lagi.';
     }
@@ -37,7 +37,10 @@ class ErrorFormatter {
       return 'Layanan kami sedang mengalami kendala teknis. Kami sedang berupaya memperbaikinya, mohon coba kembali beberapa saat lagi.';
     }
     if (lowerMessage.contains('401') || lowerMessage.contains('unauthorized') || lowerMessage.contains('tidak valid')) {
-      if (lowerMessage.contains('login') || lowerMessage.contains('auth') || lowerMessage.contains('social')) {
+      final hasLoginKeyword = lowerMessage.contains('login') ||
+          lowerMessage.contains('social') ||
+          (lowerMessage.contains('auth') && !lowerMessage.contains('unauthorized'));
+      if (isLogin || hasLoginKeyword) {
         return 'Gagal melakukan autentikasi masuk. Silakan pastikan akun Google Anda aktif dan coba lagi.';
       }
       return 'Sesi masuk Anda tidak valid atau telah berakhir. Silakan masuk kembali.';
