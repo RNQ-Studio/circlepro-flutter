@@ -37,6 +37,9 @@ class ErrorFormatter {
       return 'Layanan kami sedang mengalami kendala teknis. Kami sedang berupaya memperbaikinya, mohon coba kembali beberapa saat lagi.';
     }
     if (lowerMessage.contains('401') || lowerMessage.contains('unauthorized') || lowerMessage.contains('tidak valid')) {
+      if (lowerMessage.contains('login') || lowerMessage.contains('auth') || lowerMessage.contains('social')) {
+        return 'Gagal melakukan autentikasi masuk. Silakan pastikan akun Google Anda aktif dan coba lagi.';
+      }
       return 'Sesi masuk Anda tidak valid atau telah berakhir. Silakan masuk kembali.';
     }
     if (lowerMessage.contains('403') || lowerMessage.contains('forbidden')) {
