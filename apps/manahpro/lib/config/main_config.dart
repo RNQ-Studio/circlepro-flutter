@@ -14,4 +14,8 @@ class MainConfig extends AppConfig {
         Environment.staging => 'https://circlepro.web.id/api/',
         Environment.prod => 'https://circlepro.web.id/api/',
       };
+
+  @override
+  String get googleWebClientId =>
+      '925566560744-qee086bdptv1jm964ghs0phgjsmo0ljf.apps.googleusercontent.com';
 }

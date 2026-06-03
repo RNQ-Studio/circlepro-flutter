@@ -3,6 +3,7 @@ abstract class AppConfig {
 
   String get baseUrl;
   Environment get environment;
+  String get googleWebClientId => '';
 }
 
 enum Environment {

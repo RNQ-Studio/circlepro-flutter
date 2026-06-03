@@ -11,6 +11,17 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<User> loginWithGoogle({required String idToken}) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    _currentUser = const User(
+      id: 'dev-google-001',
+      name: 'Google Athlete',
+      email: 'atlet@example.com',
+    );
+    return _currentUser!;
+  }
+
+  @override
   Future<User> register({
     required String name,
     required String email,

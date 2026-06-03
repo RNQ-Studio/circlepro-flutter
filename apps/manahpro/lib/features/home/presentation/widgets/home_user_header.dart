@@ -11,12 +11,14 @@ class HomeUserHeader extends StatelessWidget {
     this.stats,
     required this.onProfileTap,
     required this.onSettingsTap,
+    required this.onLogoutTap,
   });
 
   final UserProfile profile;
   final UserStatsEntity? stats;
   final VoidCallback onProfileTap;
   final VoidCallback onSettingsTap;
+  final VoidCallback onLogoutTap;
 
   @override
   Widget build(BuildContext context) {
@@ -166,16 +168,32 @@ class HomeUserHeader extends StatelessWidget {
                   ),
                 ),
               ),
-              // Settings Button
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 22),
-                onPressed: onSettingsTap,
-                tooltip: 'Pengaturan',
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.white.withOpacity(0.12),
-                  padding: const EdgeInsets.all(8),
-                ),
+              // Action Buttons (Settings & Logout)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 22),
+                    onPressed: onSettingsTap,
+                    tooltip: 'Pengaturan',
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.white.withOpacity(0.12),
+                      padding: const EdgeInsets.all(8),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(Icons.logout_rounded, color: Colors.white, size: 22),
+                    onPressed: onLogoutTap,
+                    tooltip: 'Keluar',
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.white.withOpacity(0.12),
+                      padding: const EdgeInsets.all(8),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

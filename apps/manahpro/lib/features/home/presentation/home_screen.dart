@@ -127,6 +127,32 @@ class HomeScreen extends ConsumerWidget {
           stats: stats,
           onProfileTap: () => context.push(AppRoutes.profile),
           onSettingsTap: () => context.push(AppRoutes.settings),
+          onLogoutTap: () {
+            showDialog<bool>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: const Text('Keluar Akun'),
+                content: const Text('Apakah Anda yakin ingin keluar dari akun ini?'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('Batal'),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.redAccent,
+                    ),
+                    child: const Text('Keluar'),
+                  ),
+                ],
+              ),
+            ).then((confirmed) {
+              if (confirmed == true) {
+                ref.read(authProvider.notifier).logout();
+              }
+            });
+          },
         );
       },
     );

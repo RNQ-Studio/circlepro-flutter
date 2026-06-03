@@ -57,6 +57,34 @@ void main() {
     expect((state as AuthError).message, 'Invalid credentials');
   });
 
+  test('loginWithGoogle success → AuthAuthenticated', () async {
+    when(() => mockRepo.loginWithGoogle(
+          idToken: any(named: 'idToken'),
+        )).thenAnswer((_) async => tUser);
+
+    await container
+        .read(authProvider.notifier)
+        .loginWithGoogle('valid-id-token');
+
+    final state = container.read(authProvider);
+    expect(state, isA<AuthAuthenticated>());
+    expect((state as AuthAuthenticated).user, tUser);
+  });
+
+  test('loginWithGoogle failure → AuthError with message', () async {
+    when(() => mockRepo.loginWithGoogle(
+          idToken: any(named: 'idToken'),
+        )).thenThrow(const ServerException('Google auth failed'));
+
+    await container
+        .read(authProvider.notifier)
+        .loginWithGoogle('invalid-id-token');
+
+    final state = container.read(authProvider);
+    expect(state, isA<AuthError>());
+    expect((state as AuthError).message, 'Google auth failed');
+  });
+
   test('logout → AuthUnauthenticated', () async {
     when(() => mockRepo.login(
           email: any(named: 'email'),

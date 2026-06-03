@@ -3,6 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/biometric_auth_service.dart';
 import '../domain/usecases/get_current_user_use_case.dart';
 import '../domain/usecases/login_use_case.dart';
+import '../domain/usecases/login_with_google_use_case.dart';
 import '../domain/usecases/logout_use_case.dart';
 import '../domain/usecases/register_use_case.dart';
 import 'auth_repository_provider.dart';
@@ -14,6 +15,7 @@ part 'auth_notifier.g.dart';
 class AuthNotifier extends _$AuthNotifier {
   late GetCurrentUserUseCase _getCurrentUser;
   late LoginUseCase _login;
+  late LoginWithGoogleUseCase _loginWithGoogle;
   late LogoutUseCase _logout;
   late RegisterUseCase _register;
 
@@ -22,6 +24,7 @@ class AuthNotifier extends _$AuthNotifier {
     final repo = ref.watch(authRepositoryProvider);
     _getCurrentUser = GetCurrentUserUseCase(repo);
     _login = LoginUseCase(repo);
+    _loginWithGoogle = LoginWithGoogleUseCase(repo);
     _logout = LogoutUseCase(repo);
     _register = RegisterUseCase(repo);
     return const AuthInitial();
@@ -43,6 +46,16 @@ class AuthNotifier extends _$AuthNotifier {
     state = const AuthLoading();
     try {
       final user = await _login(email: email, password: password);
+      state = AuthAuthenticated(user);
+    } catch (e) {
+      state = AuthError(e.toString());
+    }
+  }
+
+  Future<void> loginWithGoogle(String idToken) async {
+    state = const AuthLoading();
+    try {
+      final user = await _loginWithGoogle(idToken: idToken);
       state = AuthAuthenticated(user);
     } catch (e) {
       state = AuthError(e.toString());

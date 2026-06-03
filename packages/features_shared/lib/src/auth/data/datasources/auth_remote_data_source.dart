@@ -53,6 +53,49 @@ class AuthRemoteDataSource {
     }
   }
 
+  Future<UserModel> loginWithGoogle(String idToken) async {
+    try {
+      final response = await _dio.post(
+        'v1/auth/social',
+        data: {
+          'provider': 'google',
+          'token': idToken,
+        },
+      );
+
+      final responseData = response.data as Map<String, dynamic>;
+      final tokensData = responseData['data'] as Map<String, dynamic>;
+      final token = tokensData['access_token'] as String;
+
+      final profileResponse = await _dio.get(
+        'v1/auth/me',
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
+
+      final profileData = profileResponse.data as Map<String, dynamic>;
+      final userJson = profileData['data'] as Map<String, dynamic>;
+
+      return UserModel(
+        id: userJson['id'].toString(),
+        name: userJson['name'] as String,
+        email: userJson['email'] as String,
+        phone: userJson['phone'] as String?,
+        avatarUrl: userJson['avatar_url'] as String?,
+        roles: (userJson['roles'] as List<dynamic>?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            const [],
+        token: token,
+      );
+    } on DioException catch (e) {
+      throw e.error ?? ServerException(e.message ?? 'Login dengan Google gagal');
+    }
+  }
+
   Future<UserModel> register({
     required String name,
     required String email,
