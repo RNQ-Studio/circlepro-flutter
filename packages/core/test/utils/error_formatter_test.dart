@@ -1,5 +1,16 @@
+import 'package:core/core.dart';
 import 'package:core/src/utils/error_formatter.dart';
 import 'package:flutter_test/flutter_test.dart' hide ErrorFormatter;
+
+class TestAppConfig extends AppConfig {
+  TestAppConfig(this.environment);
+
+  @override
+  final Environment environment;
+
+  @override
+  String get baseUrl => 'https://example.com';
+}
 
 void main() {
   group('ErrorFormatter.getFriendlyMessage', () {
@@ -72,6 +83,22 @@ void main() {
       expect(
         ErrorFormatter.getFriendlyMessage('some random error'),
         'Mohon maaf, terjadi kendala saat memproses permintaan Anda. Silakan hubungi dukungan atau coba lagi nanti.',
+      );
+    });
+
+    test('appends raw error message when AppConfig.instance.environment == Environment.dev', () {
+      AppConfig.instance = TestAppConfig(Environment.dev);
+      expect(
+        ErrorFormatter.getFriendlyMessage('ApiException: 10'),
+        contains('[DEBUG ERROR: ApiException: 10]'),
+      );
+    });
+
+    test('does NOT append raw error message when AppConfig.instance.environment == Environment.prod', () {
+      AppConfig.instance = TestAppConfig(Environment.prod);
+      expect(
+        ErrorFormatter.getFriendlyMessage('ApiException: 10'),
+        isNot(contains('[DEBUG ERROR:')),
       );
     });
   });

@@ -1,6 +1,26 @@
+import '../config/app_config.dart';
+
 class ErrorFormatter {
   /// Maps any dynamic error/exception to a user-friendly corporate Indonesian message.
   static String getFriendlyMessage(dynamic error, {bool isLogin = false}) {
+    final message = _getFriendlyMessageInternal(error, isLogin: isLogin);
+
+    // If development mode is active, append the raw error message to help debugging
+    bool isDev = false;
+    try {
+      isDev = AppConfig.instance.environment == Environment.dev;
+    } catch (_) {
+      // Default to false if AppConfig is not initialized (e.g. in unit tests)
+      isDev = false;
+    }
+
+    if (isDev && error != null) {
+      return '$message\n\n[DEBUG ERROR: ${error.toString()}]';
+    }
+    return message;
+  }
+
+  static String _getFriendlyMessageInternal(dynamic error, {bool isLogin = false}) {
     if (error == null) {
       return 'Terjadi kendala yang tidak terduga. Silakan coba beberapa saat lagi.';
     }
