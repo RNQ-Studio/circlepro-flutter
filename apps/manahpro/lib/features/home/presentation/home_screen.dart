@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../shared/routes/social_routes.dart';
 import '../../scoring/presentation/scoring_routes.dart';
+import '../../events/presentation/events_routes.dart';
 import 'home_provider.dart';
 import 'widgets/home_user_header.dart';
 import 'widgets/home_menu_grid.dart';
@@ -55,6 +56,8 @@ class HomeScreen extends ConsumerWidget {
                     context.push(SocialRoutes.feed);
                   } else if (label == 'Notifikasi') {
                     context.push(SocialRoutes.notifications);
+                  } else if (label == 'Event') {
+                    context.push(EventsRoutes.discovery);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('$label — Fitur belum tersedia')),

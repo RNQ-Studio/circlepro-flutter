@@ -11,6 +11,7 @@ import '../features/quotes/presentation/screens/quote_form_screen.dart';
 import '../features/onboarding/presentation/manah_onboarding_screen.dart';
 import '../features/scoring/presentation/scoring_routes.dart';
 import '../shared/routes/social_routes.dart';
+import '../features/events/presentation/events_routes.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/splash',
@@ -56,5 +57,8 @@ final appRouter = GoRouter(
 
     // ManahPro — Phase 2: Identity & Social (profile, clubs, feed)
     ...socialRoutes,
+
+    // ManahPro — Phase 3: Events & Ranking (COMPETE)
+    ...eventsRoutes,
   ],
 );

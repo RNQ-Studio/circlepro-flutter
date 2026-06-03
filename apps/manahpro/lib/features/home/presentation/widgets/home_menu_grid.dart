@@ -32,7 +32,7 @@ const _menuItems = [
   _MenuItem(label: 'Klub', icon: Icons.groups, color: Color(0xFF00695C)),
   _MenuItem(label: 'Komunitas', icon: Icons.forum_outlined, color: Colors.deepPurple),
   _MenuItem(label: 'Notifikasi', icon: Icons.notifications_outlined, color: Colors.teal),
-  _MenuItem(label: 'Menu 10', icon: Icons.location_on, color: Colors.brown),
+  _MenuItem(label: 'Event', icon: Icons.emoji_events_outlined, color: Colors.blue),
   _MenuItem(
       label: 'Menu 11', icon: Icons.lightbulb_outline, color: Colors.amber),
   _MenuItem(label: 'Menu 12', icon: Icons.calculate, color: Colors.blueGrey),
