@@ -43,7 +43,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal mengunggah foto: $e')),
+          SnackBar(content: Text('Gagal mengunggah foto: ${ErrorFormatter.getFriendlyMessage(e)}')),
         );
       }
     } finally {

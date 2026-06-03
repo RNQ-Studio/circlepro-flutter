@@ -50,6 +50,7 @@ export 'src/theme/app_theme.dart';
 // utils
 export 'src/utils/date_utils.dart';
 export 'src/utils/input_validators.dart';
+export 'src/utils/error_formatter.dart';
 
 // widgets
 export 'src/widgets/app_button.dart';

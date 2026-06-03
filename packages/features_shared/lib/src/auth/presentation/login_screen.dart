@@ -83,7 +83,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Login Google Gagal'),
-            content: Text(e.toString()),
+            content: Text(ErrorFormatter.getFriendlyMessage(e)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
@@ -160,7 +160,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const Text('Login Gagal'),
                 ],
               ),
-              content: Text(next.message),
+              content: Text(ErrorFormatter.getFriendlyMessage(next.message)),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),

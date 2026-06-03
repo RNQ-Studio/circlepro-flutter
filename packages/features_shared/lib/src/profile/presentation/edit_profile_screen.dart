@@ -86,7 +86,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     color: Colors.white, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text('Gagal memperbarui profil: $e'),
+                  child: Text('Gagal memperbarui profil: ${ErrorFormatter.getFriendlyMessage(e)}'),
                 ),
               ],
             ),
@@ -118,7 +118,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         isLoading: _isLoading,
         child: profileAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Gagal memuat profil: $e')),
+          error: (e, _) => Center(child: Text('Gagal memuat profil: ${ErrorFormatter.getFriendlyMessage(e)}')),
           data: (profile) {
             if (profile == null) {
               return const Center(child: Text('Profil tidak ditemukan.'));
