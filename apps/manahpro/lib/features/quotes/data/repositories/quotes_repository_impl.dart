@@ -54,12 +54,16 @@ class QuotesRepositoryImpl implements QuotesRepository {
   @override
   Future<int> loveQuote(int quoteId) async {
     final result = await _remoteDataSource.loveQuote(quoteId);
-    return result['love_count'] as int;
+    final count = result['love_count'] as int;
+    await _localDataSource.updateLoveState(quoteId, isLoved: true, loveCount: count);
+    return count;
   }
 
   @override
   Future<int> unloveQuote(int quoteId) async {
     final result = await _remoteDataSource.unloveQuote(quoteId);
-    return result['love_count'] as int;
+    final count = result['love_count'] as int;
+    await _localDataSource.updateLoveState(quoteId, isLoved: false, loveCount: count);
+    return count;
   }
 }

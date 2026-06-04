@@ -45,4 +45,19 @@ class QuotesLocalDataSource {
       }
     });
   }
+
+  /// Updates the love state of a quote in the local DB.
+  Future<void> updateLoveState(
+    int serverId, {
+    required bool isLoved,
+    required int loveCount,
+  }) async {
+    await (_db.update(_db.quotes)..where((t) => t.serverId.equals(serverId)))
+        .write(
+      QuotesCompanion(
+        isLoved: Value(isLoved),
+        loveCount: Value(loveCount),
+      ),
+    );
+  }
 }
