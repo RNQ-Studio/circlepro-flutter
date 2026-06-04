@@ -191,7 +191,7 @@ Berlaku di semua fase, bukan task tersendiri:
 
 | # | Task | SP | Detail |
 |---|------|----|--------|
-| 2.1b | **Social auth UI** | 1.5 | Google/Apple Sign-In SDK, input OTP HP, **deferred sign-up flow** (UI/UX guide) |
+| 2.1b | **Social auth UI** | 1.5 | Google Sign-In SDK, input OTP HP, **deferred sign-up flow** (UI/UX guide). ~~Apple Sign-In dihapus dari scope~~ |
 | 2.3 | **Profile screen** | 3 | Avatar & banner, rating card (placeholder), stats, achievements, bow setup, edit profile |
 | 2.4 | **Onboarding flow** | 2 | Maks 3 layar: Welcome → Bow type → First score CTA (UI/UX guide §7) |
 | 2.6 | **Notification UI** | 2 | Bell, list notifikasi, read/unread, deep link dari notifikasi |
@@ -205,7 +205,7 @@ Berlaku di semua fase, bukan task tersendiri:
 - `/auth/social`, `/profile`, `/clubs`, `/feed`, `/notifications` (backend 2.1a–2.13a).
 
 ### Deliverables Mobile Phase 2:
-- [~] Auth UI — email + OTP HP (starter) jalan; **tombol Google/Apple sign-in di mobile ditunda** (perlu plugin `google_sign_in` + Firebase OAuth/Apple key + uji device). Endpoint backend Google sudah siap.
+- [x] Auth UI — email + OTP HP (starter) + **Google sign-in mobile berjalan lancar** (`google_sign_in` plugin). ~~Apple sign-in dihapus dari scope.~~
 - [x] Rich profile + **Onboarding** — **Profil** (`features/identity/`: view + edit, stats, busur, lokasi) + **Onboarding ManahPro** 3-layar (`features/onboarding/manah_onboarding_screen.dart`, override route `/onboarding`).
 - [x] Club directory & management UI + community feed UI + **Notification UI** — **Klub** (`features/clubs/`) · **Komunitas** (`features/feed/`) + Share-to-Feed (2.13b) · **Notifikasi** (`features/notifications/`: list + mark read + Preferensi toggle push/email per kategori).
 
@@ -220,7 +220,7 @@ Berlaku di semua fase, bukan task tersendiri:
 ## Phase 3: Events & Ranking (Mobile)
 ### 📅 17 Agustus – 18 Oktober 2026 · Mobile share: **30 SP** (dari 63 SP total fase)
 
-> **Tujuan mobile**: Layar discovery/registrasi event, payment UX, live scoreboard, leaderboard,
+> **Tujuan mobile**: Layar discovery/registrasi event, live scoreboard, leaderboard,
 > rating card. Banyak screen — backend memimpin kontrak, mobile mengikuti.
 
 ### Prioritas: 🔴 CRITICAL
@@ -233,11 +233,11 @@ Berlaku di semua fase, bukan task tersendiri:
 | 3.4b | **Event creation form (organizer)** | 1.5 | Multi-step form: info → schedule → divisions → pricing → preview → publish |
 | 3.5 | **My Events screen** | 2 | Tabs: Registered/In Progress/Completed, status cards |
 
-#### Minggu 3-4: Registration & Payment
+#### Minggu 3-4: Registration
 | # | Task | SP | Detail |
 |---|------|----|--------|
-| 3.7b | **Payment UI** | 1.5 | Pilihan metode bayar, payment page, status tracking (konsumsi callback backend 3.7a) |
-| 3.8 | **Registration flow UI** | 3 | Select division → confirm → payment → confirmation. Order summary |
+| ~~3.7b~~ | ~~**Payment UI**~~ | ~~1.5~~ | ~~DIHAPUS DARI SCOPE — tidak ada payment gateway~~ |
+| 3.8 | **Registration flow UI** | 3 | Select division → confirm → confirmation. Order summary |
 | 3.9b | **Participant management UI (organizer)** | 1.5 | View peserta, approve/reject, export, bulk notif, UI check-in |
 | 3.10b | **E-ticket / QR UI** | 1 | Tampil e-ticket + QR, scanner check-in |
 
@@ -257,21 +257,26 @@ Berlaku di semua fase, bukan task tersendiri:
 #### Minggu 9: Test & Buffer
 | # | Task | SP | Detail |
 |---|------|----|--------|
-| 3.23b | **Integration testing (mobile)** | 1 | E2E app: daftar → bayar → live score → lihat hasil → rating update |
+| 3.23b | **Integration testing (mobile)** | 1 | E2E app: daftar → live score → lihat hasil → rating update |
 | 3.25b | **Bug fixing buffer (mobile)** | 0.5 | Akumulasi bug |
 
 ### ⛓️ Menunggu dari Backend:
-- `/events`, `/registrations`, `/payments`, channel live-scoring, `/leaderboard`, `/ratings`
+- `/events`, `/registrations`, channel live-scoring, `/leaderboard`, `/ratings`
   (backend 3.1–3.20). Untuk live scoreboard, mulai dari **polling** (sinkron dengan backend 3.11).
 
-### Deliverables Mobile Phase 3:
-- [ ] Event discovery, detail, calendar; registration + payment UX
-- [ ] Scorer interface + live scoreboard; digital scorecard
-- [ ] National leaderboard + rating card di profil
+### Deliverables Mobile Phase 3 (status per 4 Jun 2026 — ~90% selesai):
+- [x] Event discovery, detail, calendar; registration UI
+- [x] Scorer interface + live scoreboard; digital scorecard
+- [x] National leaderboard + rating card di profil
+- [x] E-ticket / QR check-in + participant management (organizer)
+- [ ] 🚧 E2E integration testing
 
-### 🎯 Checkpoint: PUBLIC LAUNCH (v1.0) — ~18 Oktober 2026
-> **Kesiapan app:** semua dari soft launch + event/registration/payment + live scoring + leaderboard.
-> Full Play Store + App Store launch. Submit iOS **2 minggu sebelum** target (antisipasi review).
+> ~~Payment UI (3.7b) dihapus dari scope~~ — tidak ada payment gateway.
+> 13 screen events lengkap di `features/events/`.
+
+### 🎯 Checkpoint: PUBLIC LAUNCH (v1.0) — **~Agustus–September 2026** (dimajukan dari Oktober)
+> **Kesiapan app:** semua dari soft launch + event/registration + live scoring + leaderboard.
+> Full Play Store launch. Submit iOS **2 minggu sebelum** target (antisipasi review).
 
 ---
 
@@ -288,7 +293,7 @@ Berlaku di semua fase, bukan task tersendiri:
 | 4.2b | **Follow UI** | 1 | Follow/unfollow, following vs discover feed, follower count |
 | 4.3b | **Club enhanced UI** | 2 | Schedule management, attendance, member stats dashboard, club leaderboard |
 | 4.4b | **Coach directory UI** | 1.5 | Coach profile, search by lokasi/spesialisasi, verified badge |
-| 4.5b | **In-app messaging UI** | 2 | Direct message + group chat per klub, real-time (WebSocket) |
+| ~~4.5b~~ | ~~**In-app messaging UI**~~ | ~~2~~ | ~~DIHAPUS DARI SCOPE — komunikasi via WhatsApp/Telegram~~ |
 | 4.6b | **Range finder UI** | 1 | Map-based search (Google Maps), range profile, directions |
 | 4.7b | **Article reader UI** | 1.5 | List & detail artikel, kategori, reading time |
 | 4.8b | **Islamic content UI** | 0.5 | Seksi konten Sunnah, tampil hadith reference |
@@ -297,12 +302,15 @@ Berlaku di semua fase, bukan task tersendiri:
 | 4.11b | **Bug fixing & polish (mobile)** | 0.5 | Akumulasi bug + polish UI |
 
 ### 🪓 Cuttable jika behind schedule (lihat timeline gabungan):
-- 4.5b messaging → WhatsApp deep link dulu · 4.6b range finder → defer · 4.8b Islamic → cukup tag ·
+- 4.8b Islamic → cukup tag ·
   4.10b gamification → basic streak saja.
 
-### Deliverables Mobile Phase 4:
-- [ ] Rich feed, follow, club enhanced, coach directory, messaging, range finder, content reader,
-      achievements & gamification (UI).
+### Deliverables Mobile Phase 4 (status per 4 Jun 2026 — ~70% selesai):
+- [x] Follow, club enhanced (schedules+attendance), coach directory, range finder, article reader, achievements & gamification
+- [ ] 🚧 Rich feed (gallery/video/poll)
+- [ ] 🚧 Islamic content (dedicated section)
+
+> ~~In-app messaging (4.5b) dihapus dari scope~~ — komunikasi via WhatsApp/Telegram.
 
 ---
 
@@ -315,13 +323,13 @@ Berlaku di semua fase, bukan task tersendiri:
 
 | # | Task | SP | Detail |
 |---|------|----|--------|
-| 5.1b | **Subscription purchase flow** | 1.5 | Google Play Billing + Apple IAP UI, alur beli, restore purchase |
+| 5.1b | **Subscription purchase flow** | 1.5 | Google Play Billing UI, alur beli, restore purchase |
 | 5.2b | **Premium gating UI** | 1 | Lock state untuk fitur premium, indikator kuota (free=3 scoring/minggu) |
 | 5.3b | **Club SaaS UI** | 1 | Pilih tier klub, dashboard pembayaran admin klub |
-| 5.4b | **Event fee UI** | 0.5 | Tampil platform fee di registrasi, ringkasan biaya |
+| ~~5.4b~~ | ~~**Event fee UI**~~ | ~~0.5~~ | ~~DIHAPUS — tidak ada payment gateway; event gratis/transfer manual~~ |
 | 5.5 | **Paywall & upgrade UX** | 3 | Layar upgrade cantik, feature comparison, trial offer, trigger di titik natural (tidak mengganggu) |
 | 5.6b | **Ads integration (mobile)** | 1.5 | AdMob/Meta SDK, placement (feed antar post, event list), frequency cap, no ads untuk premium |
-| 5.9b | **Testing & bug fix (mobile)** | 0.5 | Payment edge case di UI, state pembelian |
+| 5.9b | **Testing & bug fix (mobile)** | 0.5 | Subscription edge case di UI, state pembelian |
 
 ### ⛓️ Menunggu dari Backend:
 - Receipt validation, plans, gating flags, fee (backend 5.1a–5.8).
@@ -329,8 +337,10 @@ Berlaku di semua fase, bukan task tersendiri:
 ### Deliverables Mobile Phase 5:
 - [ ] Purchase flow (Pro/Elite + Club SaaS), paywall UX, ads untuk free tier.
 
-### 🎯 Checkpoint: REVENUE LAUNCH (v1.5) — ~6 Desember 2026
-> **Kesiapan app:** subscription live di Play Store + App Store, ads serving, fee tampil di registrasi.
+> ~~Event fee UI (5.4b) dihapus dari scope~~ — tidak ada payment gateway.
+
+### 🎯 Checkpoint: REVENUE LAUNCH (v1.5) — ~Oktober–November 2026 (dimajukan)
+> **Kesiapan app:** subscription live di Play Store, ads serving.
 
 ---
 
@@ -421,4 +431,4 @@ Berlaku di semua fase, bukan task tersendiri:
 
 *Living document — update tiap 2 minggu. Pasangan: [development-timeline-backend.md](development-timeline-backend.md). Sumber: [development-timeline.md](development-timeline.md), [ui-ux-design-guide.md](ui-ux-design-guide.md), [CLAUDE.md](../../../CLAUDE.md).*
 
-*Dibuat: 29 Mei 2026 · Track Mobile (Flutter) · 1 developer + AI Agent (kalender bersama dengan track backend)*
+*Dibuat: 29 Mei 2026 · Update terakhir: **4 Juni 2026** · Track Mobile (Flutter) · 1 developer + AI Agent (kalender bersama dengan track backend)*

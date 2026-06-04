@@ -9,7 +9,7 @@
 
 ---
 
-## 🟢 Status Implementasi (update: 30 Mei 2026)
+## 🟢 Status Implementasi (update: 4 Juni 2026)
 
 > Repo: **`circlepro-flutter`** (app `apps/manahpro`) + **`circlepro-web`** (backend Laravel — _bukan_ `circlepro-laravel`; folder aktualnya `circlepro-web`).
 
@@ -30,9 +30,18 @@
 | **Phase 2 — Backend (penuh)** | **Profile API** (2.2: `/v1/profile` GET/PUT + public + stats + age_group otomatis) · **Notification preferences** (2.5) · **Club API** (2.7: directory/search, CRUD, membership join/leave, roles, remove, activity klub) · **Feed API** (2.11: posts CRUD + like + komentar + auto-post `shared_type=scoring_session` 2.13a). Migrasi **Modul 5** (posts, post_likes, comments, comment_likes, follows). **Tes: seluruh suite 196 hijau di PostgreSQL nyata; Pint bersih; migrasi diterapkan ke `circlepro_new`.** |
 | **Phase 2 — Mobile (penuh)** | Online (Dio) clean-arch: **Profil** (view + edit) · **Klub** (direktori + search + "Klub Saya" + detail + anggota + gabung/keluar + buat klub) · **Komunitas/Feed** (list + buat post + like optimistik + komentar sheet + kartu scorecard) · **Share-to-Feed** dari Summary scoring (2.13b). Entry Home: Profil/Klub/Komunitas. **`flutter analyze` 0 error/0 warning.** |
 | **Phase 2 — Minor (selesai)** | **2.1 Google sign-in (backend)**: `SocialAuthService` verifikasi ID token Google (config-gated `GOOGLE_CLIENT_ID`) → upsert `user_auth_providers` → token Passport via `AuthService::issueTokenForUser`. Aktif begitu client ID diisi (terverifikasi via fake verifier). **2.4 Onboarding ManahPro** 3-layar (override route `/onboarding`). **2.6 Notification UI**: layar Notifikasi (list + mark read) + Preferensi (toggle push/email per kategori). |
+| **Phase 3 — Backend (sebagian besar)** | **Event CRUD** (`EventController`) + **event divisions** + status workflow. **Registration API** (`EventRegistrationController`: register, check-in, participant mgmt, status update). **Live Scoring** (`EventScoringController`: assign targets, save end scores per target butt, leaderboard per divisi). **Glicko-2 Rating Engine** (`RatingEngine.php`, 20KB: virtual pairwise, NPS, sigmoid differential, μ/φ/σ update). **Rating data model** (migrasi `ratings`/`rating_history`/`rating_periods`/`rating_bands`). **Leaderboard + finalize ratings** (`RatingController`). Tes: `EventTest`, `EventRegistrationTest`, `EventScoringTest`, `RatingEngineTest` hijau. |
+| **Phase 3 — Mobile (sebagian besar)** | **13 screen** di `features/events/`: `event_discovery_screen` · `event_detail_screen` · `create_event_screen` · `my_events_screen` · `registration_flow_screen` · `participant_management_screen` · `ticket_detail_screen` (e-ticket QR) · `multi_archer_scorer_screen` + `scorer_target_selector_screen` (scorer interface) · `live_scoreboard_screen` · `digital_scorecard_screen` · `national_leaderboard_screen` · `rating_history_screen`. Providers + routes + event card widget. **`flutter analyze` 0 error/0 warning.** |
+| **Phase 4 — Backend (sebagian besar)** | **Follow system** (`FollowController`: follow/unfollow/followers/following). **Coach directory** (`CoachController` + `CoachReviewController`: CRUD + reviews). **Club enhanced** (`ClubScheduleController` + `ClubAttendanceController`: schedules RRULE + attendance tracking). **Range finder** (`ArcheryRangeController`: CRUD `archery_ranges`). **Article system** (`ArticleController` + categories + tags). **Gamification** (`GamificationController` + `GamificationService`: stats/achievements/streaks). Tes: `FollowSystemTest`, `CoachSystemTest`, `ClubScheduleAndAttendanceTest`, `ArcheryRangeTest`, `GamificationTest` hijau. |
+| **Phase 4 — Mobile (sebagian)** | **Coach** (`features/coaches/`: `coach_directory_screen` + `coach_detail_screen`). **Club enhanced** (`club_schedule_screen` 23KB + `club_attendance_dashboard_screen`). **Range finder** (`range_finder_screen` 17KB). **Article reader** (`article_list_screen` + `article_reader_screen`). **Achievement** (`achievement_dashboard_widget` 12KB). **Gamification** (providers + widget). |
+| **Bonus (di luar timeline awal)** | **Stories** (Instagram-style): `StoryController` backend + `story_viewer_screen`/`story_picker_preview_screen` mobile + migrasi `stories`/`story_views`. Tes: `StoryTest` hijau. · **Quotes**: `QuoteController` (love/unlove) + full clean-arch `features/quotes/` mobile + migrasi `quotes`/`quote_loves` + seeder 150 quotes. · **Target Face management**: `TargetFaceController` + migrasi `target_faces` + enhanced scoring setup (pilih target face dengan preview visual). |
 
-**🚧 Yang benar-benar belum (butuh perangkat fisik / kredensial / plugin):**
-- 1.15 uji keterbacaan outdoor **terukur** · 1.17 profiling 60fps · 2.1 tombol **Google sign-in di mobile** (perlu plugin `google_sign_in` + Firebase OAuth + uji device) & **Apple** sign-in (perlu Apple key).
+**🚧 Yang benar-benar belum:**
+- **Phase 1–2 (device):** 1.15 uji keterbacaan outdoor **terukur** · 1.17 profiling 60fps.
+- **Phase 3 (sisa):** 3.21 **Anti-gaming** (sandbagging detection, SoF) · 3.22 **Calibration mode** (silent rating) · 3.23/3.24 **E2E integration & stress testing** live scoring.
+- **Phase 4 (sisa):** 4.1 **Enhanced feed** (rich post types: gallery/video/poll) · 4.8 **Islamic content** (dedicated section, hadith references).
+
+> ~~Payment gateway (3.7)~~, ~~in-app messaging (4.5)~~, dan ~~Apple sign-in~~ **dihapus dari scope**. Google sign-in mobile sudah berjalan lancar.
 
 > **Base URL API:** `https://circlepro.web.id/api/` (3 environment) di `apps/manahpro/lib/config/main_config.dart`.
 
@@ -129,56 +138,57 @@ Estimation sudah termasuk:
 ```
 ═══════════════════════════════════════════════════════════════════════
                     MANAHPRO DEVELOPMENT TIMELINE
-                 1 Developer + AI Agent | Jun 2026 →
+         1 Developer + AI Agent | Jun 2026 → | Update 4 Jun 2026
 ═══════════════════════════════════════════════════════════════════════
+  ✅ = selesai   🔶 = sebagian besar selesai   ⬚ = belum mulai
 
-PHASE 0 ▐██░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▌
+✅ P0  ▐████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▌
          Foundation & Boilerplate
-         Jun 1–14 (2 minggu, 14 SP)
+         Jun 1–14 → SELESAI (akhir Mei)
 
-PHASE 1 ▐░░██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▌
+✅ P1  ▐░░░░░░░░████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▌
          MVP Core — Scoring System
-         Jun 15 – Jul 19 (5 minggu, 35 SP)
+         Jun 15 – Jul 19 → SELESAI (akhir Mei)
 
-PHASE 2 ▐░░░░░░░░████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▌
+✅ P2  ▐░░░░░░░░░░░░░░░░████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▌
          User Identity & Social Foundation
-         Jul 20 – Aug 16 (4 minggu, 28 SP)
+         Jul 20 – Aug 16 → SELESAI (akhir Mei)
 
-         ──── 🚀 SOFT LAUNCH (v0.1-beta) : ~Pertengahan Agustus ────
-         Core scoring + user profile + basic community
+🔶 P3  ▐░░░░░░░░░░░░░░░░░░░░██████████░░░░░░░░░░░░░░░░░░░░░░░░▌
+         Compete — Events & Ranking (~90% selesai)
+         Aug 17 – Oct 18 → Kode selesai awal Jun; SISA: anti-gaming, testing
 
-PHASE 3 ▐░░░░░░░░░░░░██████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░▌
-         Compete — Events & Ranking
-         Aug 17 – Oct 18 (9 minggu, 63 SP)
+         ──── 🚀 SOFT LAUNCH (v0.1-beta) : ~Pertengahan Juli 2026 ────
+         (dimajukan dari Agustus — Phase 3 sudah sebagian besar jadi)
 
-         ──── 🚀 PUBLIC LAUNCH (v1.0) : ~Pertengahan Oktober ────
-         Scoring + Events + Ranking + Community
+🔶 P4  ▐░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░████░░░░░░░░░░░░░░░░░░░▌
+         Community & Content (~70% selesai)
+         Oct 19 – Nov 15 → Kode selesai awal Jun; SISA: Islamic, enhanced feed
 
-PHASE 4 ▐░░░░░░░░░░░░░░░░░░░░░░████░░░░░░░░░░░░░░░░░░░░░░░░░░░▌
-         Community & Content
-         Oct 19 – Nov 15 (4 minggu, 28 SP)
+         ──── 🚀 PUBLIC LAUNCH (v1.0) : ~Agustus–September 2026 ────
+         (dimajukan dari Oktober — tinggal polish + testing)
 
-PHASE 5 ▐░░░░░░░░░░░░░░░░░░░░░░░░░░██░░░░░░░░░░░░░░░░░░░░░░░░░▌
+⬚ P5  ▐░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░██░░░░░░░░░░░░░░░░░▌
          Monetization Layer
-         Nov 16 – Dec 6 (3 minggu, 21 SP)
+         Sep – Oct 2026 (3 minggu, 21 SP)
 
-         ──── 🚀 REVENUE LAUNCH (v1.5) : ~Awal Desember ────
+         ──── 🚀 REVENUE LAUNCH (v1.5) : ~Oktober–November 2026 ────
          Premium subscription + Club SaaS + Event fees
 
-PHASE 6 ▐░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░██████░░░░░░░░░░░░░░░░░▌
+⬚ P6  ▐░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░██████░░░░░░░░░▌
          Marketplace
-         Dec 7 – Jan 31 2027 (8 minggu, 56 SP)
+         Nov – Jan 2027 (8 minggu, 56 SP)
 
          ──── 🚀 MARKETPLACE LAUNCH (v2.0) : ~Akhir Januari 2027 ────
 
-PHASE 7 ▐░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░████████████████▌
+⬚ P7  ▐░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░████████████▌
          Advanced & AI Features
          Feb 2027 – Jun 2027 (ongoing)
 
 ═══════════════════════════════════════════════════════════════════════
-TOTAL Phase 0–6: ~35 minggu (≈ 8.5 bulan)
-Start: 1 Juni 2026  |  Public Launch: ~Pertengahan Oktober 2026
-Revenue Launch: ~Desember 2026  |  Marketplace: ~Januari 2027
+ PROGRESS: Phase 0–2 ✅ | Phase 3 🔶 90% | Phase 4 🔶 70% ≈ 72% total
+ AHEAD OF SCHEDULE: ~2.5 bulan lebih cepat dari timeline awal!
+ Sisa: anti-gaming + polish/testing + Phase 5–6
 ═══════════════════════════════════════════════════════════════════════
 ```
 
@@ -186,17 +196,17 @@ Revenue Launch: ~Desember 2026  |  Marketplace: ~Januari 2027
 
 | Business Strategy Target | Timeline Target | Status |
 |--------------------------|-----------------|--------|
-| Q1 2026 (Jul-Sep): MVP & Soft Launch | v0.1-beta: Pertengahan Agustus 2026 | ✅ Aligned |
+| Q1 2026 (Jul-Sep): MVP & Soft Launch | v0.1-beta: **Pertengahan Juli 2026** (dimajukan) | ✅ Ahead of schedule |
 | 1.000-3.000 users | Soft launch → gather feedback | ✅ Achievable |
-| Q2 2026 (Oct-Dec): Club Tools & Events | v1.0: Oktober + v1.5: Desember 2026 | ✅ Aligned |
+| Q2 2026 (Oct-Dec): Club Tools & Events | v1.0: **Agustus–September 2026** (dimajukan) | ✅ Ahead of schedule |
 | 5.000-10.000 users, 50 clubs | Post public launch + monetization | ✅ Achievable |
-| Q3 2027 (Jan-Mar): Marketplace & Premium | v2.0: Januari 2027 | ✅ Aligned (sedikit lebih awal) |
+| Q3 2027 (Jan-Mar): Marketplace & Premium | v2.0: Januari 2027 | ✅ Aligned |
 | Revenue Bulan ke-12: Rp 41 jt/bulan | Juni 2027 | ⚠️ Depends on traction |
 
 ---
 
 ## Phase 0: Foundation & Boilerplate
-### 📅 1 – 14 Juni 2026 (2 Minggu, 14 SP)
+### 📅 1 – 14 Juni 2026 (2 Minggu, 14 SP) — ✅ SELESAI
 
 > **Tujuan**: Menyiapkan seluruh fondasi teknis agar development fitur berjalan lancar tanpa hambatan infrastruktur.
 
@@ -295,7 +305,7 @@ Revenue Launch: ~Desember 2026  |  Marketplace: ~Januari 2027
 
 | # | Task | SP | Backend/Frontend | Detail |
 |---|------|----|-----------------|--------|
-| 2.1 | **Social auth implementation** | 3 | Both | Google Sign-In, Apple Sign-In, Phone number (OTP via SMS gateway). Deferred sign-up flow (sesuai UI/UX guide) |
+| 2.1 | **Social auth implementation** | 3 | Both | Google Sign-In, Phone number (OTP via SMS gateway). Deferred sign-up flow (sesuai UI/UX guide). ~~Apple Sign-In dihapus dari scope~~ |
 | 2.2 | **User profile API** | 2 | Backend | Profile CRUD: name, avatar, bio, location, club, bow type preferences, social links |
 | 2.3 | **Profile screen** | 3 | Frontend | Avatar & banner, rating card (placeholder), stats summary, achievements section, bow setup, edit profile |
 | 2.4 | **Onboarding flow** | 2 | Frontend | 3 screen max: Welcome → Bow type selection → First score CTA. Sesuai UI/UX guide Section 7 |
@@ -366,13 +376,13 @@ TARGET: Deploy ke Play Store (internal/closed testing)
 | 3.4 | **Event creation (organizer)** | 3 | Both | Multi-step form: basic info → schedule → divisions & rules → pricing → preview → publish. Admin approval workflow |
 | 3.5 | **My Events screen** | 2 | Frontend | Tabs: Registered (upcoming), In Progress, Completed. Event status cards |
 
-#### Minggu 3-4: Event Registration & Payment (14 SP)
+#### Minggu 3-4: Event Registration (10 SP)
 
 | # | Task | SP | Backend/Frontend | Detail |
 |---|------|----|-----------------|--------|
 | 3.6 | **Registration API** | 2 | Backend | Register, cancel, waitlist. Slot management, division assignment, registration deadline enforcement |
-| 3.7 | **Payment gateway integration** | 4 | Both | Midtrans/Xendit: payment page, callback handler, payment status tracking, refund flow. Support VA, e-wallet, QRIS |
-| 3.8 | **Registration flow UI** | 3 | Frontend | Select division → confirm details → payment → confirmation. Order summary, payment method selection |
+| ~~3.7~~ | ~~**Payment gateway integration**~~ | ~~4~~ | ~~Both~~ | ~~DIHAPUS DARI SCOPE — registrasi event gratis/transfer manual~~ |
+| 3.8 | **Registration flow UI** | 3 | Frontend | Select division → confirm details → confirmation. Order summary |
 | 3.9 | **Participant management (organizer)** | 3 | Backend + Frontend | View participants, approve/reject, export list, send bulk notification, check-in system |
 | 3.10 | **E-ticket / QR Code** | 2 | Both | Generate e-ticket with QR code, scan for check-in at event |
 
@@ -406,23 +416,31 @@ TARGET: Deploy ke Play Store (internal/closed testing)
 | 3.24 | **Performance & stress test** | 1 | Live scoring with 50+ concurrent archers simulation |
 | 3.25 | **Bug fixing buffer** | 1 | Accumulated bugs |
 
-### Deliverables Phase 3:
+### Deliverables Phase 3 (status per 4 Jun 2026 — ~90% selesai):
 - [x] Event discovery, detail, & calendar
-- [x] Event registration with payment
-- [x] Live scoring system
+- [x] Event registration (gratis / transfer manual)
+- [x] Live scoring system (scorer interface + spectator leaderboard)
 - [x] Digital scorecard & certificates
 - [x] Modified Glicko-2 ranking engine
 - [x] National leaderboard
-- [x] Rating card on profile
+- [x] Rating card & history
+- [x] E-ticket / QR check-in
+- [x] Participant management (organizer)
+- [ ] 🚧 Anti-gaming mechanisms (sandbagging detection, SoF)
+- [ ] 🚧 Calibration mode (silent rating)
+- [ ] 🚧 E2E integration & stress testing
 
-### 🎯 Checkpoint: PUBLIC LAUNCH (v1.0) — ~Pertengahan Oktober 2026
+> ~~Payment gateway (3.7) dihapus dari scope~~ — registrasi event gratis atau pembayaran via transfer manual.
+
+### 🎯 Checkpoint: PUBLIC LAUNCH (v1.0) — **~Agustus–September 2026** (dimajukan dari Oktober)
 
 ```
 PUBLIC LAUNCH CHECKLIST:
 ├── ✅ Everything from Soft Launch
-├── ✅ Event discovery & registration (with payment)
+├── ✅ Event discovery & registration
 ├── ✅ Live scoring at events
-├── ✅ National ranking system (calibration mode)
+├── ✅ National ranking system
+├── 🚧 Calibration mode — BELUM
 ├── ✅ Digital scorecards & certificates
 ├── ✅ E-ticket with QR check-in
 ├── ❌ Premium subscription (Phase 5)
@@ -451,7 +469,7 @@ TARGET: Full Play Store + App Store launch
 | 4.2 | **Follow system** | 2 | Both | Follow/unfollow archers, following feed vs discover feed, follower count on profile |
 | 4.3 | **Club enhanced features** | 4 | Both | Club schedule management (training days), attendance tracking, member stats dashboard, club leaderboard |
 | 4.4 | **Coach directory** | 3 | Both | Coach profiles (specialization, experience, rate, rating), search by location/specialty, verified coach badge |
-| 4.5 | **In-app messaging** | 4 | Both | Direct messaging between users, group chat per club. Real-time via WebSocket. Basic moderation |
+| ~~4.5~~ | ~~**In-app messaging**~~ | ~~4~~ | ~~Both~~ | ~~DIHAPUS DARI SCOPE — gunakan WhatsApp/Telegram untuk komunikasi~~ |
 | 4.6 | **Range/lapangan finder** | 2 | Both | Map-based search for archery ranges, range profile (address, facilities, hours, photos), directions via Google Maps |
 | 4.7 | **Article/tips content system** | 3 | Both | CMS-like: admin publish articles, categories (technique/mental/equipment/sunnah), rich text with images, reading time |
 | 4.8 | **Islamic archery content** | 1 | Content | Dedicated section for Sunnah archery content, hadith references, Islamic community features |
@@ -459,15 +477,18 @@ TARGET: Full Play Store + App Store launch
 | 4.10 | **Gamification layer** | 2 | Both | Streak system (🔥), weekly challenges, XP system, level progression. Emotional hooks sesuai UI/UX guide |
 | 4.11 | **Bug fixing & polish** | 1 | Both | Accumulated bugs + UI polish |
 
-### Deliverables Phase 4:
-- [x] Rich community feed
+### Deliverables Phase 4 (status per 4 Jun 2026 — ~70% selesai):
+- [ ] 🚧 Rich community feed (rich post types: gallery/video/poll belum)
 - [x] Follow system
-- [x] Enhanced club management
-- [x] Coach directory
-- [x] In-app messaging
+- [x] Enhanced club management (schedules + attendance)
+- [x] Coach directory (+ reviews)
 - [x] Range finder
 - [x] Content/article system
+- [ ] 🚧 Islamic archery content (BELUM — dedicated section)
 - [x] Achievements & gamification
+- [x] 🎁 BONUS: Stories (Instagram-style) — di luar timeline awal
+
+> ~~In-app messaging (4.5) dihapus dari scope~~ — komunikasi via WhatsApp/Telegram.
 
 ---
 
@@ -480,10 +501,10 @@ TARGET: Full Play Store + App Store launch
 
 | # | Task | SP | Backend/Frontend | Detail |
 |---|------|----|-----------------|--------|
-| 5.1 | **Subscription billing system** | 4 | Both | Subscription tiers (Free/Pro/Elite), Google Play Billing + Apple IAP, receipt validation, feature gating per tier |
+| 5.1 | **Subscription billing system** | 4 | Both | Subscription tiers (Free/Pro/Elite), Google Play Billing, receipt validation, feature gating per tier |
 | 5.2 | **Premium features gating** | 2 | Both | Unlimited scoring (free = 3/minggu), advanced analytics, AI insights placeholder, no ads, export data, priority event registration |
 | 5.3 | **Club SaaS subscription** | 3 | Both | Club tiers (Starter/Professional/Enterprise), club-level billing, feature gating per tier, payment dashboard for club admin |
-| 5.4 | **Event fee processing** | 2 | Both | Platform fee (5%) on event registration, automated fee calculation, organizer payout system |
+| ~~5.4~~ | ~~**Event fee processing**~~ | ~~2~~ | ~~Both~~ | ~~DIHAPUS — tidak ada payment gateway; event gratis/transfer manual~~ |
 | 5.5 | **Paywall & upgrade UX** | 3 | Frontend | Beautiful upgrade screens, feature comparison, trial offers, paywall triggers at natural points (not annoying) |
 | 5.6 | **Ads framework** | 2 | Both | AdMob/Meta Audience Network integration, ad placements (feed between posts, event list), frequency cap, no ads for premium |
 | 5.7 | **Revenue dashboard (admin)** | 2 | Backend | Admin panel: revenue tracking, subscription analytics, churn rate, MRR/ARR projections |
@@ -694,23 +715,24 @@ Phase 7: Advanced & AI Features
 
 ### Key Dates Summary
 
-| Milestone | Target Date | Confidence |
-|-----------|-------------|------------|
-| Phase 0 complete | 14 Juni 2026 | 🟢 95% |
-| Phase 1 complete (Scoring MVP) | 19 Juli 2026 | 🟢 90% |
-| **🚀 Soft Launch (v0.1-beta)** | **~16 Agustus 2026** | 🟢 85% |
-| Phase 3 complete (Events + Ranking) | 18 Oktober 2026 | 🟡 75% |
-| **🚀 Public Launch (v1.0)** | **~18 Oktober 2026** | 🟡 75% |
-| Phase 4 complete (Community) | 15 November 2026 | 🟡 70% |
-| **🚀 Revenue Launch (v1.5)** | **~6 Desember 2026** | 🟡 70% |
-| Phase 6 complete (Marketplace) | 31 Januari 2027 | 🟡 65% |
-| **🚀 Marketplace Launch (v2.0)** | **~31 Januari 2027** | 🟡 65% |
+| Milestone | Target Awal | **Target Revisi** | Status |
+|-----------|------------|-------------------|--------|
+| Phase 0 complete | 14 Juni 2026 | **✅ Akhir Mei 2026** | 🟢 SELESAI |
+| Phase 1 complete (Scoring MVP) | 19 Juli 2026 | **✅ Akhir Mei 2026** | 🟢 SELESAI |
+| Phase 2 complete (Identity & Social) | 16 Agustus 2026 | **✅ Akhir Mei 2026** | 🟢 SELESAI |
+| Phase 3 ~90% (Events + Ranking) | 18 Oktober 2026 | **🔶 4 Juni 2026** | 🟢 Sisa: anti-gaming, testing |
+| Phase 4 ~70% (Community) | 15 November 2026 | **🔶 4 Juni 2026** | 🟢 Sisa: Islamic, enhanced feed |
+| **🚀 Soft Launch (v0.1-beta)** | **~16 Agustus 2026** | **~Pertengahan Juli 2026** | 🟢 95% |
+| **🚀 Public Launch (v1.0)** | **~18 Oktober 2026** | **~Agustus–September 2026** | 🟢 90% |
+| **🚀 Revenue Launch (v1.5)** | **~6 Desember 2026** | **~Oktober–November 2026** | 🟡 80% |
+| Phase 6 complete (Marketplace) | 31 Januari 2027 | **~Desember 2026 – Jan 2027** | 🟡 75% |
+| **🚀 Marketplace Launch (v2.0)** | **~31 Januari 2027** | **~Januari 2027** | 🟡 75% |
 
-> **Catatan Confidence**: Confidence menurun di phase akhir karena:
-> 1. Kumulatif risiko delay dari phase sebelumnya
-> 2. Burnout risk meningkat seiring waktu
-> 3. External dependencies (payment, App Store) bisa unpredictable
-> 4. Feedback dari soft/public launch bisa memaksa re-prioritization
+> **Catatan Confidence (update)**: Confidence **meningkat** karena Phase 0–4 sebagian besar sudah jadi,
+> menghilangkan risiko kumulatif delay di fase awal. Risiko yang masih ada:
+> 1. App Store review (submit iOS 2 minggu sebelum target)
+> 2. Feedback dari soft launch bisa memaksa re-prioritization
+> 3. Burnout risk — sudah bekerja intensif, perlu pace yang sustainable
 
 ---
 
@@ -735,20 +757,19 @@ Phase 2 ─────────────┐                              
         │            ▼                                  ▼
         │     Phase 3 ──────────────────┐        Phase 6
         │       Events + Ranking        │        Marketplace
-        │       (butuh Auth + Scoring)  │        (butuh Auth + Payment)
+        │       (butuh Auth + Scoring)  │        (butuh Auth)
         │            │                  │              │
         ▼            ▼                  ▼              │
    Phase 4      Phase 5 ◄──────────────┘              │
    Community    Monetization                           │
-   (butuh Auth  (butuh Events untuk                    │
-    + Feed)      event fees)                           │
+   (butuh Auth  (subscription +                        │
+    + Feed)      premium gating)                       │
                      │                                  │
                      └──────────────────────────────────┘
-                     (Marketplace reuse payment system dari Phase 5)
 
 PARALLELIZABLE (bisa di-overlap jika ada capacity):
 ├── Phase 4 (Community) bisa mulai parallel dengan akhir Phase 3
-├── Phase 6 bisa reuse payment code dari Phase 3+5
+├── Phase 6 (Marketplace) independen dari payment gateway
 └── Phase 7 items independen — bisa dikerjakan kapan saja
 ```
 
@@ -791,23 +812,24 @@ BURNOUT PREVENTION:
 
 | Milestone | Tanggal Target | Apa yang User Dapat | Revenue Stream Aktif |
 |-----------|---------------|---------------------|---------------------|
-| **v0.1-beta** | ~16 Aug 2026 | Scoring + Profile + Club + Feed | ❌ Belum ada |
-| **v1.0** | ~18 Oct 2026 | + Events + Registration + Live Scoring + Ranking | Event registration fee (5%) |
-| **v1.5** | ~6 Dec 2026 | + Premium Sub + Club SaaS + Ads | Premium, Club SaaS, Ads, Event fee |
-| **v2.0** | ~31 Jan 2027 | + Full Marketplace + Escrow | + Marketplace commission (3-5%) |
+| **v0.1-beta** | ~~16 Aug~~ → **~Jul 2026** | Scoring + Profile + Club + Feed + Events + Coach + Ranges | ❌ Belum ada |
+| **v1.0** | ~~18 Oct~~ → **~Aug–Sep 2026** | + Live Scoring + Ranking + Articles | ❌ Belum ada (event gratis) |
+| **v1.5** | ~~6 Dec~~ → **~Oct–Nov 2026** | + Premium Sub + Club SaaS + Ads | Premium, Club SaaS, Ads, Event fee |
+| **v2.0** | ~Jan 2027 | + Full Marketplace + Escrow | + Marketplace commission (3-5%) |
 | **v2.x** | Feb-Jun 2027 | + AI features + Coaching + Training | + Coaching commission, Brand partnership |
 
 ```
-REVENUE TRAJECTORY (estimated):
-═════════════════════════════════
+REVENUE TRAJECTORY (estimated, revised):
+════════════════════════════════════════
 
-Bulan ke-3  (Aug 2026) : Rp 0 (beta, free for all)
-Bulan ke-5  (Oct 2026) : Rp 1-3 jt (event fees mulai masuk)
-Bulan ke-7  (Dec 2026) : Rp 5-10 jt (premium + club SaaS + events)
-Bulan ke-9  (Feb 2027) : Rp 15-25 jt (+ marketplace commission)
+Bulan ke-2  (Jul 2026) : Rp 0 (beta, free for all)
+Bulan ke-3  (Aug 2026) : Rp 0-1 jt (event fees mulai masuk)
+Bulan ke-5  (Oct 2026) : Rp 3-8 jt (premium + club SaaS + events)
+Bulan ke-7  (Dec 2026) : Rp 10-20 jt (+ marketplace early)
 Bulan ke-12 (May 2027) : Rp 35-50 jt (all streams active, growing)
 
 → Target business strategy Rp 41 jt/bulan di bulan ke-12: ✅ ACHIEVABLE
+→ Revenue start lebih cepat karena launch dimajukan!
 ```
 
 ---
@@ -815,5 +837,6 @@ Bulan ke-12 (May 2027) : Rp 35-50 jt (all streams active, growing)
 *Dokumen ini adalah living document. Update setiap 2 minggu berdasarkan actual progress vs planned.*
 
 *Dibuat: 29 Mei 2026*  
+*Update terakhir: **4 Juni 2026** — audit codebase menunjukkan Phase 3+4 sebagian besar selesai (~68% total)*  
 *Konteks: 1 developer (Laravel + Flutter) + AI Agent, 8-10 jam/hari*  
 *Baseline: Business Strategy & UI/UX Design Guide ManahPro*

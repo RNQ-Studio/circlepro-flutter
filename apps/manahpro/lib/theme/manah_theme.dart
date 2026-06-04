@@ -23,7 +23,7 @@ abstract final class ManahTheme {
     );
 
     final textColor = isDark ? const Color(0xFFE8E8E8) : ManahColors.nearBlack;
-    final scaffoldBg = isDark ? ManahColors.darkBg : ManahColors.nearWhite;
+    final scaffoldBg = isDark ? ManahColors.darkBg : Colors.white;
     final surface = isDark ? ManahColors.darkSurface : Colors.white;
 
     return ThemeData(

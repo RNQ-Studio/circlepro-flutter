@@ -11,7 +11,7 @@
 > Per fitur, urutan kerja yang disarankan: **backend (kontrak API) dulu → baru mobile** (lihat
 > [§Prinsip Kontrak](#prinsip-kontrak-backend-first-per-fitur)).
 
-> **Stack backend**: Laravel (API) + PostgreSQL + **Passport** (OAuth2) + Midtrans/Xendit + FCM.
+> **Stack backend**: Laravel (API) + PostgreSQL + **Passport** (OAuth2) + FCM.
 > Skema DB acuan: [database-design.md](database-design.md) / [database-design.dbml](database-design.dbml) (~88 tabel, 9 modul).
 
 ---
@@ -206,7 +206,7 @@ Acuan: [database-design.md §11](database-design.md). Urutan migrasi mengikuti f
 - `/auth/social`, `/profile`, `/notifications`, `/clubs`, `/feed` → dikonsumsi mobile 2.1b–2.13b.
 
 ### Deliverables Backend Phase 2:
-- [x] Auth sosial (server-side) — **Google** diimplementasi penuh: `SocialAuthService` verifikasi ID token (`HttpGoogleIdTokenVerifier` via tokeninfo, cek `aud`) → upsert `user_auth_providers` → token Passport via `AuthService::issueTokenForUser`. Config-gated `services.google.client_id` (`GOOGLE_CLIENT_ID`); jika kosong → `501 SOCIAL_AUTH_NOT_CONFIGURED`. **Apple** masih ditunda (butuh Apple key). Phone OTP + email sudah ada di starter.
+- [x] Auth sosial (server-side) — **Google** diimplementasi penuh: `SocialAuthService` verifikasi ID token (`HttpGoogleIdTokenVerifier` via tokeninfo, cek `aud`) → upsert `user_auth_providers` → token Passport via `AuthService::issueTokenForUser`. Config-gated `services.google.client_id` (`GOOGLE_CLIENT_ID`); jika kosong → `501 SOCIAL_AUTH_NOT_CONFIGURED`. ~~Apple ditiadakan dari scope.~~ Phone OTP + email sudah ada di starter. **Google sign-in mobile sudah berjalan lancar.**
 - [x] Profil, klub (orgs), feed, notifikasi API siap — `ProfileController` (`/v1/profile`, stats + age_group) · `ClubController` + `ClubService` (directory/CRUD/membership/roles/activity) · `PostController`/`CommentController` (feed + like + komentar + auto-post `shared_type`) · `NotificationPreferenceController`. Migrasi **Modul 5** (posts/comments/likes/follows).
 
 > **Verifikasi:** suite **196 test hijau di PostgreSQL nyata** (Phase 2: `IdentityProfileTest` incl. Google sign-in dgn fake verifier, `ClubTest`, `FeedTest`), Pint bersih, migrasi diterapkan ke `circlepro_new`. Catatan PG: FK self-ref `comments.parent_id` dibuat tanpa constraint (integritas di app layer) untuk menghindari limitasi self-reference PostgreSQL.
@@ -220,8 +220,8 @@ Acuan: [database-design.md §11](database-design.md). Urutan migrasi mengikuti f
 ## Phase 3: Events & Ranking (Backend)
 ### 📅 17 Agustus – 18 Oktober 2026 · Backend share: **33 SP** (dari 63 SP total fase)
 
-> **Tujuan backend**: Engine event + **Glicko-2** + live scoring + **payment**. **FASE TERBERAT
-> backend** — mulai integrasi payment & desain rating engine sedini mungkin (paling banyak edge case).
+> **Tujuan backend**: Engine event + **Glicko-2** + live scoring. **FASE TERBERAT
+> backend** — desain rating engine sedini mungkin (paling banyak edge case).
 
 ### Prioritas: 🔴 CRITICAL (diferensiasi utama)
 
@@ -231,11 +231,11 @@ Acuan: [database-design.md §11](database-design.md). Urutan migrasi mengikuti f
 | 3.1 | **Event data model & API** | 3 | `events` + `event_divisions` (bow×gender×age×distance), tier S/A/B/C/D, status workflow (draft→…→rated) |
 | 3.4a | **Event creation backend** | 1.5 | Persist multi-step (info→schedule→divisions→pricing), admin approval workflow |
 
-#### Minggu 3-4: Registration & Payment
+#### Minggu 3-4: Registration
 | # | Task | SP | Detail |
 |---|------|----|--------|
 | 3.6 | **Registration API** | 2 | Register/cancel/waitlist, slot management, division assignment, deadline enforcement |
-| 3.7a | **Payment gateway backend** | 2.5 | Midtrans/Xendit: callback handler, status tracking, refund. `payments` polymorphic (payable=event_registration). VA/e-wallet/QRIS |
+| ~~3.7a~~ | ~~**Payment gateway backend**~~ | ~~2.5~~ | ~~DIHAPUS DARI SCOPE — registrasi event gratis/transfer manual~~ |
 | 3.9a | **Participant management (backend)** | 1.5 | Approve/reject, export list, bulk notification, data check-in |
 | 3.10a | **E-ticket / QR (backend)** | 1 | Generate `qr_code` di `event_registrations`, verifikasi saat check-in |
 
@@ -263,16 +263,22 @@ Acuan: [database-design.md §11](database-design.md). Urutan migrasi mengikuti f
 | 3.25a | **Bug fixing buffer (backend)** | 0.5 | Akumulasi bug |
 
 ### 🤝 Kontrak yang dibuka untuk Mobile:
-- `/events`, `/registrations`, `/payments`, `/live-scoring` (channel realtime), `/leaderboard`,
+- `/events`, `/registrations`, `/live-scoring` (channel realtime), `/leaderboard`,
   `/ratings/{user}` → dikonsumsi mobile 3.2–3.20.
 
-### Deliverables Backend Phase 3:
-- [ ] Event + registration + payment (VA/e-wallet/QRIS) jalan end-to-end
-- [ ] Live scoring (polling minimal) + results + certificate
-- [ ] Glicko-2 engine + national leaderboard (calibration mode)
+### Deliverables Backend Phase 3 (status per 4 Jun 2026 — ~90% selesai):
+- [x] Event + registration jalan end-to-end (gratis / transfer manual)
+- [x] Live scoring (polling) + results
+- [x] Glicko-2 engine + national leaderboard
+- [ ] 🚧 Anti-gaming mechanisms (sandbagging detection, SoF)
+- [ ] 🚧 Calibration mode (silent rating)
+- [ ] 🚧 E2E integration & stress testing
 
-### 🎯 Checkpoint: PUBLIC LAUNCH (v1.0) — ~18 Oktober 2026
-> **Kesiapan backend:** semua di atas + rating dalam mode kalibrasi. Payment gateway production-ready.
+> ~~Payment gateway (3.7a) dihapus dari scope~~ — registrasi event gratis atau pembayaran via transfer manual.
+> Tes: `EventTest`, `EventRegistrationTest`, `EventScoringTest`, `RatingEngineTest` hijau.
+
+### 🎯 Checkpoint: PUBLIC LAUNCH (v1.0) — **~Agustus–September 2026** (dimajukan dari Oktober)
+> **Kesiapan backend:** semua di atas + rating. Event registration tanpa payment gateway.
 
 ---
 
@@ -289,7 +295,7 @@ Acuan: [database-design.md §11](database-design.md). Urutan migrasi mengikuti f
 | 4.2a | **Follow system (backend)** | 1 | `follows`, following vs discover feed, follower count |
 | 4.3a | **Club enhanced (backend)** | 2 | `club_schedules` (RRULE), `club_attendances`, member stats, club leaderboard |
 | 4.4a | **Coach directory (backend)** | 1.5 | `coaches` (spesialisasi, rate, rating), search, verified badge |
-| 4.5a | **In-app messaging (backend)** | 2 | `conversations`/`messages`, real-time WebSocket, moderasi dasar |
+| ~~4.5a~~ | ~~**In-app messaging (backend)**~~ | ~~2~~ | ~~DIHAPUS DARI SCOPE — komunikasi via WhatsApp/Telegram~~ |
 | 4.6a | **Range finder (backend)** | 1 | `ranges` (geo lat/lng, fasilitas jsonb), pencarian radius |
 | 4.7a | **Article/content system (backend)** | 1.5 | `articles` + `article_categories`, rich text, reading time, publish workflow |
 | 4.8a | **Islamic content (backend)** | 0.5 | `articles.is_islamic`, referensi hadith, seksi khusus Sunnah |
@@ -297,8 +303,13 @@ Acuan: [database-design.md §11](database-design.md). Urutan migrasi mengikuti f
 | 4.10a | **Gamification (backend)** | 1 | `user_gamification` (XP/level/streak), `challenges`/`challenge_participations` |
 | 4.11a | **Bug fixing (backend)** | 0.5 | Akumulasi bug |
 
-### Deliverables Backend Phase 4:
-- [ ] API: rich feed, follow, club schedule/attendance, coach, messaging, range, content, achievements, gamification
+### Deliverables Backend Phase 4 (status per 4 Jun 2026 — ~70% selesai):
+- [x] Follow system, coach directory+reviews, club schedules+attendance, range finder, articles, gamification
+- [ ] 🚧 Rich feed (gallery/video/poll)
+- [ ] 🚧 Islamic content (dedicated section)
+
+> ~~In-app messaging (4.5a) dihapus dari scope~~ — komunikasi via WhatsApp/Telegram.
+> Tes: `FollowSystemTest`, `CoachSystemTest`, `ClubScheduleAndAttendanceTest`, `ArcheryRangeTest`, `GamificationTest` hijau.
 
 ---
 
@@ -311,19 +322,20 @@ Acuan: [database-design.md §11](database-design.md). Urutan migrasi mengikuti f
 
 | # | Task | SP | Detail |
 |---|------|----|--------|
-| 5.1a | **Subscription billing (backend)** | 2.5 | `subscription_plans`/`subscriptions` (polymorphic user/org), validasi receipt Google Play + Apple IAP, feature gating |
+| 5.1a | **Subscription billing (backend)** | 2.5 | `subscription_plans`/`subscriptions` (polymorphic user/org), validasi receipt Google Play, feature gating |
 | 5.2a | **Premium gating (backend)** | 1 | Enforce limit (free=3 scoring/minggu), flag fitur per tier (`features`/`limits` jsonb) |
 | 5.3a | **Club SaaS subscription (backend)** | 2 | Tier Starter/Professional/Enterprise, billing level-org, dashboard pembayaran admin klub |
-| 5.4a | **Event fee processing (backend)** | 1.5 | Platform fee 5% di registrasi, `platform_fees` ledger, `payouts` ke organizer |
+| ~~5.4a~~ | ~~**Event fee processing (backend)**~~ | ~~1.5~~ | ~~DIHAPUS — tidak ada payment gateway; event gratis/transfer manual~~ |
 | 5.6a | **Ads framework (backend)** | 0.5 | `ad_campaigns`/`ads`, targeting jsonb, frequency cap, exclude premium |
 | 5.7 | **Revenue dashboard (admin)** | 2 | Tracking revenue, subscription analytics, churn, MRR/ARR |
 | 5.8 | **Subscription lifecycle** | 2 | Grace period, dunning (retry gagal bayar), cancellation, reactivation, proration |
 | 5.9a | **Testing & bug fix (backend)** | 0.5 | Payment edge case, subscription state machine |
 
 ### Deliverables Backend Phase 5:
-- [ ] Billing subscription (user + club) + receipt validation
-- [ ] Event platform fee + payout + `platform_fees` ledger
+- [ ] Billing subscription (user + club) + receipt validation (Google Play)
 - [ ] Revenue admin dashboard + lifecycle (dunning/grace/proration)
+
+> ~~Event platform fee (5.4a) dihapus dari scope~~ — tidak ada payment gateway.
 
 ### 🎯 Checkpoint: REVENUE LAUNCH (v1.5) — ~6 Desember 2026
 > **Kesiapan backend:** subscription live, IAP/Play receipt validation, fee processing, ads serving.
@@ -404,7 +416,6 @@ Acuan: [database-design.md §11](database-design.md). Urutan migrasi mengikuti f
 
 | Risiko | Probabilitas | Impact | Mitigasi |
 |--------|-------------|--------|----------|
-| **Payment gateway complexity** | Medium | Tinggi | Mulai integrasi di **minggu 1 Phase 3** (bukan akhir). Test callback & refund di sandbox dulu |
 | **Glicko-2 bugs** | Medium | Tinggi | Calibration/silent mode. Unit test ekstensif + spot-check manual vs contoh di [elo-ranking-system.md](elo-ranking-system.md) |
 | **Real-time live scoring** | Medium | Medium | Mulai **polling**, naikkan ke WebSocket/SSE bila perlu. MVP boleh refresh manual |
 | **Escrow & order state machine** | Medium | Tinggi | Modelkan state secara eksplisit, test tiap transisi + edge case refund/dispute |
@@ -415,4 +426,4 @@ Acuan: [database-design.md §11](database-design.md). Urutan migrasi mengikuti f
 
 *Living document — update tiap 2 minggu. Pasangan: [development-timeline-mobile.md](development-timeline-mobile.md). Sumber: [development-timeline.md](development-timeline.md), [database-design.md](database-design.md), [elo-ranking-system.md](elo-ranking-system.md).*
 
-*Dibuat: 29 Mei 2026 · Track Backend (Laravel) · 1 developer + AI Agent (kalender bersama dengan track mobile)*
+*Dibuat: 29 Mei 2026 · Update terakhir: **4 Juni 2026** · Track Backend (Laravel) · 1 developer + AI Agent (kalender bersama dengan track mobile)*
