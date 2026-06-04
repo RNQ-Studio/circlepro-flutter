@@ -242,4 +242,23 @@ class ScoringLocalDataSource {
       );
     }).toList();
   }
+
+  Stream<List<TargetFaceEntity>> watchTargetFaces() {
+    return _db.select(_db.targetFaceRows).watch().map((rows) {
+      return rows.map((r) {
+        final rulesJson = jsonDecode(r.scoringRulesJson) as List<dynamic>;
+        return TargetFaceEntity(
+          id: r.id,
+          organizationId: r.organizationId,
+          organizationName: r.organizationName,
+          organizationSlug: r.organizationSlug,
+          code: r.code,
+          name: r.name,
+          imagePath: r.imagePath,
+          usedCount: r.usedCount,
+          scoringRules: rulesJson.map((x) => TargetFaceRule.fromJson(x as Map<String, dynamic>)).toList(),
+        );
+      }).toList();
+    });
+  }
 }

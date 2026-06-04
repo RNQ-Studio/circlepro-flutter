@@ -40,6 +40,9 @@ abstract interface class ScoringRepository {
   /// Push all unsynced sessions to the server (idempotent batch sync).
   Future<void> sync();
 
-  /// Retrieve all target faces (master data), with automatic background fetch when online.
-  Future<List<TargetFaceEntity>> getTargetFaces();
+  /// Watch target faces locally from SQLite database.
+  Stream<List<TargetFaceEntity>> watchTargetFaces();
+
+  /// Trigger a background update of target faces from the server.
+  Future<void> refreshTargetFaces();
 }

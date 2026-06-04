@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:core/core.dart';
 import 'package:features_shared/features_shared.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -54,6 +55,10 @@ Future<List<ScoringSessionEntity>> sessionsList(Ref ref) {
 
 /// List of all target faces (cached locally).
 @riverpod
-Future<List<TargetFaceEntity>> targetFacesList(Ref ref) {
-  return ref.watch(scoringRepositoryProvider).getTargetFaces();
+Stream<List<TargetFaceEntity>> targetFacesList(Ref ref) {
+  final repo = ref.watch(scoringRepositoryProvider);
+  repo.refreshTargetFaces().catchError((Object e) {
+    log('Failed to refresh target faces in background: $e');
+  });
+  return repo.watchTargetFaces();
 }

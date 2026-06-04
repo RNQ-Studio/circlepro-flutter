@@ -175,15 +175,16 @@ class ScoringRepositoryImpl implements ScoringRepository {
   }
 
   @override
-  Future<List<TargetFaceEntity>> getTargetFaces() async {
+  Stream<List<TargetFaceEntity>> watchTargetFaces() => _local.watchTargetFaces();
+
+  @override
+  Future<void> refreshTargetFaces() async {
     try {
       final data = await _remote.getTargetFaces();
       final entities = data.map((json) => TargetFaceEntity.fromJson(json)).toList();
       await _local.saveTargetFaces(entities);
-      return entities;
     } catch (e) {
-      log('ScoringRepository.getTargetFaces remote fetch failed, falling back to local: $e');
-      return _local.getTargetFaces();
+      log('ScoringRepository.refreshTargetFaces failed: $e');
     }
   }
 }

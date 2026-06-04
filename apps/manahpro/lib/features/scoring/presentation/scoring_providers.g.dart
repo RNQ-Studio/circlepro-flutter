@@ -274,10 +274,10 @@ final targetFacesListProvider = TargetFacesListProvider._();
 final class TargetFacesListProvider extends $FunctionalProvider<
         AsyncValue<List<TargetFaceEntity>>,
         List<TargetFaceEntity>,
-        FutureOr<List<TargetFaceEntity>>>
+        Stream<List<TargetFaceEntity>>>
     with
         $FutureModifier<List<TargetFaceEntity>>,
-        $FutureProvider<List<TargetFaceEntity>> {
+        $StreamProvider<List<TargetFaceEntity>> {
   /// List of all target faces (cached locally).
   TargetFacesListProvider._()
       : super(
@@ -295,14 +295,14 @@ final class TargetFacesListProvider extends $FunctionalProvider<
 
   @$internal
   @override
-  $FutureProviderElement<List<TargetFaceEntity>> $createElement(
+  $StreamProviderElement<List<TargetFaceEntity>> $createElement(
           $ProviderPointer pointer) =>
-      $FutureProviderElement(pointer);
+      $StreamProviderElement(pointer);
 
   @override
-  FutureOr<List<TargetFaceEntity>> create(Ref ref) {
+  Stream<List<TargetFaceEntity>> create(Ref ref) {
     return targetFacesList(ref);
   }
 }
 
-String _$targetFacesListHash() => r'e01cec79132085a0397bf1fea8cf8cbbc39a68c9';
+String _$targetFacesListHash() => r'110dd9d42327541dbdafc2e7f877102018662c61';
