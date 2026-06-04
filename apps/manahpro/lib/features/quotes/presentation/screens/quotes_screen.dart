@@ -1,10 +1,9 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../theme/manah_colors.dart';
 import '../../domain/entities/quote_entity.dart';
 import '../quotes_notifier.dart';
 
@@ -35,13 +34,13 @@ class _QuotesScreenState extends ConsumerState<QuotesScreen> {
 
     return quotesAsync.when(
       loading: () => const Scaffold(
-        backgroundColor: Color(0xFF0F172A),
+        backgroundColor: ManahColors.nearWhite,
         body: Center(
-          child: CircularProgressIndicator(color: Colors.white70),
+          child: CircularProgressIndicator(color: ManahColors.brand),
         ),
       ),
       error: (error, _) => Scaffold(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: ManahColors.nearWhite,
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(32),
@@ -49,11 +48,14 @@ class _QuotesScreenState extends ConsumerState<QuotesScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(Icons.error_outline_rounded,
-                    size: 64, color: Colors.redAccent),
+                    size: 64, color: ManahColors.error),
                 const SizedBox(height: 16),
                 const Text(
                   'Gagal memuat kutipan.',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                  style: TextStyle(
+                    color: ManahColors.nearBlack,
+                    fontSize: 16,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
@@ -73,15 +75,14 @@ class _QuotesScreenState extends ConsumerState<QuotesScreen> {
 
         if (activeQuotes.isEmpty) {
           return Scaffold(
-            backgroundColor: const Color(0xFF0F172A),
+            backgroundColor: ManahColors.nearWhite,
             body: Stack(
               children: [
-                _buildAmbientBackground(),
                 Center(
                   child: Text(
                     'Belum ada kutipan aktif.',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
+                      color: ManahColors.mediumGrey,
                       fontSize: 16,
                     ),
                   ),
@@ -116,11 +117,19 @@ class _QuotesScreenState extends ConsumerState<QuotesScreen> {
         }
 
         return Scaffold(
-          backgroundColor: const Color(0xFF0F172A),
+          backgroundColor: ManahColors.nearWhite,
           body: Stack(
             children: [
-              // Ambient glow background
-              _buildAmbientBackground(),
+              // Subtle brand watermark
+              Positioned(
+                top: -60,
+                right: -40,
+                child: Icon(
+                  Icons.format_quote_rounded,
+                  size: 260,
+                  color: ManahColors.brand.withValues(alpha: 0.03),
+                ),
+              ),
 
               // PageView for swiping quotes (infinite scroll)
               PageView.builder(
@@ -141,64 +150,6 @@ class _QuotesScreenState extends ConsumerState<QuotesScreen> {
     );
   }
 
-  Widget _buildAmbientBackground() {
-    return Stack(
-      children: [
-        // Solid deep dark base
-        Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFF0F172A), // Slate 900
-                Color(0xFF020617), // Slate 950
-              ],
-            ),
-          ),
-        ),
-
-        // Glowing Amber Orb at top-right
-        Positioned(
-          top: -80,
-          right: -80,
-          child: Container(
-            width: 280,
-            height: 280,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.amber.withValues(alpha: 0.12),
-            ),
-          ),
-        ),
-
-        // Glowing Indigo Orb at bottom-left
-        Positioned(
-          bottom: -100,
-          left: -100,
-          child: Container(
-            width: 320,
-            height: 320,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.indigo.withValues(alpha: 0.12),
-            ),
-          ),
-        ),
-
-        // Blur effect to soften orbs into high-end ambient light
-        Positioned.fill(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 90, sigmaY: 90),
-            child: Container(
-              color: Colors.transparent,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildBackButton(BuildContext context) {
     return SafeArea(
       child: Padding(
@@ -207,17 +158,24 @@ class _QuotesScreenState extends ConsumerState<QuotesScreen> {
           alignment: Alignment.topLeft,
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.06),
+              color: Colors.white,
               shape: BoxShape.circle,
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.08),
+                color: ManahColors.brand.withValues(alpha: 0.08),
                 width: 1,
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: IconButton(
               icon: const Icon(
                 Icons.close_rounded,
-                color: Colors.white,
+                color: ManahColors.nearBlack,
                 size: 20,
               ),
               onPressed: () => context.pop(),
@@ -234,135 +192,167 @@ class _QuotesScreenState extends ConsumerState<QuotesScreen> {
 
     return Center(
       child: Container(
-        width: size.width * 0.85,
-        height: size.height * 0.65,
+        width: size.width * 0.88,
+        constraints: BoxConstraints(
+          maxHeight: size.height * 0.65,
+        ),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.03),
-          borderRadius: BorderRadius.circular(32),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(28),
           border: Border.all(
-            color: Colors.white.withValues(alpha: 0.08),
-            width: 1.5,
+            color: ManahColors.brand.withValues(alpha: 0.08),
+            width: 1.2,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.25),
-              blurRadius: 30,
-              offset: const Offset(0, 15),
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+            BoxShadow(
+              color: ManahColors.brand.withValues(alpha: 0.03),
+              blurRadius: 40,
+              offset: const Offset(0, 16),
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(32),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-            child: Stack(
-              children: [
-                // Elegant Watermark Quotes Icon
-                Positioned(
-                  top: -10,
-                  left: -20,
-                  child: Icon(
-                    Icons.format_quote_rounded,
-                    size: 140,
-                    color: Colors.white.withValues(alpha: 0.015),
-                  ),
+          borderRadius: BorderRadius.circular(28),
+          child: Stack(
+            children: [
+              // Subtle watermark
+              Positioned(
+                top: -10,
+                left: -20,
+                child: Icon(
+                  Icons.format_quote_rounded,
+                  size: 140,
+                  color: ManahColors.brand.withValues(alpha: 0.03),
                 ),
+              ),
 
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(28, 36, 28, 28),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Top Quote Symbol
-                      Align(
-                        alignment: Alignment.topLeft,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(28, 32, 28, 28),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Top accent — brand-colored quote icon
+                    Align(
+                      alignment: Alignment.topLeft,
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: ManahColors.brandSurface,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: ManahColors.brand.withValues(alpha: 0.1),
+                            width: 1,
+                          ),
+                        ),
                         child: Icon(
                           Icons.format_quote_rounded,
-                          color: Colors.amber.shade600.withValues(alpha: 0.7),
-                          size: 40,
+                          color: ManahColors.brand,
+                          size: 24,
                         ),
                       ),
+                    ),
 
-                      // Quote Body (Scrollable if long)
-                      Expanded(
-                        child: Center(
-                          child: SingleChildScrollView(
-                            physics: const BouncingScrollPhysics(),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              child: Text(
-                                quote.text,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w600,
-                                  fontStyle: FontStyle.italic,
-                                  height: 1.6,
-                                  letterSpacing: 0.3,
-                                ),
+                    const SizedBox(height: 24),
+
+                    // Quote Body (Scrollable if long)
+                    Flexible(
+                      child: Center(
+                        child: SingleChildScrollView(
+                          physics: const BouncingScrollPhysics(),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              quote.text,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: ManahColors.nearBlack,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                                fontStyle: FontStyle.italic,
+                                height: 1.7,
+                                letterSpacing: 0.2,
                               ),
                             ),
                           ),
                         ),
                       ),
+                    ),
 
-                      // Author & Source
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
+                    const SizedBox(height: 20),
+
+                    // Divider
+                    Container(
+                      width: 40,
+                      height: 3,
+                      decoration: BoxDecoration(
+                        color: ManahColors.brand.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Author & Source
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          quote.author,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: ManahColors.nearBlack,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        if (quote.source != null &&
+                            quote.source!.isNotEmpty) ...[
+                          const SizedBox(height: 4),
                           Text(
-                            '— ${quote.author}',
+                            quote.source!,
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
+                              color: ManahColors.mediumGrey,
+                              fontSize: 12,
                             ),
-                          ),
-                          if (quote.source != null &&
-                              quote.source!.isNotEmpty) ...[
-                            const SizedBox(height: 6),
-                            Text(
-                              quote.source!,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.5),
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 32),
-
-                          // Interaction Buttons (Love & Copy)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              // Love Button
-                              _FullscreenLoveButton(
-                                quote: quote,
-                                onToggleLove: () {
-                                  if (quote.id != null) {
-                                    ref
-                                        .read(quotesProvider.notifier)
-                                        .toggleLove(quote.id!, quote.isLoved);
-                                  }
-                                },
-                              ),
-                              const SizedBox(width: 20),
-
-                              // Copy Button
-                              _FullscreenCopyButton(quote: quote),
-                            ],
                           ),
                         ],
-                      ),
-                    ],
-                  ),
+                        const SizedBox(height: 24),
+
+                        // Interaction Buttons (Love & Copy)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Love Button
+                            _FullscreenLoveButton(
+                              quote: quote,
+                              onToggleLove: () {
+                                if (quote.id != null) {
+                                  ref
+                                      .read(quotesProvider.notifier)
+                                      .toggleLove(quote.id!, quote.isLoved);
+                                }
+                              },
+                            ),
+                            const SizedBox(width: 12),
+
+                            // Copy Button
+                            _FullscreenCopyButton(quote: quote),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -421,13 +411,18 @@ class _FullscreenLoveButtonState extends State<_FullscreenLoveButton>
     final isLoved = quote.isLoved;
 
     return Material(
-      color: Colors.white.withValues(alpha: 0.05),
+      color: isLoved
+          ? Colors.red.withValues(alpha: 0.06)
+          : ManahColors.brandSurface,
       shape: const StadiumBorder(),
       child: InkWell(
         customBorder: const StadiumBorder(),
         onTap: _handleLoveTap,
+        splashColor: isLoved
+            ? Colors.red.withValues(alpha: 0.08)
+            : ManahColors.brand.withValues(alpha: 0.06),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -444,7 +439,7 @@ class _FullscreenLoveButtonState extends State<_FullscreenLoveButton>
                       ? Icons.favorite_rounded
                       : Icons.favorite_border_rounded,
                   size: 20,
-                  color: isLoved ? Colors.redAccent : Colors.white70,
+                  color: isLoved ? Colors.redAccent : ManahColors.brand,
                 ),
               ),
               if (quote.loveCount > 0) ...[
@@ -452,7 +447,7 @@ class _FullscreenLoveButtonState extends State<_FullscreenLoveButton>
                 Text(
                   '${quote.loveCount}',
                   style: TextStyle(
-                    color: isLoved ? Colors.redAccent : Colors.white70,
+                    color: isLoved ? Colors.redAccent : ManahColors.brand,
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
                   ),
@@ -494,7 +489,7 @@ class _FullscreenCopyButton extends StatelessWidget {
               ],
             ),
             behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.indigoAccent,
+            backgroundColor: ManahColors.brand,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -509,17 +504,18 @@ class _FullscreenCopyButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white.withValues(alpha: 0.05),
+      color: ManahColors.brandSurface,
       shape: const CircleBorder(),
       child: IconButton(
         icon: const Icon(
           Icons.copy_rounded,
-          color: Colors.white70,
-          size: 20,
+          color: ManahColors.brand,
+          size: 18,
         ),
         onPressed: () => _copyToClipboard(context),
         constraints: const BoxConstraints(),
         padding: const EdgeInsets.all(12),
+        tooltip: 'Salin kutipan',
       ),
     );
   }
