@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../theme/manah_colors.dart';
-import '../../../../theme/manah_tokens.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../../gamification/domain/gamification_entities.dart';
 
@@ -11,15 +10,11 @@ class HomeUserHeader extends StatelessWidget {
     required this.profile,
     this.stats,
     required this.onProfileTap,
-    required this.onSettingsTap,
-    required this.onLogoutTap,
   });
 
   final UserProfile profile;
   final UserStatsEntity? stats;
   final VoidCallback onProfileTap;
-  final VoidCallback onSettingsTap;
-  final VoidCallback onLogoutTap;
 
   @override
   Widget build(BuildContext context) {
@@ -156,39 +151,6 @@ class HomeUserHeader extends StatelessWidget {
                         ),
                       ],
                     ),
-                  ),
-                  // Action Buttons
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        visualDensity: VisualDensity.compact,
-                        icon: Icon(
-                          Icons.settings_outlined,
-                          color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6),
-                          size: 18,
-                        ),
-                        onPressed: onSettingsTap,
-                        tooltip: 'Pengaturan',
-                        style: IconButton.styleFrom(
-                          padding: const EdgeInsets.all(4),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      IconButton(
-                        visualDensity: VisualDensity.compact,
-                        icon: Icon(
-                          Icons.logout_rounded,
-                          color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6),
-                          size: 18,
-                        ),
-                        onPressed: onLogoutTap,
-                        tooltip: 'Keluar',
-                        style: IconButton.styleFrom(
-                          padding: const EdgeInsets.all(4),
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),

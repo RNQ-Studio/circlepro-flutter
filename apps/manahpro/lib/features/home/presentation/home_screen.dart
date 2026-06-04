@@ -31,18 +31,9 @@ class HomeScreen extends ConsumerWidget {
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
-            // Logo dipaling atas
+            // Logo dan Aksi dipaling atas
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
-                child: Center(
-                  child: Image.asset(
-                    'assets/images/logo_border_white.png',
-                    height: 48,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
+              child: _buildTopBar(context, ref, isAuthenticated),
             ),
 
             // Welcoming User Banner
@@ -149,35 +140,89 @@ class HomeScreen extends ConsumerWidget {
           profile: profile,
           stats: stats,
           onProfileTap: () => context.push(AppRoutes.profile),
-          onSettingsTap: () => context.push(AppRoutes.settings),
-          onLogoutTap: () {
-            showDialog<bool>(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: const Text('Keluar Akun'),
-                content: const Text('Apakah Anda yakin ingin keluar dari akun ini?'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: const Text('Batal'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.redAccent,
-                    ),
-                    child: const Text('Keluar'),
-                  ),
-                ],
-              ),
-            ).then((confirmed) {
-              if (confirmed == true) {
-                ref.read(authProvider.notifier).logout();
-              }
-            });
-          },
         );
       },
+    );
+  }
+
+  Widget _buildTopBar(BuildContext context, WidgetRef ref, bool isAuthenticated) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Logo ManahPro (kecilkan sedikit ke 32, pojok kiri)
+          Image.asset(
+            'assets/images/logo_border_white.png',
+            height: 32,
+            fit: BoxFit.contain,
+          ),
+          // Ikon pengaturan dan logout (hanya tampil jika terautentikasi)
+          if (isAuthenticated)
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(
+                    Icons.settings_outlined,
+                    color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6),
+                    size: 20,
+                  ),
+                  onPressed: () => context.push(AppRoutes.settings),
+                  tooltip: 'Pengaturan',
+                  style: IconButton.styleFrom(
+                    backgroundColor: theme.dividerColor.withValues(alpha: isDark ? 0.08 : 0.04),
+                    padding: const EdgeInsets.all(6),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(
+                    Icons.logout_rounded,
+                    color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6),
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Keluar Akun'),
+                        content: const Text('Apakah Anda yakin ingin keluar dari akun ini?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Batal'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.redAccent,
+                            ),
+                            child: const Text('Keluar'),
+                          ),
+                        ],
+                      ),
+                    ).then((confirmed) {
+                      if (confirmed == true) {
+                        ref.read(authProvider.notifier).logout();
+                      }
+                    });
+                  },
+                  tooltip: 'Keluar',
+                  style: IconButton.styleFrom(
+                    backgroundColor: theme.dividerColor.withValues(alpha: isDark ? 0.08 : 0.04),
+                    padding: const EdgeInsets.all(6),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
     );
   }
 
