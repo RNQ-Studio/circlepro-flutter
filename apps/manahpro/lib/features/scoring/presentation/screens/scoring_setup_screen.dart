@@ -5,6 +5,7 @@ import 'package:core/core.dart';
 
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
+import '../../../monetization/presentation/monetization_providers.dart';
 import '../../domain/scoring_entities.dart';
 import '../../domain/scoring_enums.dart';
 import '../equipment_notifier.dart';
@@ -192,6 +193,9 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
     final theme = Theme.of(context);
     final targetFacesAsync = ref.watch(targetFacesListProvider);
     final targetFaces = targetFacesAsync.value ?? const [];
+    final subStatusAsync = ref.watch(userSubscriptionProvider);
+    final subStatus = subStatusAsync.value;
+    final isGated = subStatus?.isGated ?? false;
 
     if (!_initialTargetFaceApplied && targetFaces.isNotEmpty && _hasLoadedLastSelected) {
       _initialTargetFaceApplied = true;
@@ -445,6 +449,61 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
               onChanged: (v) => setState(() => _arrowsPerEnd = v),
             ),
             const SizedBox(height: ManahSpacing.xl),
+            if (subStatus != null && !subStatus.isPremium) ...[
+              Card(
+                color: isGated ? const Color(0xFFFFEBEE) : ManahColors.brandSurface,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(ManahRadius.md),
+                  side: BorderSide(
+                    color: isGated ? ManahColors.error.withOpacity(0.3) : ManahColors.brandLight.withOpacity(0.3),
+                  ),
+                ),
+                child: InkWell(
+                  onTap: isGated ? () => context.push('/monetization/paywall') : null,
+                  borderRadius: BorderRadius.circular(ManahRadius.md),
+                  child: Padding(
+                    padding: const EdgeInsets.all(ManahSpacing.base),
+                    child: Row(
+                      children: [
+                        Icon(
+                          isGated ? Icons.lock_outline_rounded : Icons.info_outline_rounded,
+                          color: isGated ? ManahColors.error : ManahColors.brand,
+                        ),
+                        const SizedBox(width: ManahSpacing.base),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Sesi Latihan Minggu Ini: ${subStatus.scoringSessionsThisWeek}/${subStatus.scoringSessionsLimit}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: isGated ? ManahColors.error : ManahColors.brand,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                isGated
+                                    ? 'Batas mingguan tercapai. Ketuk untuk upgrade ke Premium.'
+                                    : 'Paket Gratis dibatasi 3 sesi per minggu.',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: isGated ? ManahColors.error.withOpacity(0.8) : ManahColors.brand.withOpacity(0.8),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (isGated)
+                          const Icon(Icons.chevron_right, color: ManahColors.error),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: ManahSpacing.md),
+            ],
             Card(
               color: ManahColors.brandSurface,
               child: Padding(
@@ -463,18 +522,33 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
             ),
             const SizedBox(height: ManahSpacing.lg),
             FilledButton(
-              onPressed: (_starting ||
-                      _bowCategory == null ||
-                      _bowClass == null ||
-                      _distance == null ||
-                      _environment == null ||
-                      _selectedTargetFace == null)
+              onPressed: _starting
                   ? null
-                  : _start,
+                  : (isGated
+                      ? () => context.push('/monetization/paywall')
+                      : ((_bowCategory == null ||
+                              _bowClass == null ||
+                              _distance == null ||
+                              _environment == null ||
+                              _selectedTargetFace == null)
+                          ? null
+                          : _start)),
+              style: isGated
+                  ? FilledButton.styleFrom(backgroundColor: ManahColors.amberDeep)
+                  : null,
               child: _starting
                   ? const SizedBox(
                       height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : const Text('Mulai Scoring'),
+                  : (isGated
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.workspace_premium, size: 18),
+                            SizedBox(width: 8),
+                            Text('Upgrade ke Premium'),
+                          ],
+                        )
+                      : const Text('Mulai Scoring')),
             ),
           ],
         ),

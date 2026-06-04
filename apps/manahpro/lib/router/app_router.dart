@@ -12,6 +12,7 @@ import '../features/onboarding/presentation/manah_onboarding_screen.dart';
 import '../features/scoring/presentation/scoring_routes.dart';
 import '../shared/routes/social_routes.dart';
 import '../features/events/presentation/events_routes.dart';
+import '../features/monetization/presentation/monetization_routes.dart';
 import '../features/stories/domain/story_entities.dart';
 import '../features/stories/presentation/screens/story_picker_preview_screen.dart';
 import '../features/stories/presentation/screens/story_viewer_screen.dart';
@@ -57,6 +58,9 @@ final appRouter = GoRouter(
 
     // ManahPro — Phase 3: Events & Ranking (COMPETE)
     ...eventsRoutes,
+
+    // ManahPro — Phase 5: Monetization
+    ...monetizationRoutes,
 
     // Stories system
     GoRoute(

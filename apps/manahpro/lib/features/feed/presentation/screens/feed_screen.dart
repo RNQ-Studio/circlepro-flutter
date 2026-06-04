@@ -6,6 +6,9 @@ import 'package:video_player/video_player.dart';
 import '../../../../shared/routes/social_routes.dart';
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
+import '../../../monetization/domain/monetization_entities.dart';
+import '../../../monetization/presentation/monetization_providers.dart';
+import '../../../monetization/presentation/widgets/ad_card_widget.dart';
 import '../../domain/post_entity.dart';
 import '../feed_providers.dart';
 import '../widgets/comments_sheet.dart';
@@ -84,28 +87,52 @@ class FeedScreen extends ConsumerWidget {
             child: Text('Gagal memuat feed (butuh login & koneksi).\n$e', textAlign: TextAlign.center),
           ),
         ),
-        data: (posts) => RefreshIndicator(
-          onRefresh: () => ref.read(feedProvider.notifier).refreshFeed(),
-          child: posts.isEmpty
-              ? ListView(children: [
-                  const SizedBox(height: 120),
-                  Center(
-                    child: Text(
-                      activeFilter == 'following'
-                          ? 'Belum ada postingan dari pemanah yang Anda ikuti.'
-                          : 'Belum ada postingan. Jadilah yang pertama!',
-                      style: const TextStyle(color: ManahColors.mediumGrey),
-                      textAlign: TextAlign.center,
+        data: (posts) {
+          final subStatus = ref.watch(userSubscriptionProvider).value;
+          final isPremium = subStatus?.isPremium ?? false;
+          final ads = !isPremium ? (ref.watch(adsListProvider(placement: 'feed')).value ?? []) : <AdEntity>[];
+
+          final List<dynamic> items = [];
+          int adIndex = 0;
+          for (int i = 0; i < posts.length; i++) {
+            items.add(posts[i]);
+            if (!isPremium && ads.isNotEmpty && (i + 1) % 5 == 0) {
+              items.add(ads[adIndex % ads.length]);
+              adIndex++;
+            }
+          }
+
+          return RefreshIndicator(
+            onRefresh: () => ref.read(feedProvider.notifier).refreshFeed(),
+            child: items.isEmpty
+                ? ListView(children: [
+                    const SizedBox(height: 120),
+                    Center(
+                      child: Text(
+                        activeFilter == 'following'
+                            ? 'Belum ada postingan dari pemanah yang Anda ikuti.'
+                            : 'Belum ada postingan. Jadilah yang pertama!',
+                        style: const TextStyle(color: ManahColors.mediumGrey),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
+                  ])
+                : ListView.separated(
+                    padding: const EdgeInsets.all(ManahSpacing.base),
+                    itemCount: items.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: ManahSpacing.sm),
+                    itemBuilder: (context, i) {
+                      final item = items[i];
+                      if (item is PostEntity) {
+                        return _PostCard(post: item);
+                      } else if (item is AdEntity) {
+                        return AdCardWidget(ad: item);
+                      }
+                      return const SizedBox.shrink();
+                    },
                   ),
-                ])
-              : ListView.separated(
-                  padding: const EdgeInsets.all(ManahSpacing.base),
-                  itemCount: posts.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: ManahSpacing.sm),
-                  itemBuilder: (context, i) => _PostCard(post: posts[i]),
-                ),
-        ),
+          );
+        },
       ),
     );
   }
