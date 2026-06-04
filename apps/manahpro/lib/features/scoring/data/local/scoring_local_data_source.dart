@@ -218,7 +218,7 @@ class ScoringLocalDataSource {
                 name: t.name,
                 imagePath: Value(t.imagePath),
                 scoringRulesJson: jsonEncode(t.scoringRules.map((r) => r.toJson()).toList()),
-                totalParticipants: Value(t.totalParticipants),
+                usedCount: Value(t.usedCount),
               ),
             );
       }
@@ -237,7 +237,7 @@ class ScoringLocalDataSource {
         code: r.code,
         name: r.name,
         imagePath: r.imagePath,
-        totalParticipants: r.totalParticipants,
+        usedCount: r.usedCount,
         scoringRules: rulesJson.map((x) => TargetFaceRule.fromJson(x as Map<String, dynamic>)).toList(),
       );
     }).toList();

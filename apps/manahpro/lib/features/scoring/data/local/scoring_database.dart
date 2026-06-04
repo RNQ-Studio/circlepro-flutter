@@ -70,7 +70,7 @@ class TargetFaceRows extends Table {
   TextColumn get name => text()();
   TextColumn get imagePath => text().nullable()();
   TextColumn get scoringRulesJson => text()(); // Store rules as JSON string
-  IntColumn get totalParticipants => integer().withDefault(const Constant(0))();
+  IntColumn get usedCount => integer().withDefault(const Constant(0))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -83,7 +83,7 @@ class ScoringDatabase extends _$ScoringDatabase {
   ScoringDatabase([QueryExecutor? executor]) : super(executor ?? _open());
 
   @override
-  int get schemaVersion => 7; // Bump version to trigger upgrade and reset tables
+  int get schemaVersion => 8; // Bump version to trigger upgrade and reset tables
 
   @override
   MigrationStrategy get migration => MigrationStrategy(

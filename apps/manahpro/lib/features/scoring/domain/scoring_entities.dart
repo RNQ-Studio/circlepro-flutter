@@ -218,7 +218,7 @@ class TargetFaceEntity extends Equatable {
     required this.code,
     required this.name,
     this.imagePath,
-    this.totalParticipants = 0,
+    this.usedCount = 0,
     required this.scoringRules,
   });
 
@@ -229,7 +229,7 @@ class TargetFaceEntity extends Equatable {
   final String code;
   final String name;
   final String? imagePath;
-  final int totalParticipants;
+  final int usedCount;
   final List<TargetFaceRule> scoringRules;
 
   factory TargetFaceEntity.fromJson(Map<String, dynamic> json) {
@@ -243,7 +243,7 @@ class TargetFaceEntity extends Equatable {
       code: json['code'] as String? ?? '',
       name: json['name'] as String? ?? '',
       imagePath: json['image_path'] as String?,
-      totalParticipants: json['total_participants'] as int? ?? 0,
+      usedCount: json['used_count'] as int? ?? json['total_participants'] as int? ?? 0,
       scoringRules: rulesJson.map((r) => TargetFaceRule.fromJson(r as Map<String, dynamic>)).toList(),
     );
   }
@@ -257,11 +257,11 @@ class TargetFaceEntity extends Equatable {
       'code': code,
       'name': name,
       'image_path': imagePath,
-      'total_participants': totalParticipants,
+      'used_count': usedCount,
       'scoring_rules': scoringRules.map((r) => r.toJson()).toList(),
     };
   }
 
   @override
-  List<Object?> get props => [id, organizationId, organizationName, organizationSlug, code, name, imagePath, totalParticipants, scoringRules];
+  List<Object?> get props => [id, organizationId, organizationName, organizationSlug, code, name, imagePath, usedCount, scoringRules];
 }

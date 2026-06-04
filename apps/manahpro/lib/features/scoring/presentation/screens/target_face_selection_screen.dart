@@ -52,9 +52,9 @@ class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionS
               return false;
             }
 
-            // Sort targets by totalParticipants descending, then filter by category
+            // Sort targets by usedCount descending, then filter by category
             final sortedTargets = List<TargetFaceEntity>.from(targets)
-              ..sort((a, b) => b.totalParticipants.compareTo(a.totalParticipants));
+              ..sort((a, b) => b.usedCount.compareTo(a.usedCount));
 
             final filteredTargets = sortedTargets.where((t) {
               if (_selectedFilter == 'SEMUA') return true;
@@ -171,8 +171,8 @@ class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionS
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
-                                        target.totalParticipants > 0
-                                            ? '${target.totalParticipants} peserta'
+                                        target.usedCount > 0
+                                            ? '${target.usedCount} peserta'
                                             : '0 peserta',
                                         style: theme.textTheme.bodySmall?.copyWith(
                                           color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
