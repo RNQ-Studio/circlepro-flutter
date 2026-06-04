@@ -9,5 +9,10 @@ part 'manah_api.g.dart';
 /// feed). Reuses the same token interceptor as the rest of the app.
 @Riverpod(keepAlive: true)
 Dio manahDio(Ref ref) {
-  return DioClient(ref.watch(storageServiceProvider)).dio;
+  return DioClient(
+    ref.watch(storageServiceProvider),
+    onLogout: () async {
+      await ref.read(authProvider.notifier).logout();
+    },
+  ).dio;
 }

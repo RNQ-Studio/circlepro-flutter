@@ -5,6 +5,7 @@ import '../data/datasources/auth_local_data_source.dart';
 import '../data/datasources/auth_remote_data_source.dart';
 import '../data/repositories/auth_repository_impl.dart';
 import '../domain/repositories/auth_repository.dart';
+import 'auth_notifier.dart';
 
 part 'auth_repository_provider.g.dart';
 
@@ -17,7 +18,12 @@ StorageService storageService(Ref ref) {
 
 @Riverpod(keepAlive: true)
 DioClient _dioClient(Ref ref) {
-  return DioClient(ref.watch(storageServiceProvider));
+  return DioClient(
+    ref.watch(storageServiceProvider),
+    onLogout: () async {
+      await ref.read(authProvider.notifier).logout();
+    },
+  );
 }
 
 @Riverpod(keepAlive: true)

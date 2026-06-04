@@ -9,7 +9,14 @@ part 'equipment_notifier.g.dart';
 
 @Riverpod(keepAlive: true)
 EquipmentRemoteDataSource _equipmentRemote(Ref ref) {
-  return EquipmentRemoteDataSource(DioClient(ref.watch(storageServiceProvider)).dio);
+  return EquipmentRemoteDataSource(
+    DioClient(
+      ref.watch(storageServiceProvider),
+      onLogout: () async {
+        await ref.read(authProvider.notifier).logout();
+      },
+    ).dio,
+  );
 }
 
 /// Online CRUD of the user's equipment profiles (Module 1, task 1.11b).

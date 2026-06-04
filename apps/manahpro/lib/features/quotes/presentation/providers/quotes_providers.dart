@@ -18,7 +18,12 @@ part 'quotes_providers.g.dart';
 
 @Riverpod(keepAlive: true)
 DioClient _dioClient(Ref ref) {
-  return DioClient(ref.watch(storageServiceProvider));
+  return DioClient(
+    ref.watch(storageServiceProvider),
+    onLogout: () async {
+      await ref.read(authProvider.notifier).logout();
+    },
+  );
 }
 
 @Riverpod(keepAlive: true)
