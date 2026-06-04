@@ -80,21 +80,18 @@ class ScoringDatabase extends _$ScoringDatabase {
   ScoringDatabase([QueryExecutor? executor]) : super(executor ?? _open());
 
   @override
-  int get schemaVersion => 3; // Increment version for schema migration
+  int get schemaVersion => 4; // Bump version to trigger upgrade and reset tables
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) => m.createAll(),
         onUpgrade: (m, from, to) async {
-          if (from < 2) {
-            // Create target_face_rows table
-            await m.createTable(targetFaceRows);
-            // Add target_face_id to scoring_session_rows table
-            await m.addColumn(scoringSessionRows, scoringSessionRows.targetFaceId);
-          }
-          if (from < 3) {
-            // Add organizationId to target_face_rows table
-            await m.addColumn(targetFaceRows, targetFaceRows.organizationId);
-          }
+          // Destructive migration for development: drop all tables and start fresh
+          await m.drop(scoringArrowRows);
+          await m.drop(scoringEndRows);
+          await m.drop(scoringSessionRows);
+          await m.drop(targetFaceRows);
+          await m.createAll();
         },
       );
 
