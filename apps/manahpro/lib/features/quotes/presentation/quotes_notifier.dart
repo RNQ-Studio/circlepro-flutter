@@ -14,9 +14,7 @@ part 'quotes_notifier.g.dart';
 /// The [build] method initializes by triggering a background sync,
 /// then returns the local SQLite data as the single source of truth.
 ///
-/// All CRUD methods use **optimistic UI updates**: they modify local
-/// storage first, immediately rebuild the state, then trigger
-/// background sync to push changes to the server.
+/// All sync methods use read-only pulling.
 @riverpod
 class QuotesNotifier extends _$QuotesNotifier {
   @override
@@ -41,109 +39,6 @@ class QuotesNotifier extends _$QuotesNotifier {
     return _loadLocalQuotes();
   }
 
-  // ─── CRUD Actions (Optimistic UI) ───────────────────────────
-
-  /// Creates a new quote with optimistic UI update.
-  ///
-  /// 1. Saves to local SQLite immediately with `syncAction = 'create'`
-  /// 2. Rebuilds state instantly so the user sees the new quote
-  /// 3. Triggers background sync to POST to the server
-  Future<void> addQuote({
-    required String text,
-    required String author,
-    String? source,
-    bool isActive = true,
-  }) async {
-    final repository = ref.read(quotesRepositoryProvider);
-
-    try {
-      await repository.createQuote(
-        text: text,
-        author: author,
-        source: source,
-        isActive: isActive,
-      );
-
-      // Optimistic: reload from local DB and rebuild state instantly
-      state = AsyncData(await _loadLocalQuotes());
-
-      // Background sync
-      syncInBackground();
-    } catch (e, st) {
-      log(
-        'QuotesNotifier.addQuote: failed',
-        error: e,
-        stackTrace: st,
-        name: 'QuotesNotifier',
-      );
-      // Re-throw so the UI can show an error snackbar
-      rethrow;
-    }
-  }
-
-  /// Updates an existing quote with optimistic UI update.
-  ///
-  /// Only the provided fields are updated; others remain unchanged.
-  Future<void> editQuote({
-    required int localId,
-    String? text,
-    String? author,
-    String? source,
-    bool? isActive,
-  }) async {
-    final repository = ref.read(quotesRepositoryProvider);
-
-    try {
-      await repository.updateQuote(
-        localId: localId,
-        text: text,
-        author: author,
-        source: source,
-        isActive: isActive,
-      );
-
-      // Optimistic: reload and rebuild
-      state = AsyncData(await _loadLocalQuotes());
-
-      // Background sync
-      syncInBackground();
-    } catch (e, st) {
-      log(
-        'QuotesNotifier.editQuote: failed for localId=$localId',
-        error: e,
-        stackTrace: st,
-        name: 'QuotesNotifier',
-      );
-      rethrow;
-    }
-  }
-
-  /// Deletes a quote with optimistic UI update.
-  ///
-  /// If the quote was never synced, it's removed immediately.
-  /// If it was synced, it's soft-deleted and removed from the server
-  /// during the next sync cycle.
-  Future<void> removeQuote(int localId) async {
-    final repository = ref.read(quotesRepositoryProvider);
-
-    try {
-      await repository.deleteQuote(localId);
-
-      // Optimistic: remove from visible list immediately
-      state = AsyncData(await _loadLocalQuotes());
-
-      // Background sync
-      syncInBackground();
-    } catch (e, st) {
-      log(
-        'QuotesNotifier.removeQuote: failed for localId=$localId',
-        error: e,
-        stackTrace: st,
-        name: 'QuotesNotifier',
-      );
-      rethrow;
-    }
-  }
 
   /// Manually refreshes the quotes list.
   ///

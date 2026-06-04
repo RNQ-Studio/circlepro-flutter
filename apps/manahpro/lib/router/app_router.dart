@@ -7,7 +7,7 @@ import '../features/settings/presentation/settings_route.dart';
 import '../features/profile/presentation/profile_route.dart';
 import '../features/ui_gallery/screens/ui_gallery_home_screen.dart';
 import '../features/quotes/presentation/screens/quotes_screen.dart';
-import '../features/quotes/presentation/screens/quote_form_screen.dart';
+
 import '../features/onboarding/presentation/manah_onboarding_screen.dart';
 import '../features/scoring/presentation/scoring_routes.dart';
 import '../shared/routes/social_routes.dart';
@@ -43,17 +43,7 @@ final appRouter = GoRouter(
       path: AppRoutes.quotes,
       builder: (context, state) => const QuotesScreen(),
     ),
-    GoRoute(
-      path: AppRoutes.createQuote,
-      builder: (context, state) => const QuoteFormScreen(),
-    ),
-    GoRoute(
-      path: '${AppRoutes.editQuote}/:localId',
-      builder: (context, state) {
-        final localId = int.parse(state.pathParameters['localId']!);
-        return QuoteFormScreen(localId: localId);
-      },
-    ),
+
 
     // ManahPro — Scoring (Module 1 / TRACK)
     ...scoringRoutes,

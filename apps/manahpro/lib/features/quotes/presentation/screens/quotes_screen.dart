@@ -320,11 +320,6 @@ class _QuotesScreenState extends ConsumerState<QuotesScreen> {
                               final quote = filtered[index];
                               return _QuoteCard(
                                 quote: quote,
-                                onTap: () => context.push(
-                                  '${AppRoutes.editQuote}/${quote.localId}',
-                                ),
-                                onDelete: () =>
-                                    _confirmDelete(context, ref, quote),
                               );
                             },
                           ),
@@ -338,58 +333,11 @@ class _QuotesScreenState extends ConsumerState<QuotesScreen> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push(AppRoutes.createQuote),
-        icon: const Icon(Icons.add_rounded),
-        label: Text(l10n.quotesAdd),
       ),
     );
   }
 
-  Future<void> _confirmDelete(
-    BuildContext context,
-    WidgetRef ref,
-    QuoteEntity quote,
-  ) async {
-    final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(l10n.quotesDelete),
-        content: Text(l10n.quotesDeleteConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.quotesCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-            child: Text(l10n.quotesConfirmDelete),
-          ),
-        ],
-      ),
-    );
 
-    if (confirmed == true && context.mounted) {
-      try {
-        await ref.read(quotesProvider.notifier).removeQuote(quote.localId);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.quotesDeleteSuccess)),
-          );
-        }
-      } catch (_) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(l10n.errorGeneral)),
-          );
-        }
-      }
-    }
-  }
 }
 
 // ─── Supporting Widgets ─────────────────────────────────────────
@@ -422,13 +370,9 @@ class _FilterChip extends StatelessWidget {
 class _QuoteCard extends StatelessWidget {
   const _QuoteCard({
     required this.quote,
-    required this.onTap,
-    required this.onDelete,
   });
 
   final QuoteEntity quote;
-  final VoidCallback onTap;
-  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -445,10 +389,7 @@ class _QuoteCard extends StatelessWidget {
           color: colorScheme.outlineVariant.withValues(alpha: 0.5),
         ),
       ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
+      child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -479,17 +420,6 @@ class _QuoteCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                  IconButton(
-                    icon: Icon(Icons.delete_outline,
-                        color: colorScheme.error, size: 20),
-                    onPressed: onDelete,
-                    visualDensity: VisualDensity.compact,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
-                    ),
-                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -575,9 +505,7 @@ class _QuoteCard extends StatelessWidget {
               ],
             ],
           ),
-        ),
       ),
-    );
   }
 }
 

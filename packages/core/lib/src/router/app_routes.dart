@@ -10,6 +10,4 @@ abstract final class AppRoutes {
 
   // Quotes
   static const String quotes = '/quotes';
-  static const String createQuote = '/quotes/create';
-  static const String editQuote = '/quotes/edit';
 }
