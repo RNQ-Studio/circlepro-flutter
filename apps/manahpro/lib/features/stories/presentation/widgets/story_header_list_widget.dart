@@ -20,7 +20,12 @@ class StoryHeaderListWidget extends ConsumerWidget {
           color: Theme.of(context).scaffoldBackgroundColor,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
-        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+        padding: EdgeInsets.only(
+          top: 24,
+          left: 16,
+          right: 16,
+          bottom: MediaQuery.of(context).padding.bottom + 16, // Fix bottom navigation overlap
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -115,29 +120,21 @@ class StoryHeaderListWidget extends ConsumerWidget {
           final myStoryGroupIndex = storyGroups.indexWhere((g) => g.userId.toString() == currentUserId);
           final hasMyStory = myStoryGroupIndex != -1;
 
-          // Buat list tanpa myStoryGroup di posisi tengah, kita akan render myStory di posisi pertama
+          // Buat list tanpa myStoryGroup di posisi tengah, kita akan render myStory di posisi pertama/kedua
           final otherGroups = storyGroups.where((g) => g.userId.toString() != currentUserId).toList();
 
+          final itemCount = hasMyStory ? otherGroups.length + 2 : otherGroups.length + 1;
 
           return ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: otherGroups.length + 1,
+            itemCount: itemCount,
             itemBuilder: (context, index) {
               if (index == 0) {
-                // RENDER LINGKARAN STORY SAYA
+                // RENDER TOMBOL TAMBAH STORY (SELALU UNTUK PILIH MEDIA BARU)
                 return GestureDetector(
-                  onTap: () {
-                    if (hasMyStory) {
-                      context.push('/stories/view', extra: {
-                        'groups': storyGroups,
-                        'initialIndex': myStoryGroupIndex,
-                      });
-                    } else {
-                      _pickMedia(context, ImageSource.gallery);
-                    }
-                  },
+                  onTap: () => _pickMedia(context, ImageSource.gallery),
                   child: Padding(
                     padding: const EdgeInsets.only(right: 14),
                     child: Column(
@@ -145,28 +142,22 @@ class StoryHeaderListWidget extends ConsumerWidget {
                         Stack(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(2.5),
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: hasMyStory
-                                    ? Border.all(color: Colors.blueAccent, width: 2)
-                                    : null,
-                              ),
+                              padding: const EdgeInsets.all(4.5), // Menyamakan ukuran bounding box
                               child: CircleAvatar(
-                                radius: 28,
+                                radius: 26,
                                 backgroundColor: Colors.grey.shade300,
                                 backgroundImage: profile.avatarUrl != null &&
                                         profile.avatarUrl!.isNotEmpty
                                     ? NetworkImage(profile.avatarUrl!)
                                     : null,
                                 child: profile.avatarUrl == null || profile.avatarUrl!.isEmpty
-                                    ? const Icon(Icons.person_rounded, size: 28, color: Colors.white)
+                                    ? const Icon(Icons.person_rounded, size: 26, color: Colors.white)
                                     : null,
                               ),
                             ),
                             Positioned(
-                              bottom: 0,
-                              right: 0,
+                              bottom: 4.5,
+                              right: 4.5,
                               child: Container(
                                 padding: const EdgeInsets.all(3),
                                 decoration: const BoxDecoration(
@@ -184,6 +175,48 @@ class StoryHeaderListWidget extends ConsumerWidget {
                         ),
                         const SizedBox(height: 6),
                         const Text(
+                          'Tambah',
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              if (hasMyStory && index == 1) {
+                // RENDER LINGKARAN STORY SAYA (SELALU BUKA VIEWER STORY SAYA)
+                return GestureDetector(
+                  onTap: () {
+                    context.push('/stories/view', extra: {
+                      'groups': storyGroups,
+                      'initialIndex': myStoryGroupIndex,
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 14),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(2.5),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.blueAccent, width: 2),
+                          ),
+                          child: CircleAvatar(
+                            radius: 26,
+                            backgroundColor: Colors.grey.shade300,
+                            backgroundImage: profile.avatarUrl != null &&
+                                    profile.avatarUrl!.isNotEmpty
+                                ? NetworkImage(profile.avatarUrl!)
+                                : null,
+                            child: profile.avatarUrl == null || profile.avatarUrl!.isEmpty
+                                ? const Icon(Icons.person_rounded, size: 26, color: Colors.white)
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
                           'Cerita Anda',
                           style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
                         ),
@@ -193,8 +226,8 @@ class StoryHeaderListWidget extends ConsumerWidget {
                 );
               }
 
-              final group = otherGroups[index - 1];
-              // Cari index asli di dalam list storyGroups
+              final groupIndex = hasMyStory ? index - 2 : index - 1;
+              final group = otherGroups[groupIndex];
               final originalIndex = storyGroups.indexOf(group);
 
               return GestureDetector(
