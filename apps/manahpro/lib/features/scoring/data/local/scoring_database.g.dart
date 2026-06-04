@@ -1822,6 +1822,14 @@ class $TargetFaceRowsTable extends TargetFaceRows
   late final GeneratedColumn<String> scoringRulesJson = GeneratedColumn<String>(
       'scoring_rules_json', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _totalParticipantsMeta =
+      const VerificationMeta('totalParticipants');
+  @override
+  late final GeneratedColumn<int> totalParticipants = GeneratedColumn<int>(
+      'total_participants', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -1831,7 +1839,8 @@ class $TargetFaceRowsTable extends TargetFaceRows
         code,
         name,
         imagePath,
-        scoringRulesJson
+        scoringRulesJson,
+        totalParticipants
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1890,6 +1899,12 @@ class $TargetFaceRowsTable extends TargetFaceRows
     } else if (isInserting) {
       context.missing(_scoringRulesJsonMeta);
     }
+    if (data.containsKey('total_participants')) {
+      context.handle(
+          _totalParticipantsMeta,
+          totalParticipants.isAcceptableOrUnknown(
+              data['total_participants']!, _totalParticipantsMeta));
+    }
     return context;
   }
 
@@ -1915,6 +1930,8 @@ class $TargetFaceRowsTable extends TargetFaceRows
           .read(DriftSqlType.string, data['${effectivePrefix}image_path']),
       scoringRulesJson: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}scoring_rules_json'])!,
+      totalParticipants: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}total_participants'])!,
     );
   }
 
@@ -1933,6 +1950,7 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
   final String name;
   final String? imagePath;
   final String scoringRulesJson;
+  final int totalParticipants;
   const TargetFaceRow(
       {required this.id,
       this.organizationId,
@@ -1941,7 +1959,8 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
       required this.code,
       required this.name,
       this.imagePath,
-      required this.scoringRulesJson});
+      required this.scoringRulesJson,
+      required this.totalParticipants});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1961,6 +1980,7 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
       map['image_path'] = Variable<String>(imagePath);
     }
     map['scoring_rules_json'] = Variable<String>(scoringRulesJson);
+    map['total_participants'] = Variable<int>(totalParticipants);
     return map;
   }
 
@@ -1982,6 +2002,7 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
           ? const Value.absent()
           : Value(imagePath),
       scoringRulesJson: Value(scoringRulesJson),
+      totalParticipants: Value(totalParticipants),
     );
   }
 
@@ -1997,6 +2018,7 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
       name: serializer.fromJson<String>(json['name']),
       imagePath: serializer.fromJson<String?>(json['imagePath']),
       scoringRulesJson: serializer.fromJson<String>(json['scoringRulesJson']),
+      totalParticipants: serializer.fromJson<int>(json['totalParticipants']),
     );
   }
   @override
@@ -2011,6 +2033,7 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
       'name': serializer.toJson<String>(name),
       'imagePath': serializer.toJson<String?>(imagePath),
       'scoringRulesJson': serializer.toJson<String>(scoringRulesJson),
+      'totalParticipants': serializer.toJson<int>(totalParticipants),
     };
   }
 
@@ -2022,7 +2045,8 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
           String? code,
           String? name,
           Value<String?> imagePath = const Value.absent(),
-          String? scoringRulesJson}) =>
+          String? scoringRulesJson,
+          int? totalParticipants}) =>
       TargetFaceRow(
         id: id ?? this.id,
         organizationId:
@@ -2037,6 +2061,7 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
         name: name ?? this.name,
         imagePath: imagePath.present ? imagePath.value : this.imagePath,
         scoringRulesJson: scoringRulesJson ?? this.scoringRulesJson,
+        totalParticipants: totalParticipants ?? this.totalParticipants,
       );
   TargetFaceRow copyWithCompanion(TargetFaceRowsCompanion data) {
     return TargetFaceRow(
@@ -2056,6 +2081,9 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
       scoringRulesJson: data.scoringRulesJson.present
           ? data.scoringRulesJson.value
           : this.scoringRulesJson,
+      totalParticipants: data.totalParticipants.present
+          ? data.totalParticipants.value
+          : this.totalParticipants,
     );
   }
 
@@ -2069,14 +2097,23 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
           ..write('code: $code, ')
           ..write('name: $name, ')
           ..write('imagePath: $imagePath, ')
-          ..write('scoringRulesJson: $scoringRulesJson')
+          ..write('scoringRulesJson: $scoringRulesJson, ')
+          ..write('totalParticipants: $totalParticipants')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, organizationId, organizationName,
-      organizationSlug, code, name, imagePath, scoringRulesJson);
+  int get hashCode => Object.hash(
+      id,
+      organizationId,
+      organizationName,
+      organizationSlug,
+      code,
+      name,
+      imagePath,
+      scoringRulesJson,
+      totalParticipants);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2088,7 +2125,8 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
           other.code == this.code &&
           other.name == this.name &&
           other.imagePath == this.imagePath &&
-          other.scoringRulesJson == this.scoringRulesJson);
+          other.scoringRulesJson == this.scoringRulesJson &&
+          other.totalParticipants == this.totalParticipants);
 }
 
 class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
@@ -2100,6 +2138,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
   final Value<String> name;
   final Value<String?> imagePath;
   final Value<String> scoringRulesJson;
+  final Value<int> totalParticipants;
   final Value<int> rowid;
   const TargetFaceRowsCompanion({
     this.id = const Value.absent(),
@@ -2110,6 +2149,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
     this.name = const Value.absent(),
     this.imagePath = const Value.absent(),
     this.scoringRulesJson = const Value.absent(),
+    this.totalParticipants = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TargetFaceRowsCompanion.insert({
@@ -2121,6 +2161,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
     required String name,
     this.imagePath = const Value.absent(),
     required String scoringRulesJson,
+    this.totalParticipants = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         code = Value(code),
@@ -2135,6 +2176,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
     Expression<String>? name,
     Expression<String>? imagePath,
     Expression<String>? scoringRulesJson,
+    Expression<int>? totalParticipants,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -2146,6 +2188,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
       if (name != null) 'name': name,
       if (imagePath != null) 'image_path': imagePath,
       if (scoringRulesJson != null) 'scoring_rules_json': scoringRulesJson,
+      if (totalParticipants != null) 'total_participants': totalParticipants,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -2159,6 +2202,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
       Value<String>? name,
       Value<String?>? imagePath,
       Value<String>? scoringRulesJson,
+      Value<int>? totalParticipants,
       Value<int>? rowid}) {
     return TargetFaceRowsCompanion(
       id: id ?? this.id,
@@ -2169,6 +2213,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
       name: name ?? this.name,
       imagePath: imagePath ?? this.imagePath,
       scoringRulesJson: scoringRulesJson ?? this.scoringRulesJson,
+      totalParticipants: totalParticipants ?? this.totalParticipants,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -2200,6 +2245,9 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
     if (scoringRulesJson.present) {
       map['scoring_rules_json'] = Variable<String>(scoringRulesJson.value);
     }
+    if (totalParticipants.present) {
+      map['total_participants'] = Variable<int>(totalParticipants.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -2217,6 +2265,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
           ..write('name: $name, ')
           ..write('imagePath: $imagePath, ')
           ..write('scoringRulesJson: $scoringRulesJson, ')
+          ..write('totalParticipants: $totalParticipants, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3084,6 +3133,7 @@ typedef $$TargetFaceRowsTableCreateCompanionBuilder = TargetFaceRowsCompanion
   required String name,
   Value<String?> imagePath,
   required String scoringRulesJson,
+  Value<int> totalParticipants,
   Value<int> rowid,
 });
 typedef $$TargetFaceRowsTableUpdateCompanionBuilder = TargetFaceRowsCompanion
@@ -3096,6 +3146,7 @@ typedef $$TargetFaceRowsTableUpdateCompanionBuilder = TargetFaceRowsCompanion
   Value<String> name,
   Value<String?> imagePath,
   Value<String> scoringRulesJson,
+  Value<int> totalParticipants,
   Value<int> rowid,
 });
 
@@ -3135,6 +3186,10 @@ class $$TargetFaceRowsTableFilterComposer
   ColumnFilters<String> get scoringRulesJson => $composableBuilder(
       column: $table.scoringRulesJson,
       builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get totalParticipants => $composableBuilder(
+      column: $table.totalParticipants,
+      builder: (column) => ColumnFilters(column));
 }
 
 class $$TargetFaceRowsTableOrderingComposer
@@ -3173,6 +3228,10 @@ class $$TargetFaceRowsTableOrderingComposer
   ColumnOrderings<String> get scoringRulesJson => $composableBuilder(
       column: $table.scoringRulesJson,
       builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get totalParticipants => $composableBuilder(
+      column: $table.totalParticipants,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$TargetFaceRowsTableAnnotationComposer
@@ -3207,6 +3266,9 @@ class $$TargetFaceRowsTableAnnotationComposer
 
   GeneratedColumn<String> get scoringRulesJson => $composableBuilder(
       column: $table.scoringRulesJson, builder: (column) => column);
+
+  GeneratedColumn<int> get totalParticipants => $composableBuilder(
+      column: $table.totalParticipants, builder: (column) => column);
 }
 
 class $$TargetFaceRowsTableTableManager extends RootTableManager<
@@ -3244,6 +3306,7 @@ class $$TargetFaceRowsTableTableManager extends RootTableManager<
             Value<String> name = const Value.absent(),
             Value<String?> imagePath = const Value.absent(),
             Value<String> scoringRulesJson = const Value.absent(),
+            Value<int> totalParticipants = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               TargetFaceRowsCompanion(
@@ -3255,6 +3318,7 @@ class $$TargetFaceRowsTableTableManager extends RootTableManager<
             name: name,
             imagePath: imagePath,
             scoringRulesJson: scoringRulesJson,
+            totalParticipants: totalParticipants,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -3266,6 +3330,7 @@ class $$TargetFaceRowsTableTableManager extends RootTableManager<
             required String name,
             Value<String?> imagePath = const Value.absent(),
             required String scoringRulesJson,
+            Value<int> totalParticipants = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               TargetFaceRowsCompanion.insert(
@@ -3277,6 +3342,7 @@ class $$TargetFaceRowsTableTableManager extends RootTableManager<
             name: name,
             imagePath: imagePath,
             scoringRulesJson: scoringRulesJson,
+            totalParticipants: totalParticipants,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0

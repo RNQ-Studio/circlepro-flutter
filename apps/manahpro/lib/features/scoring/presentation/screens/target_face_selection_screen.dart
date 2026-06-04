@@ -41,23 +41,26 @@ class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionS
               return const Center(child: Text('Tidak ada target face tersedia'));
             }
 
-            // Extract unique organization slugs
-            final List<String> orgFilters = ['SEMUA'];
-            final slugs = targets
-                .map((t) => t.organizationSlug?.toUpperCase())
-                .whereType<String>()
-                .where((s) => s.isNotEmpty)
-                .toSet()
-                .toList();
-            slugs.sort();
-            orgFilters.addAll(slugs);
-            orgFilters.add('UMUM');
+            // Categories: SEMUA, TRADISIONAL, MODERN
+            final List<String> categories = ['SEMUA', 'TRADISIONAL', 'MODERN'];
 
-            // Filter targets based on selection
-            final filteredTargets = targets.where((t) {
+            bool isModern(TargetFaceEntity target) {
+              final code = target.code;
+              final orgSlug = target.organizationSlug?.toLowerCase();
+              if (orgSlug == 'perpani') return true;
+              if (code.startsWith('fita_') || code == 'las_vegas_3spot') return true;
+              return false;
+            }
+
+            // Sort targets by totalParticipants descending, then filter by category
+            final sortedTargets = List<TargetFaceEntity>.from(targets)
+              ..sort((a, b) => b.totalParticipants.compareTo(a.totalParticipants));
+
+            final filteredTargets = sortedTargets.where((t) {
               if (_selectedFilter == 'SEMUA') return true;
-              if (_selectedFilter == 'UMUM') return t.organizationSlug == null || t.organizationSlug!.isEmpty;
-              return t.organizationSlug?.toUpperCase() == _selectedFilter;
+              if (_selectedFilter == 'MODERN') return isModern(t);
+              if (_selectedFilter == 'TRADISIONAL') return !isModern(t);
+              return true;
             }).toList();
 
             return Column(
@@ -70,9 +73,9 @@ class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionS
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: ManahSpacing.base),
-                    itemCount: orgFilters.length,
+                    itemCount: categories.length,
                     itemBuilder: (context, index) {
-                      final filter = orgFilters[index];
+                      final filter = categories[index];
                       final isSelected = _selectedFilter == filter;
                       return Padding(
                         padding: const EdgeInsets.only(right: ManahSpacing.xs),
@@ -119,7 +122,7 @@ class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionS
                             crossAxisCount: 2,
                             crossAxisSpacing: ManahSpacing.sm,
                             mainAxisSpacing: ManahSpacing.sm,
-                            childAspectRatio: 1.25,
+                            childAspectRatio: 1.05,
                           ),
                           itemBuilder: (context, idx) {
                             final target = filteredTargets[idx];
@@ -159,11 +162,21 @@ class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionS
                                       Text(
                                         target.name,
                                         textAlign: TextAlign.center,
-                                        maxLines: 2,
+                                        maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: theme.textTheme.labelMedium?.copyWith(
                                           fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
                                           color: isSelected ? ManahColors.brand : null,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        target.totalParticipants > 0
+                                            ? '${target.totalParticipants} peserta'
+                                            : '0 peserta',
+                                        style: theme.textTheme.bodySmall?.copyWith(
+                                          color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+                                          fontSize: 10,
                                         ),
                                       ),
                                     ],
