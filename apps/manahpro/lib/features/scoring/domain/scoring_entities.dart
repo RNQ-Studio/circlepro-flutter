@@ -214,6 +214,7 @@ class TargetFaceEntity extends Equatable {
     required this.id,
     this.organizationId,
     this.organizationName,
+    this.organizationSlug,
     required this.code,
     required this.name,
     this.imagePath,
@@ -223,6 +224,7 @@ class TargetFaceEntity extends Equatable {
   final String id;
   final String? organizationId;
   final String? organizationName;
+  final String? organizationSlug;
   final String code;
   final String name;
   final String? imagePath;
@@ -235,6 +237,7 @@ class TargetFaceEntity extends Equatable {
       id: json['id'] as String? ?? '',
       organizationId: json['organization_id'] as String?,
       organizationName: orgJson?['name'] as String?,
+      organizationSlug: orgJson?['slug'] as String?,
       code: json['code'] as String? ?? '',
       name: json['name'] as String? ?? '',
       imagePath: json['image_path'] as String?,
@@ -247,6 +250,7 @@ class TargetFaceEntity extends Equatable {
       'id': id,
       'organization_id': organizationId,
       'organization_name': organizationName,
+      'organization_slug': organizationSlug,
       'code': code,
       'name': name,
       'image_path': imagePath,
@@ -255,5 +259,5 @@ class TargetFaceEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, organizationId, organizationName, code, name, imagePath, scoringRules];
+  List<Object?> get props => [id, organizationId, organizationName, organizationSlug, code, name, imagePath, scoringRules];
 }

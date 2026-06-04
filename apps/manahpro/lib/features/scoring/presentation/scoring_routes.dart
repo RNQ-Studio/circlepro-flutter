@@ -7,6 +7,8 @@ import 'screens/score_input_screen.dart';
 import 'screens/scorecard_preview_screen.dart';
 import 'screens/scoring_setup_screen.dart';
 import 'screens/session_summary_screen.dart';
+import 'screens/target_face_selection_screen.dart';
+import '../domain/scoring_entities.dart';
 
 /// Route paths for the scoring feature. Declared app-level (not in core's
 /// shared AppRoutes, which the `variant` flavor also uses).
@@ -15,6 +17,8 @@ abstract final class ScoringRoutes {
   static const String history = '/scoring/history';
   static const String dashboard = '/scoring/dashboard';
   static const String equipment = '/scoring/equipment';
+
+  static const String targetFaceSelection = '/scoring/target-face-selection';
 
   static String input(String sessionId) => '/scoring/session/$sessionId';
 
@@ -28,6 +32,13 @@ final List<RouteBase> scoringRoutes = [
   GoRoute(
     path: ScoringRoutes.setup,
     builder: (context, state) => const ScoringSetupScreen(),
+  ),
+  GoRoute(
+    path: ScoringRoutes.targetFaceSelection,
+    builder: (context, state) {
+      final currentSelection = state.extra as TargetFaceEntity?;
+      return TargetFaceSelectionScreen(currentSelection: currentSelection);
+    },
   ),
   GoRoute(
     path: ScoringRoutes.history,

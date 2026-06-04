@@ -170,85 +170,67 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
                   return const Center(child: Text('Tidak ada target face tersedia'));
                 }
 
-                // Group target faces by organization name
-                final Map<String, List<TargetFaceEntity>> groupedTargets = {};
-                for (final target in targets) {
-                  final orgName = target.organizationName ?? 'Umum';
-                  groupedTargets.putIfAbsent(orgName, () => []).add(target);
+                final selected = _selectedTargetFace;
+                if (selected == null) {
+                  return const SizedBox.shrink();
                 }
 
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    for (final entry in groupedTargets.entries) ...[
-                      Padding(
-                        padding: const EdgeInsets.only(top: ManahSpacing.md, bottom: ManahSpacing.xs),
-                        child: Text(
-                          entry.key,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: theme.colorScheme.primary,
+                return Card(
+                  elevation: 0,
+                  margin: EdgeInsets.zero,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(ManahRadius.md),
+                    side: BorderSide(
+                      color: theme.dividerColor.withValues(alpha: 0.1),
+                    ),
+                  ),
+                  child: InkWell(
+                    onTap: () async {
+                      final result = await context.push<TargetFaceEntity>(
+                        ScoringRoutes.targetFaceSelection,
+                        extra: selected,
+                      );
+                      if (result != null && mounted) {
+                        setState(() => _selectedTargetFace = result);
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(ManahRadius.md),
+                    child: Padding(
+                      padding: const EdgeInsets.all(ManahSpacing.base),
+                      child: Row(
+                        children: [
+                          SizedBox(
+                            width: 54,
+                            height: 54,
+                            child: TargetFacePreview(code: selected.code),
                           ),
-                        ),
-                      ),
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: entry.value.length,
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: ManahSpacing.sm,
-                          mainAxisSpacing: ManahSpacing.sm,
-                          childAspectRatio: 1.3,
-                        ),
-                        itemBuilder: (context, idx) {
-                          final target = entry.value[idx];
-                          final isSelected = _selectedTargetFace?.id == target.id;
-                          return InkWell(
-                            onTap: () => setState(() => _selectedTargetFace = target),
-                            borderRadius: BorderRadius.circular(ManahRadius.md),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? ManahColors.brandSurface
-                                    : theme.cardColor,
-                                borderRadius: BorderRadius.circular(ManahRadius.md),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? ManahColors.brand
-                                      : theme.dividerColor.withValues(alpha: 0.1),
-                                  width: isSelected ? 2 : 1,
+                          const SizedBox(width: ManahSpacing.base),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  selected.name,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(ManahSpacing.sm),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(4.0),
-                                        child: TargetFacePreview(code: target.code),
-                                      ),
-                                    ),
-                                    const SizedBox(height: ManahSpacing.xs),
-                                    Text(
-                                      target.name,
-                                      textAlign: TextAlign.center,
-                                      style: theme.textTheme.labelMedium?.copyWith(
-                                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
-                                        color: isSelected ? ManahColors.brand : null,
-                                      ),
-                                    ),
-                                  ],
+                                const SizedBox(height: 4),
+                                Text(
+                                  selected.organizationName ?? 'Kategori Umum',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: theme.textTheme.bodySmall?.color,
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
-                          );
-                        },
+                          ),
+                          const SizedBox(width: ManahSpacing.sm),
+                          const Icon(Icons.chevron_right, color: Colors.grey),
+                        ],
                       ),
-                    ],
-                  ],
+                    ),
+                  ),
                 );
               },
             ),

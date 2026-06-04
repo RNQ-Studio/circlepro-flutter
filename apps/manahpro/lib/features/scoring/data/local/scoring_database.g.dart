@@ -1792,6 +1792,12 @@ class $TargetFaceRowsTable extends TargetFaceRows
   late final GeneratedColumn<String> organizationName = GeneratedColumn<String>(
       'organization_name', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _organizationSlugMeta =
+      const VerificationMeta('organizationSlug');
+  @override
+  late final GeneratedColumn<String> organizationSlug = GeneratedColumn<String>(
+      'organization_slug', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _codeMeta = const VerificationMeta('code');
   @override
   late final GeneratedColumn<String> code = GeneratedColumn<String>(
@@ -1821,6 +1827,7 @@ class $TargetFaceRowsTable extends TargetFaceRows
         id,
         organizationId,
         organizationName,
+        organizationSlug,
         code,
         name,
         imagePath,
@@ -1852,6 +1859,12 @@ class $TargetFaceRowsTable extends TargetFaceRows
           _organizationNameMeta,
           organizationName.isAcceptableOrUnknown(
               data['organization_name']!, _organizationNameMeta));
+    }
+    if (data.containsKey('organization_slug')) {
+      context.handle(
+          _organizationSlugMeta,
+          organizationSlug.isAcceptableOrUnknown(
+              data['organization_slug']!, _organizationSlugMeta));
     }
     if (data.containsKey('code')) {
       context.handle(
@@ -1892,6 +1905,8 @@ class $TargetFaceRowsTable extends TargetFaceRows
           .read(DriftSqlType.string, data['${effectivePrefix}organization_id']),
       organizationName: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}organization_name']),
+      organizationSlug: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}organization_slug']),
       code: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}code'])!,
       name: attachedDatabase.typeMapping
@@ -1913,6 +1928,7 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
   final String id;
   final String? organizationId;
   final String? organizationName;
+  final String? organizationSlug;
   final String code;
   final String name;
   final String? imagePath;
@@ -1921,6 +1937,7 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
       {required this.id,
       this.organizationId,
       this.organizationName,
+      this.organizationSlug,
       required this.code,
       required this.name,
       this.imagePath,
@@ -1934,6 +1951,9 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
     }
     if (!nullToAbsent || organizationName != null) {
       map['organization_name'] = Variable<String>(organizationName);
+    }
+    if (!nullToAbsent || organizationSlug != null) {
+      map['organization_slug'] = Variable<String>(organizationSlug);
     }
     map['code'] = Variable<String>(code);
     map['name'] = Variable<String>(name);
@@ -1953,6 +1973,9 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
       organizationName: organizationName == null && nullToAbsent
           ? const Value.absent()
           : Value(organizationName),
+      organizationSlug: organizationSlug == null && nullToAbsent
+          ? const Value.absent()
+          : Value(organizationSlug),
       code: Value(code),
       name: Value(name),
       imagePath: imagePath == null && nullToAbsent
@@ -1969,6 +1992,7 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
       id: serializer.fromJson<String>(json['id']),
       organizationId: serializer.fromJson<String?>(json['organizationId']),
       organizationName: serializer.fromJson<String?>(json['organizationName']),
+      organizationSlug: serializer.fromJson<String?>(json['organizationSlug']),
       code: serializer.fromJson<String>(json['code']),
       name: serializer.fromJson<String>(json['name']),
       imagePath: serializer.fromJson<String?>(json['imagePath']),
@@ -1982,6 +2006,7 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
       'id': serializer.toJson<String>(id),
       'organizationId': serializer.toJson<String?>(organizationId),
       'organizationName': serializer.toJson<String?>(organizationName),
+      'organizationSlug': serializer.toJson<String?>(organizationSlug),
       'code': serializer.toJson<String>(code),
       'name': serializer.toJson<String>(name),
       'imagePath': serializer.toJson<String?>(imagePath),
@@ -1993,6 +2018,7 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
           {String? id,
           Value<String?> organizationId = const Value.absent(),
           Value<String?> organizationName = const Value.absent(),
+          Value<String?> organizationSlug = const Value.absent(),
           String? code,
           String? name,
           Value<String?> imagePath = const Value.absent(),
@@ -2004,6 +2030,9 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
         organizationName: organizationName.present
             ? organizationName.value
             : this.organizationName,
+        organizationSlug: organizationSlug.present
+            ? organizationSlug.value
+            : this.organizationSlug,
         code: code ?? this.code,
         name: name ?? this.name,
         imagePath: imagePath.present ? imagePath.value : this.imagePath,
@@ -2018,6 +2047,9 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
       organizationName: data.organizationName.present
           ? data.organizationName.value
           : this.organizationName,
+      organizationSlug: data.organizationSlug.present
+          ? data.organizationSlug.value
+          : this.organizationSlug,
       code: data.code.present ? data.code.value : this.code,
       name: data.name.present ? data.name.value : this.name,
       imagePath: data.imagePath.present ? data.imagePath.value : this.imagePath,
@@ -2033,6 +2065,7 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
           ..write('id: $id, ')
           ..write('organizationId: $organizationId, ')
           ..write('organizationName: $organizationName, ')
+          ..write('organizationSlug: $organizationSlug, ')
           ..write('code: $code, ')
           ..write('name: $name, ')
           ..write('imagePath: $imagePath, ')
@@ -2042,8 +2075,8 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
   }
 
   @override
-  int get hashCode => Object.hash(id, organizationId, organizationName, code,
-      name, imagePath, scoringRulesJson);
+  int get hashCode => Object.hash(id, organizationId, organizationName,
+      organizationSlug, code, name, imagePath, scoringRulesJson);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -2051,6 +2084,7 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
           other.id == this.id &&
           other.organizationId == this.organizationId &&
           other.organizationName == this.organizationName &&
+          other.organizationSlug == this.organizationSlug &&
           other.code == this.code &&
           other.name == this.name &&
           other.imagePath == this.imagePath &&
@@ -2061,6 +2095,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
   final Value<String> id;
   final Value<String?> organizationId;
   final Value<String?> organizationName;
+  final Value<String?> organizationSlug;
   final Value<String> code;
   final Value<String> name;
   final Value<String?> imagePath;
@@ -2070,6 +2105,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
     this.id = const Value.absent(),
     this.organizationId = const Value.absent(),
     this.organizationName = const Value.absent(),
+    this.organizationSlug = const Value.absent(),
     this.code = const Value.absent(),
     this.name = const Value.absent(),
     this.imagePath = const Value.absent(),
@@ -2080,6 +2116,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
     required String id,
     this.organizationId = const Value.absent(),
     this.organizationName = const Value.absent(),
+    this.organizationSlug = const Value.absent(),
     required String code,
     required String name,
     this.imagePath = const Value.absent(),
@@ -2093,6 +2130,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
     Expression<String>? id,
     Expression<String>? organizationId,
     Expression<String>? organizationName,
+    Expression<String>? organizationSlug,
     Expression<String>? code,
     Expression<String>? name,
     Expression<String>? imagePath,
@@ -2103,6 +2141,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
       if (id != null) 'id': id,
       if (organizationId != null) 'organization_id': organizationId,
       if (organizationName != null) 'organization_name': organizationName,
+      if (organizationSlug != null) 'organization_slug': organizationSlug,
       if (code != null) 'code': code,
       if (name != null) 'name': name,
       if (imagePath != null) 'image_path': imagePath,
@@ -2115,6 +2154,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
       {Value<String>? id,
       Value<String?>? organizationId,
       Value<String?>? organizationName,
+      Value<String?>? organizationSlug,
       Value<String>? code,
       Value<String>? name,
       Value<String?>? imagePath,
@@ -2124,6 +2164,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
       id: id ?? this.id,
       organizationId: organizationId ?? this.organizationId,
       organizationName: organizationName ?? this.organizationName,
+      organizationSlug: organizationSlug ?? this.organizationSlug,
       code: code ?? this.code,
       name: name ?? this.name,
       imagePath: imagePath ?? this.imagePath,
@@ -2143,6 +2184,9 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
     }
     if (organizationName.present) {
       map['organization_name'] = Variable<String>(organizationName.value);
+    }
+    if (organizationSlug.present) {
+      map['organization_slug'] = Variable<String>(organizationSlug.value);
     }
     if (code.present) {
       map['code'] = Variable<String>(code.value);
@@ -2168,6 +2212,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
           ..write('id: $id, ')
           ..write('organizationId: $organizationId, ')
           ..write('organizationName: $organizationName, ')
+          ..write('organizationSlug: $organizationSlug, ')
           ..write('code: $code, ')
           ..write('name: $name, ')
           ..write('imagePath: $imagePath, ')
@@ -3034,6 +3079,7 @@ typedef $$TargetFaceRowsTableCreateCompanionBuilder = TargetFaceRowsCompanion
   required String id,
   Value<String?> organizationId,
   Value<String?> organizationName,
+  Value<String?> organizationSlug,
   required String code,
   required String name,
   Value<String?> imagePath,
@@ -3045,6 +3091,7 @@ typedef $$TargetFaceRowsTableUpdateCompanionBuilder = TargetFaceRowsCompanion
   Value<String> id,
   Value<String?> organizationId,
   Value<String?> organizationName,
+  Value<String?> organizationSlug,
   Value<String> code,
   Value<String> name,
   Value<String?> imagePath,
@@ -3070,6 +3117,10 @@ class $$TargetFaceRowsTableFilterComposer
 
   ColumnFilters<String> get organizationName => $composableBuilder(
       column: $table.organizationName,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get organizationSlug => $composableBuilder(
+      column: $table.organizationSlug,
       builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get code => $composableBuilder(
@@ -3106,6 +3157,10 @@ class $$TargetFaceRowsTableOrderingComposer
       column: $table.organizationName,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get organizationSlug => $composableBuilder(
+      column: $table.organizationSlug,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get code => $composableBuilder(
       column: $table.code, builder: (column) => ColumnOrderings(column));
 
@@ -3137,6 +3192,9 @@ class $$TargetFaceRowsTableAnnotationComposer
 
   GeneratedColumn<String> get organizationName => $composableBuilder(
       column: $table.organizationName, builder: (column) => column);
+
+  GeneratedColumn<String> get organizationSlug => $composableBuilder(
+      column: $table.organizationSlug, builder: (column) => column);
 
   GeneratedColumn<String> get code =>
       $composableBuilder(column: $table.code, builder: (column) => column);
@@ -3181,6 +3239,7 @@ class $$TargetFaceRowsTableTableManager extends RootTableManager<
             Value<String> id = const Value.absent(),
             Value<String?> organizationId = const Value.absent(),
             Value<String?> organizationName = const Value.absent(),
+            Value<String?> organizationSlug = const Value.absent(),
             Value<String> code = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<String?> imagePath = const Value.absent(),
@@ -3191,6 +3250,7 @@ class $$TargetFaceRowsTableTableManager extends RootTableManager<
             id: id,
             organizationId: organizationId,
             organizationName: organizationName,
+            organizationSlug: organizationSlug,
             code: code,
             name: name,
             imagePath: imagePath,
@@ -3201,6 +3261,7 @@ class $$TargetFaceRowsTableTableManager extends RootTableManager<
             required String id,
             Value<String?> organizationId = const Value.absent(),
             Value<String?> organizationName = const Value.absent(),
+            Value<String?> organizationSlug = const Value.absent(),
             required String code,
             required String name,
             Value<String?> imagePath = const Value.absent(),
@@ -3211,6 +3272,7 @@ class $$TargetFaceRowsTableTableManager extends RootTableManager<
             id: id,
             organizationId: organizationId,
             organizationName: organizationName,
+            organizationSlug: organizationSlug,
             code: code,
             name: name,
             imagePath: imagePath,
