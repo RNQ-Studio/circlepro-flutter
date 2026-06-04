@@ -8,10 +8,13 @@ class FeedRepository {
 
   final Dio _dio;
 
-  Future<List<PostEntity>> feed({String? filter}) async {
+  Future<List<PostEntity>> feed({String? filter, String? sort}) async {
     final response = await _dio.get(
       'v1/posts',
-      queryParameters: filter != null ? {'feed': filter} : null,
+      queryParameters: {
+        if (filter != null) 'feed': filter,
+        if (sort != null) 'sort': sort,
+      },
     );
     final data = response.data['data'] as List<dynamic>;
     return data.map((e) => PostEntity.fromJson(e as Map<String, dynamic>)).toList();
@@ -19,6 +22,11 @@ class FeedRepository {
 
   Future<PostEntity> createPost(Map<String, dynamic> data) async {
     final response = await _dio.post('v1/posts', data: data);
+    return PostEntity.fromJson(response.data['data'] as Map<String, dynamic>);
+  }
+
+  Future<PostEntity> voteInPoll(String pollId, String optionId) async {
+    final response = await _dio.post('v1/polls/$pollId/vote', data: {'poll_option_id': optionId});
     return PostEntity.fromJson(response.data['data'] as Map<String, dynamic>);
   }
 

@@ -21,10 +21,12 @@ Future<List<ArticleEntity>> articlesList(
   Ref ref, {
   int? categoryId,
   String? search,
+  bool? isIslamic,
 }) {
   return ref.watch(articlesRepositoryProvider).directory(
         categoryId: categoryId,
         search: search,
+        isIslamic: isIslamic,
       );
 }
 

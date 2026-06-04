@@ -16,11 +16,13 @@ class ArticlesRepository {
   Future<List<ArticleEntity>> directory({
     int? categoryId,
     String? search,
+    bool? isIslamic,
   }) async {
     final response = await _dio.get('v1/articles', queryParameters: {
       'filter[status]': 'published',
       if (categoryId != null) 'filter[category_id]': categoryId,
       if (search != null && search.isNotEmpty) 'filter[search]': search,
+      if (isIslamic != null) 'filter[is_islamic]': isIslamic ? 1 : 0,
     });
     final data = response.data['data'] as List<dynamic>;
     return data.map((e) => ArticleEntity.fromJson(e as Map<String, dynamic>)).toList();

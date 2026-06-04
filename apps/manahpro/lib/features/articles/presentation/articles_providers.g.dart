@@ -106,6 +106,7 @@ final class ArticlesListProvider extends $FunctionalProvider<
       required ({
         int? categoryId,
         String? search,
+        bool? isIslamic,
       })
           super.argument})
       : super(
@@ -137,11 +138,13 @@ final class ArticlesListProvider extends $FunctionalProvider<
     final argument = this.argument as ({
       int? categoryId,
       String? search,
+      bool? isIslamic,
     });
     return articlesList(
       ref,
       categoryId: argument.categoryId,
       search: argument.search,
+      isIslamic: argument.isIslamic,
     );
   }
 
@@ -156,7 +159,7 @@ final class ArticlesListProvider extends $FunctionalProvider<
   }
 }
 
-String _$articlesListHash() => r'ffc2c611045f2a3b401617415be410f9ba429d03';
+String _$articlesListHash() => r'058aee6dfe070bd52b136010d79546f23d949391';
 
 final class ArticlesListFamily extends $Family
     with
@@ -165,6 +168,7 @@ final class ArticlesListFamily extends $Family
             ({
               int? categoryId,
               String? search,
+              bool? isIslamic,
             })> {
   ArticlesListFamily._()
       : super(
@@ -178,10 +182,12 @@ final class ArticlesListFamily extends $Family
   ArticlesListProvider call({
     int? categoryId,
     String? search,
+    bool? isIslamic,
   }) =>
       ArticlesListProvider._(argument: (
         categoryId: categoryId,
         search: search,
+        isIslamic: isIslamic,
       ), from: this);
 
   @override

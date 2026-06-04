@@ -160,6 +160,54 @@ class ArticleReaderScreen extends ConsumerWidget {
                         const SizedBox(height: ManahSpacing.lg),
                       ],
 
+                      if (article.isIslamic && article.hadithReference != null && article.hadithReference!.isNotEmpty) ...[
+                        Container(
+                          margin: const EdgeInsets.only(bottom: ManahSpacing.lg),
+                          padding: const EdgeInsets.all(ManahSpacing.base),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                ManahColors.brandSurface,
+                                Color(0xFFFFFBEB),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(ManahRadius.md),
+                            border: Border.all(color: ManahColors.amber.withValues(alpha: 0.3)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.nightlight_round, color: ManahColors.amber, size: 18),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Dalil & Rujukan Sunnah',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: ManahColors.amberDeep,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: ManahSpacing.sm),
+                              Text(
+                                article.hadithReference!,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontStyle: FontStyle.italic,
+                                  height: 1.4,
+                                  color: ManahColors.darkGrey,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+
                       // Body Content
                       Text(
                         article.content,

@@ -19,6 +19,7 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
   final _searchCtrl = TextEditingController();
   int? _selectedCategoryId;
   String _searchQuery = '';
+  bool _filterIslamic = false;
 
   @override
   void dispose() {
@@ -32,6 +33,7 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
     final articlesAsync = ref.watch(articlesListProvider(
       categoryId: _selectedCategoryId,
       search: _searchQuery,
+      isIslamic: _filterIslamic ? true : null,
     ));
 
     final theme = Theme.of(context);
@@ -83,9 +85,34 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
                             padding: const EdgeInsets.only(right: ManahSpacing.xs),
                             child: ChoiceChip(
                               label: const Text('Semua', style: TextStyle(fontSize: 12)),
-                              selected: _selectedCategoryId == null,
+                              selected: _selectedCategoryId == null && !_filterIslamic,
                               onSelected: (selected) {
-                                if (selected) setState(() => _selectedCategoryId = null);
+                                if (selected) {
+                                  setState(() {
+                                    _selectedCategoryId = null;
+                                    _filterIslamic = false;
+                                  });
+                                }
+                              },
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(right: ManahSpacing.xs),
+                            child: ChoiceChip(
+                              label: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.nightlight_round_outlined, size: 14, color: ManahColors.amber),
+                                  SizedBox(width: 4),
+                                  Text('Sunnah Panahan', style: TextStyle(fontSize: 12)),
+                                ],
+                              ),
+                              selected: _filterIslamic,
+                              onSelected: (selected) {
+                                setState(() {
+                                  _filterIslamic = selected;
+                                  if (selected) _selectedCategoryId = null;
+                                });
                               },
                             ),
                           ),
@@ -94,9 +121,12 @@ class _ArticleListScreenState extends ConsumerState<ArticleListScreen> {
                               padding: const EdgeInsets.only(right: ManahSpacing.xs),
                               child: ChoiceChip(
                                 label: Text(cat.name, style: const TextStyle(fontSize: 12)),
-                                selected: _selectedCategoryId == cat.id,
+                                selected: _selectedCategoryId == cat.id && !_filterIslamic,
                                 onSelected: (selected) {
-                                  setState(() => _selectedCategoryId = selected ? cat.id : null);
+                                  setState(() {
+                                    _selectedCategoryId = selected ? cat.id : null;
+                                    _filterIslamic = false;
+                                  });
                                 },
                               ),
                             );
@@ -212,15 +242,44 @@ class _ArticleCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      if (article.category != null)
-                        Text(
-                          article.category!.name.toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: ManahColors.brand,
-                          ),
-                        ),
+                      Row(
+                        children: [
+                          if (article.category != null)
+                            Text(
+                              article.category!.name.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: ManahColors.brand,
+                              ),
+                            ),
+                          if (article.category != null && article.isIslamic)
+                            const SizedBox(width: 8),
+                          if (article.isIslamic)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: ManahColors.amber.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.nightlight_round, size: 10, color: ManahColors.amber),
+                                  const SizedBox(width: 2),
+                                  Text(
+                                    'SUNNAH',
+                                    style: const TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      color: ManahColors.amberDeep,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
                       Text(
                         '${article.readingTime} mnt baca',
                         style: const TextStyle(fontSize: 11, color: ManahColors.mediumGrey),

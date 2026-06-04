@@ -95,6 +95,51 @@ abstract class _$FeedFilter extends $Notifier<String?> {
   }
 }
 
+@ProviderFor(FeedSort)
+final feedSortProvider = FeedSortProvider._();
+
+final class FeedSortProvider extends $NotifierProvider<FeedSort, String?> {
+  FeedSortProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'feedSortProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$feedSortHash();
+
+  @$internal
+  @override
+  FeedSort create() => FeedSort();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String?>(value),
+    );
+  }
+}
+
+String _$feedSortHash() => r'5ed2a11c27f920b2268fcc9c78a8695f78e5fff2';
+
+abstract class _$FeedSort extends $Notifier<String?> {
+  String? build();
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<String?, String?>;
+    final element = ref.element as $ClassProviderElement<
+        AnyNotifier<String?, String?>, String?, Object?, Object?>;
+    element.handleCreate(ref, build);
+  }
+}
+
 /// Community feed (Module 5, task 2.12).
 
 @ProviderFor(Feed)
@@ -123,7 +168,7 @@ final class FeedProvider
   Feed create() => Feed();
 }
 
-String _$feedHash() => r'27ce10eccd55ee12de1ef8eb399963e502019cd6';
+String _$feedHash() => r'8ee815c81fe25bdf305429fe12db738d4eb22ec7';
 
 /// Community feed (Module 5, task 2.12).
 

@@ -54,7 +54,7 @@ final class QuotesNotifierProvider
   QuotesNotifier create() => QuotesNotifier();
 }
 
-String _$quotesNotifierHash() => r'b455b8891b59a94ac76871171982d97b929cff4c';
+String _$quotesNotifierHash() => r'd41ae3c980327465978f8f253fbdbd812fe296ba';
 
 /// Async notifier managing the Quotes list state with offline-first
 /// auto-synchronization.

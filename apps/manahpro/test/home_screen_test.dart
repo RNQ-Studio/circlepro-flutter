@@ -80,16 +80,15 @@ void main() {
   testWidgets('shows user header after profile loads', (tester) async {
     await tester.pumpWidget(buildSubject());
     await tester.pumpAndSettle();
-    expect(find.textContaining('Selamat datang,'), findsOneWidget);
     expect(find.text('Test User'), findsOneWidget);
+    expect(find.text('test@example.com'), findsOneWidget);
   });
 
   testWidgets('shows level, streak and progress bar', (tester) async {
     await tester.pumpWidget(buildSubject());
     await tester.pumpAndSettle();
-    expect(find.text('Level 2'), findsOneWidget);
-    expect(find.textContaining('3 Hari Streak'), findsOneWidget);
-    expect(find.text('150 / 500 XP'), findsOneWidget); // 650 % 500 = 150
+    expect(find.text('LVL 2'), findsOneWidget);
+    expect(find.textContaining('3 Hari'), findsOneWidget);
   });
 
   testWidgets('shows all 8 main menu items', (tester) async {

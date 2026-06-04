@@ -35,6 +35,8 @@ class ArticleEntity {
     this.category,
     this.authorName,
     required this.tags,
+    this.isIslamic = false,
+    this.hadithReference,
   });
 
   final int id;
@@ -49,6 +51,8 @@ class ArticleEntity {
   final ArticleCategoryEntity? category;
   final String? authorName;
   final List<String> tags;
+  final bool isIslamic;
+  final String? hadithReference;
 
   factory ArticleEntity.fromJson(Map<String, dynamic> json) {
     final categoryJson = json['category'] as Map<String, dynamic>?;
@@ -68,6 +72,8 @@ class ArticleEntity {
       category: categoryJson != null ? ArticleCategoryEntity.fromJson(categoryJson) : null,
       authorName: authorJson != null ? (authorJson['full_name'] as String? ?? authorJson['name'] as String? ?? '') : null,
       tags: tagsList.map((e) => (e as Map<String, dynamic>)['name'] as String? ?? '').where((s) => s.isNotEmpty).toList(),
+      isIslamic: json['is_islamic'] as bool? ?? false,
+      hadithReference: json['hadith_reference'] as String?,
     );
   }
 }

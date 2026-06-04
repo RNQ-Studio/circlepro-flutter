@@ -28,6 +28,82 @@ class SharedSnapshot {
   }
 }
 
+class FeedMedia {
+  const FeedMedia({
+    required this.id,
+    required this.url,
+    required this.type,
+    this.position = 0,
+  });
+
+  final String id;
+  final String url;
+  final String type;
+  final int position;
+
+  factory FeedMedia.fromJson(Map<String, dynamic> json) {
+    return FeedMedia(
+      id: json['id'] as String? ?? '',
+      url: json['url'] as String? ?? '',
+      type: json['type'] as String? ?? 'image',
+      position: json['position'] as int? ?? 0,
+    );
+  }
+}
+
+class PollOptionEntity {
+  const PollOptionEntity({
+    required this.id,
+    required this.optionText,
+    required this.votesCount,
+  });
+
+  final String id;
+  final String optionText;
+  final int votesCount;
+
+  factory PollOptionEntity.fromJson(Map<String, dynamic> json) {
+    return PollOptionEntity(
+      id: json['id'] as String? ?? '',
+      optionText: json['option_text'] as String? ?? '',
+      votesCount: json['votes_count'] as int? ?? 0,
+    );
+  }
+}
+
+class PollEntity {
+  const PollEntity({
+    required this.id,
+    required this.question,
+    this.expiresAt,
+    this.isExpired = false,
+    required this.options,
+    this.totalVotes = 0,
+    this.userVotedOptionId,
+  });
+
+  final String id;
+  final String question;
+  final DateTime? expiresAt;
+  final bool isExpired;
+  final List<PollOptionEntity> options;
+  final int totalVotes;
+  final String? userVotedOptionId;
+
+  factory PollEntity.fromJson(Map<String, dynamic> json) {
+    final optionsList = json['options'] as List<dynamic>? ?? [];
+    return PollEntity(
+      id: json['id'] as String? ?? '',
+      question: json['question'] as String? ?? '',
+      expiresAt: json['expires_at'] != null ? DateTime.tryParse(json['expires_at'] as String) : null,
+      isExpired: json['is_expired'] as bool? ?? false,
+      options: optionsList.map((e) => PollOptionEntity.fromJson(e as Map<String, dynamic>)).toList(),
+      totalVotes: json['total_votes'] as int? ?? 0,
+      userVotedOptionId: json['user_voted_option_id'] as String?,
+    );
+  }
+}
+
 /// A community feed post.
 class PostEntity {
   const PostEntity({
@@ -44,6 +120,8 @@ class PostEntity {
     this.commentCount = 0,
     this.isLiked = false,
     this.createdAt,
+    this.media = const [],
+    this.poll,
   });
 
   final String id;
@@ -59,8 +137,10 @@ class PostEntity {
   final int commentCount;
   final bool isLiked;
   final DateTime? createdAt;
+  final List<FeedMedia> media;
+  final PollEntity? poll;
 
-  PostEntity copyWith({int? likeCount, bool? isLiked, int? commentCount}) => PostEntity(
+  PostEntity copyWith({int? likeCount, bool? isLiked, int? commentCount, PollEntity? poll}) => PostEntity(
         id: id,
         authorId: authorId,
         authorName: authorName,
@@ -74,11 +154,16 @@ class PostEntity {
         commentCount: commentCount ?? this.commentCount,
         isLiked: isLiked ?? this.isLiked,
         createdAt: createdAt,
+        media: media,
+        poll: poll ?? this.poll,
       );
 
   factory PostEntity.fromJson(Map<String, dynamic> json) {
     final author = json['author'] as Map<String, dynamic>?;
     final shared = json['shared'] as Map<String, dynamic>?;
+    final mediaList = json['media'] as List<dynamic>? ?? [];
+    final pollJson = json['poll'] as Map<String, dynamic>?;
+
     return PostEntity(
       id: json['id'] as String,
       authorId: author?['id'] as int?,
@@ -93,6 +178,8 @@ class PostEntity {
       commentCount: json['comment_count'] as int? ?? 0,
       isLiked: json['is_liked'] as bool? ?? false,
       createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'] as String) : null,
+      media: mediaList.map((e) => FeedMedia.fromJson(e as Map<String, dynamic>)).toList(),
+      poll: pollJson != null ? PollEntity.fromJson(pollJson) : null,
     );
   }
 }
