@@ -100,7 +100,7 @@ class _SummaryBody extends StatelessWidget {
             ],
           ),
           const SizedBox(height: ManahSpacing.lg),
-          Text('Skor per End', style: theme.textTheme.titleMedium),
+          Text('Skor per Ronde', style: theme.textTheme.titleMedium),
           const SizedBox(height: ManahSpacing.sm),
           _EndBars(session: session),
           const SizedBox(height: ManahSpacing.xl),
@@ -220,7 +220,7 @@ class _EndBars extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: ManahSpacing.xs),
           child: Row(
             children: [
-              SizedBox(width: 32, child: Text('E${end.endNumber}', style: Theme.of(context).textTheme.bodySmall)),
+              SizedBox(width: 32, child: Text('R${end.endNumber}', style: Theme.of(context).textTheme.bodySmall)),
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(ManahRadius.sm),

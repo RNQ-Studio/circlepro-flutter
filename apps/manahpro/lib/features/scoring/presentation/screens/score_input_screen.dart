@@ -92,7 +92,7 @@ class _ScoreInputView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('End ${end.endNumber}/${session.numEnds}'),
+        title: Text('Ronde ${end.endNumber}/${session.numEnds}'),
         actions: [
           TextButton(
             onPressed: () => _finish(context),
@@ -153,7 +153,7 @@ class _ScoreInputView extends StatelessWidget {
                   ),
                   const SizedBox(height: ManahSpacing.sm),
                   Text(
-                    'End total: ${end.endTotal}',
+                    'Total Ronde: ${end.endTotal}',
                     style: theme.textTheme.titleMedium,
                   ),
                 ],
@@ -179,7 +179,7 @@ class _ScoreInputView extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: state.hasPreviousEnd ? notifier.previousEnd : null,
                       icon: const Icon(Icons.chevron_left),
-                      label: const Text('End Sebelumnya'),
+                      label: const Text('Ronde Sebelumnya'),
                     ),
                   ),
                   const SizedBox(width: ManahSpacing.md),
@@ -187,7 +187,7 @@ class _ScoreInputView extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: state.hasNextEnd ? notifier.nextEnd : null,
                       icon: const Icon(Icons.chevron_right),
-                      label: const Text('End Berikutnya'),
+                      label: const Text('Ronde Berikutnya'),
                     ),
                   ),
                 ],
