@@ -23,6 +23,23 @@ class QuotesRemoteDataSource {
         .toList();
   }
 
+  /// Loves a quote on the server.
+  ///
+  /// `POST /v1/quotes/{id}/love`
+  /// Returns `{ "loved": true, "love_count": N }`.
+  Future<Map<String, dynamic>> loveQuote(int quoteId) async {
+    final response = await _dio.post('v1/quotes/$quoteId/love');
+    return response.data['data'] as Map<String, dynamic>;
+  }
+
+  /// Unloves a quote on the server.
+  ///
+  /// `DELETE /v1/quotes/{id}/love`
+  /// Returns `{ "loved": false, "love_count": N }`.
+  Future<Map<String, dynamic>> unloveQuote(int quoteId) async {
+    final response = await _dio.delete('v1/quotes/$quoteId/love');
+    return response.data['data'] as Map<String, dynamic>;
+  }
 
   /// Checks whether the server is reachable.
   ///

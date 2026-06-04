@@ -386,6 +386,24 @@ class $QuotesTable extends Quotes with TableInfo<$QuotesTable, Quote> {
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
       'updated_at', aliasedName, true,
       type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _loveCountMeta =
+      const VerificationMeta('loveCount');
+  @override
+  late final GeneratedColumn<int> loveCount = GeneratedColumn<int>(
+      'love_count', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _isLovedMeta =
+      const VerificationMeta('isLoved');
+  @override
+  late final GeneratedColumn<bool> isLoved = GeneratedColumn<bool>(
+      'is_loved', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_loved" IN (0, 1))'),
+      defaultValue: const Constant(false));
   @override
   List<GeneratedColumn> get $columns => [
         localId,
@@ -397,7 +415,9 @@ class $QuotesTable extends Quotes with TableInfo<$QuotesTable, Quote> {
         isSynced,
         syncAction,
         createdAt,
-        updatedAt
+        updatedAt,
+        loveCount,
+        isLoved
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -455,6 +475,14 @@ class $QuotesTable extends Quotes with TableInfo<$QuotesTable, Quote> {
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
+    if (data.containsKey('love_count')) {
+      context.handle(_loveCountMeta,
+          loveCount.isAcceptableOrUnknown(data['love_count']!, _loveCountMeta));
+    }
+    if (data.containsKey('is_loved')) {
+      context.handle(_isLovedMeta,
+          isLoved.isAcceptableOrUnknown(data['is_loved']!, _isLovedMeta));
+    }
     return context;
   }
 
@@ -484,6 +512,10 @@ class $QuotesTable extends Quotes with TableInfo<$QuotesTable, Quote> {
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at']),
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at']),
+      loveCount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}love_count'])!,
+      isLoved: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_loved'])!,
     );
   }
 
@@ -520,6 +552,12 @@ class Quote extends DataClass implements Insertable<Quote> {
   final String? syncAction;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+
+  /// Total number of users who loved this quote.
+  final int loveCount;
+
+  /// Whether the current authenticated user has loved this quote.
+  final bool isLoved;
   const Quote(
       {required this.localId,
       this.serverId,
@@ -530,7 +568,9 @@ class Quote extends DataClass implements Insertable<Quote> {
       required this.isSynced,
       this.syncAction,
       this.createdAt,
-      this.updatedAt});
+      this.updatedAt,
+      required this.loveCount,
+      required this.isLoved});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -554,6 +594,8 @@ class Quote extends DataClass implements Insertable<Quote> {
     if (!nullToAbsent || updatedAt != null) {
       map['updated_at'] = Variable<DateTime>(updatedAt);
     }
+    map['love_count'] = Variable<int>(loveCount);
+    map['is_loved'] = Variable<bool>(isLoved);
     return map;
   }
 
@@ -578,6 +620,8 @@ class Quote extends DataClass implements Insertable<Quote> {
       updatedAt: updatedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(updatedAt),
+      loveCount: Value(loveCount),
+      isLoved: Value(isLoved),
     );
   }
 
@@ -595,6 +639,8 @@ class Quote extends DataClass implements Insertable<Quote> {
       syncAction: serializer.fromJson<String?>(json['syncAction']),
       createdAt: serializer.fromJson<DateTime?>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      loveCount: serializer.fromJson<int>(json['loveCount']),
+      isLoved: serializer.fromJson<bool>(json['isLoved']),
     );
   }
   @override
@@ -611,6 +657,8 @@ class Quote extends DataClass implements Insertable<Quote> {
       'syncAction': serializer.toJson<String?>(syncAction),
       'createdAt': serializer.toJson<DateTime?>(createdAt),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'loveCount': serializer.toJson<int>(loveCount),
+      'isLoved': serializer.toJson<bool>(isLoved),
     };
   }
 
@@ -624,7 +672,9 @@ class Quote extends DataClass implements Insertable<Quote> {
           bool? isSynced,
           Value<String?> syncAction = const Value.absent(),
           Value<DateTime?> createdAt = const Value.absent(),
-          Value<DateTime?> updatedAt = const Value.absent()}) =>
+          Value<DateTime?> updatedAt = const Value.absent(),
+          int? loveCount,
+          bool? isLoved}) =>
       Quote(
         localId: localId ?? this.localId,
         serverId: serverId.present ? serverId.value : this.serverId,
@@ -636,6 +686,8 @@ class Quote extends DataClass implements Insertable<Quote> {
         syncAction: syncAction.present ? syncAction.value : this.syncAction,
         createdAt: createdAt.present ? createdAt.value : this.createdAt,
         updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+        loveCount: loveCount ?? this.loveCount,
+        isLoved: isLoved ?? this.isLoved,
       );
   Quote copyWithCompanion(QuotesCompanion data) {
     return Quote(
@@ -650,6 +702,8 @@ class Quote extends DataClass implements Insertable<Quote> {
           data.syncAction.present ? data.syncAction.value : this.syncAction,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      loveCount: data.loveCount.present ? data.loveCount.value : this.loveCount,
+      isLoved: data.isLoved.present ? data.isLoved.value : this.isLoved,
     );
   }
 
@@ -665,14 +719,16 @@ class Quote extends DataClass implements Insertable<Quote> {
           ..write('isSynced: $isSynced, ')
           ..write('syncAction: $syncAction, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('loveCount: $loveCount, ')
+          ..write('isLoved: $isLoved')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(localId, serverId, content, author, source,
-      isActive, isSynced, syncAction, createdAt, updatedAt);
+      isActive, isSynced, syncAction, createdAt, updatedAt, loveCount, isLoved);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -686,7 +742,9 @@ class Quote extends DataClass implements Insertable<Quote> {
           other.isSynced == this.isSynced &&
           other.syncAction == this.syncAction &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.loveCount == this.loveCount &&
+          other.isLoved == this.isLoved);
 }
 
 class QuotesCompanion extends UpdateCompanion<Quote> {
@@ -700,6 +758,8 @@ class QuotesCompanion extends UpdateCompanion<Quote> {
   final Value<String?> syncAction;
   final Value<DateTime?> createdAt;
   final Value<DateTime?> updatedAt;
+  final Value<int> loveCount;
+  final Value<bool> isLoved;
   const QuotesCompanion({
     this.localId = const Value.absent(),
     this.serverId = const Value.absent(),
@@ -711,6 +771,8 @@ class QuotesCompanion extends UpdateCompanion<Quote> {
     this.syncAction = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.loveCount = const Value.absent(),
+    this.isLoved = const Value.absent(),
   });
   QuotesCompanion.insert({
     this.localId = const Value.absent(),
@@ -723,6 +785,8 @@ class QuotesCompanion extends UpdateCompanion<Quote> {
     this.syncAction = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.loveCount = const Value.absent(),
+    this.isLoved = const Value.absent(),
   })  : content = Value(content),
         author = Value(author);
   static Insertable<Quote> custom({
@@ -736,6 +800,8 @@ class QuotesCompanion extends UpdateCompanion<Quote> {
     Expression<String>? syncAction,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<int>? loveCount,
+    Expression<bool>? isLoved,
   }) {
     return RawValuesInsertable({
       if (localId != null) 'local_id': localId,
@@ -748,6 +814,8 @@ class QuotesCompanion extends UpdateCompanion<Quote> {
       if (syncAction != null) 'sync_action': syncAction,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (loveCount != null) 'love_count': loveCount,
+      if (isLoved != null) 'is_loved': isLoved,
     });
   }
 
@@ -761,7 +829,9 @@ class QuotesCompanion extends UpdateCompanion<Quote> {
       Value<bool>? isSynced,
       Value<String?>? syncAction,
       Value<DateTime?>? createdAt,
-      Value<DateTime?>? updatedAt}) {
+      Value<DateTime?>? updatedAt,
+      Value<int>? loveCount,
+      Value<bool>? isLoved}) {
     return QuotesCompanion(
       localId: localId ?? this.localId,
       serverId: serverId ?? this.serverId,
@@ -773,6 +843,8 @@ class QuotesCompanion extends UpdateCompanion<Quote> {
       syncAction: syncAction ?? this.syncAction,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      loveCount: loveCount ?? this.loveCount,
+      isLoved: isLoved ?? this.isLoved,
     );
   }
 
@@ -809,6 +881,12 @@ class QuotesCompanion extends UpdateCompanion<Quote> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (loveCount.present) {
+      map['love_count'] = Variable<int>(loveCount.value);
+    }
+    if (isLoved.present) {
+      map['is_loved'] = Variable<bool>(isLoved.value);
+    }
     return map;
   }
 
@@ -824,7 +902,9 @@ class QuotesCompanion extends UpdateCompanion<Quote> {
           ..write('isSynced: $isSynced, ')
           ..write('syncAction: $syncAction, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('loveCount: $loveCount, ')
+          ..write('isLoved: $isLoved')
           ..write(')'))
         .toString();
   }
@@ -1014,6 +1094,8 @@ typedef $$QuotesTableCreateCompanionBuilder = QuotesCompanion Function({
   Value<String?> syncAction,
   Value<DateTime?> createdAt,
   Value<DateTime?> updatedAt,
+  Value<int> loveCount,
+  Value<bool> isLoved,
 });
 typedef $$QuotesTableUpdateCompanionBuilder = QuotesCompanion Function({
   Value<int> localId,
@@ -1026,6 +1108,8 @@ typedef $$QuotesTableUpdateCompanionBuilder = QuotesCompanion Function({
   Value<String?> syncAction,
   Value<DateTime?> createdAt,
   Value<DateTime?> updatedAt,
+  Value<int> loveCount,
+  Value<bool> isLoved,
 });
 
 class $$QuotesTableFilterComposer
@@ -1066,6 +1150,12 @@ class $$QuotesTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get loveCount => $composableBuilder(
+      column: $table.loveCount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isLoved => $composableBuilder(
+      column: $table.isLoved, builder: (column) => ColumnFilters(column));
 }
 
 class $$QuotesTableOrderingComposer
@@ -1106,6 +1196,12 @@ class $$QuotesTableOrderingComposer
 
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get loveCount => $composableBuilder(
+      column: $table.loveCount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isLoved => $composableBuilder(
+      column: $table.isLoved, builder: (column) => ColumnOrderings(column));
 }
 
 class $$QuotesTableAnnotationComposer
@@ -1146,6 +1242,12 @@ class $$QuotesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get loveCount =>
+      $composableBuilder(column: $table.loveCount, builder: (column) => column);
+
+  GeneratedColumn<bool> get isLoved =>
+      $composableBuilder(column: $table.isLoved, builder: (column) => column);
 }
 
 class $$QuotesTableTableManager extends RootTableManager<
@@ -1181,6 +1283,8 @@ class $$QuotesTableTableManager extends RootTableManager<
             Value<String?> syncAction = const Value.absent(),
             Value<DateTime?> createdAt = const Value.absent(),
             Value<DateTime?> updatedAt = const Value.absent(),
+            Value<int> loveCount = const Value.absent(),
+            Value<bool> isLoved = const Value.absent(),
           }) =>
               QuotesCompanion(
             localId: localId,
@@ -1193,6 +1297,8 @@ class $$QuotesTableTableManager extends RootTableManager<
             syncAction: syncAction,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            loveCount: loveCount,
+            isLoved: isLoved,
           ),
           createCompanionCallback: ({
             Value<int> localId = const Value.absent(),
@@ -1205,6 +1311,8 @@ class $$QuotesTableTableManager extends RootTableManager<
             Value<String?> syncAction = const Value.absent(),
             Value<DateTime?> createdAt = const Value.absent(),
             Value<DateTime?> updatedAt = const Value.absent(),
+            Value<int> loveCount = const Value.absent(),
+            Value<bool> isLoved = const Value.absent(),
           }) =>
               QuotesCompanion.insert(
             localId: localId,
@@ -1217,6 +1325,8 @@ class $$QuotesTableTableManager extends RootTableManager<
             syncAction: syncAction,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            loveCount: loveCount,
+            isLoved: isLoved,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))

@@ -53,6 +53,12 @@ class Quotes extends Table {
 
   DateTimeColumn get createdAt => dateTime().nullable()();
   DateTimeColumn get updatedAt => dateTime().nullable()();
+
+  /// Total number of users who loved this quote.
+  IntColumn get loveCount => integer().withDefault(const Constant(0))();
+
+  /// Whether the current authenticated user has loved this quote.
+  BoolColumn get isLoved => boolean().withDefault(const Constant(false))();
 }
 
 /// Main application database using Drift (SQLite).
@@ -64,7 +70,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -72,6 +78,10 @@ class AppDatabase extends _$AppDatabase {
         onUpgrade: (m, from, to) async {
           if (from < 2) {
             await m.createTable(quotes);
+          }
+          if (from < 3) {
+            await m.addColumn(quotes, quotes.loveCount);
+            await m.addColumn(quotes, quotes.isLoved);
           }
         },
       );

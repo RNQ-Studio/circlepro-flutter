@@ -1,8 +1,3 @@
-import 'dart:developer';
-
-import 'package:core/core.dart';
-import 'package:drift/drift.dart';
-
 import '../../domain/entities/quote_entity.dart';
 import '../../domain/repositories/quotes_repository.dart';
 import '../datasources/quotes_local_data_source.dart';
@@ -11,13 +6,9 @@ import '../datasources/quotes_remote_data_source.dart';
 /// Offline-first implementation of [QuotesRepository].
 ///
 /// Strategy:
-/// - **Read**: Try remote first → save to local → return local data.
-///   Falls back to local-only if the network is unavailable.
-/// - **Write**: Always write to local first (optimistic), then sync
-///   to the server in the background.
-/// - **Sync**: Process all unsynced items (create/update/delete) one
-///   by one. Errors on individual items are logged but do not halt
-///   the overall sync process.
+/// - **Read**: Returns local SQLite data as single source of truth.
+/// - **Sync**: Pulls latest data from server and replaces local cache.
+/// - **Love/Unlove**: Calls server API directly (requires auth/online).
 class QuotesRepositoryImpl implements QuotesRepository {
   const QuotesRepositoryImpl(this._remoteDataSource, this._localDataSource);
 
@@ -42,8 +33,7 @@ class QuotesRepositoryImpl implements QuotesRepository {
       return;
     }
 
-
-    // After syncing all pending items, refresh local data from server
+    // Refresh local data from server
     try {
       print(
           'QuotesRepository.syncQuotes: fetching latest quotes from server...');
@@ -59,5 +49,17 @@ class QuotesRepositoryImpl implements QuotesRepository {
       print(
           'QuotesRepository.syncQuotes: failed to refresh from server after sync, error: $e');
     }
+  }
+
+  @override
+  Future<int> loveQuote(int quoteId) async {
+    final result = await _remoteDataSource.loveQuote(quoteId);
+    return result['love_count'] as int;
+  }
+
+  @override
+  Future<int> unloveQuote(int quoteId) async {
+    final result = await _remoteDataSource.unloveQuote(quoteId);
+    return result['love_count'] as int;
   }
 }

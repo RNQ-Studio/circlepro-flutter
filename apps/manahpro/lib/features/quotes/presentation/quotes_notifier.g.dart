@@ -14,9 +14,7 @@ part of 'quotes_notifier.dart';
 /// The [build] method initializes by triggering a background sync,
 /// then returns the local SQLite data as the single source of truth.
 ///
-/// All CRUD methods use **optimistic UI updates**: they modify local
-/// storage first, immediately rebuild the state, then trigger
-/// background sync to push changes to the server.
+/// All sync methods use read-only pulling. Love/unlove uses optimistic UI.
 
 @ProviderFor(QuotesNotifier)
 final quotesProvider = QuotesNotifierProvider._();
@@ -27,9 +25,7 @@ final quotesProvider = QuotesNotifierProvider._();
 /// The [build] method initializes by triggering a background sync,
 /// then returns the local SQLite data as the single source of truth.
 ///
-/// All CRUD methods use **optimistic UI updates**: they modify local
-/// storage first, immediately rebuild the state, then trigger
-/// background sync to push changes to the server.
+/// All sync methods use read-only pulling. Love/unlove uses optimistic UI.
 final class QuotesNotifierProvider
     extends $AsyncNotifierProvider<QuotesNotifier, List<QuoteEntity>> {
   /// Async notifier managing the Quotes list state with offline-first
@@ -38,9 +34,7 @@ final class QuotesNotifierProvider
   /// The [build] method initializes by triggering a background sync,
   /// then returns the local SQLite data as the single source of truth.
   ///
-  /// All CRUD methods use **optimistic UI updates**: they modify local
-  /// storage first, immediately rebuild the state, then trigger
-  /// background sync to push changes to the server.
+  /// All sync methods use read-only pulling. Love/unlove uses optimistic UI.
   QuotesNotifierProvider._()
       : super(
           from: null,
@@ -60,7 +54,7 @@ final class QuotesNotifierProvider
   QuotesNotifier create() => QuotesNotifier();
 }
 
-String _$quotesNotifierHash() => r'd7758d33966f92b9eb56f7f70de2bd64795335cb';
+String _$quotesNotifierHash() => r'b455b8891b59a94ac76871171982d97b929cff4c';
 
 /// Async notifier managing the Quotes list state with offline-first
 /// auto-synchronization.
@@ -68,9 +62,7 @@ String _$quotesNotifierHash() => r'd7758d33966f92b9eb56f7f70de2bd64795335cb';
 /// The [build] method initializes by triggering a background sync,
 /// then returns the local SQLite data as the single source of truth.
 ///
-/// All CRUD methods use **optimistic UI updates**: they modify local
-/// storage first, immediately rebuild the state, then trigger
-/// background sync to push changes to the server.
+/// All sync methods use read-only pulling. Love/unlove uses optimistic UI.
 
 abstract class _$QuotesNotifier extends $AsyncNotifier<List<QuoteEntity>> {
   FutureOr<List<QuoteEntity>> build();

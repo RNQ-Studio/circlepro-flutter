@@ -14,7 +14,7 @@ part 'quotes_notifier.g.dart';
 /// The [build] method initializes by triggering a background sync,
 /// then returns the local SQLite data as the single source of truth.
 ///
-/// All sync methods use read-only pulling.
+/// All sync methods use read-only pulling. Love/unlove uses optimistic UI.
 @riverpod
 class QuotesNotifier extends _$QuotesNotifier {
   @override
@@ -39,6 +39,62 @@ class QuotesNotifier extends _$QuotesNotifier {
     return _loadLocalQuotes();
   }
 
+  /// Toggles the love state for a quote with optimistic UI update.
+  ///
+  /// 1. Immediately updates the UI (optimistic)
+  /// 2. Calls the server API
+  /// 3. Updates state with server response
+  /// 4. Rolls back if the call fails
+  Future<void> toggleLove(int quoteId, bool currentlyLoved) async {
+    final repository = ref.read(quotesRepositoryProvider);
+    final previousState = state.value;
+    if (previousState == null) return;
+
+    // Optimistic update
+    final updatedQuotes = previousState.map((q) {
+      if (q.id == quoteId) {
+        return q.copyWith(
+          isLoved: !currentlyLoved,
+          loveCount: currentlyLoved
+              ? (q.loveCount > 0 ? q.loveCount - 1 : 0)
+              : q.loveCount + 1,
+        );
+      }
+      return q;
+    }).toList();
+    state = AsyncData(updatedQuotes);
+
+    try {
+      final int serverLoveCount;
+      if (currentlyLoved) {
+        serverLoveCount = await repository.unloveQuote(quoteId);
+      } else {
+        serverLoveCount = await repository.loveQuote(quoteId);
+      }
+
+      // Update with server-confirmed love count
+      final confirmedQuotes = state.value?.map((q) {
+        if (q.id == quoteId) {
+          return q.copyWith(loveCount: serverLoveCount);
+        }
+        return q;
+      }).toList();
+
+      if (confirmedQuotes != null) {
+        state = AsyncData(confirmedQuotes);
+      }
+    } catch (e, st) {
+      log(
+        'QuotesNotifier.toggleLove: failed for quoteId=$quoteId',
+        error: e,
+        stackTrace: st,
+        name: 'QuotesNotifier',
+      );
+
+      // Rollback to previous state on failure
+      state = AsyncData(previousState);
+    }
+  }
 
   /// Manually refreshes the quotes list.
   ///
@@ -96,8 +152,7 @@ class QuotesNotifier extends _$QuotesNotifier {
     });
   }
 
-  /// Executes the sync cycle: pushes unsynced local changes to the
-  /// server, then pulls the latest data from the server.
+  /// Executes the sync cycle: pulls the latest data from the server.
   Future<void> _syncData() async {
     final repository = ref.read(quotesRepositoryProvider);
     await repository.syncQuotes();

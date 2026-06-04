@@ -19,6 +19,8 @@ class QuoteModel extends QuoteEntity {
     super.isActive,
     super.isSynced,
     super.syncAction,
+    super.loveCount,
+    super.isLoved,
     super.createdAt,
     super.updatedAt,
   });
@@ -27,7 +29,7 @@ class QuoteModel extends QuoteEntity {
   ///
   /// Expected shape (from Laravel `QuoteResource`):
   /// ```json
-  /// { "id": 1, "text": "...", "author": "...", ... }
+  /// { "id": 1, "text": "...", "author": "...", "love_count": 5, "is_loved": true, ... }
   /// ```
   factory QuoteModel.fromJson(Map<String, dynamic> json) {
     return QuoteModel(
@@ -39,6 +41,8 @@ class QuoteModel extends QuoteEntity {
       isActive: json['is_active'] as bool? ?? true,
       isSynced: true, // Data from server is already synced
       syncAction: null,
+      loveCount: json['love_count'] as int? ?? 0,
+      isLoved: json['is_loved'] as bool? ?? false,
       createdAt: json['created_at'] != null
           ? DateTime.tryParse(json['created_at'] as String)
           : null,
@@ -62,6 +66,8 @@ class QuoteModel extends QuoteEntity {
       isActive: row.isActive,
       isSynced: row.isSynced,
       syncAction: row.syncAction,
+      loveCount: row.loveCount,
+      isLoved: row.isLoved,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,
     );
@@ -93,6 +99,8 @@ class QuoteModel extends QuoteEntity {
       isActive: Value(isActive),
       isSynced: Value(isSynced),
       syncAction: Value(syncAction),
+      loveCount: Value(loveCount),
+      isLoved: Value(isLoved),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
     );

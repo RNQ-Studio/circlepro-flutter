@@ -8,8 +8,12 @@ abstract class QuotesRepository {
   /// Fetches all quotes. Tries remote first, falls back to local cache.
   Future<List<QuoteEntity>> getQuotes();
 
-
-
-  /// Synchronizes all pending local changes with the remote server.
+  /// Synchronizes local data with the remote server (pull only).
   Future<void> syncQuotes();
+
+  /// Loves a quote on the server. Returns updated love_count.
+  Future<int> loveQuote(int quoteId);
+
+  /// Unloves a quote on the server. Returns updated love_count.
+  Future<int> unloveQuote(int quoteId);
 }

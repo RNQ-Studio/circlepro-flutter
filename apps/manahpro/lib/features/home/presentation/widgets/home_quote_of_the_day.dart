@@ -249,6 +249,51 @@ class _HomeQuoteOfTheDayState extends ConsumerState<HomeQuoteOfTheDay> {
                             ),
                           ),
                           const Spacer(),
+                          // Love Button
+                          Material(
+                            color: isDark ? Colors.white.withOpacity(0.06) : ManahColors.brandSurface,
+                            shape: const CircleBorder(),
+                            child: InkWell(
+                              customBorder: const CircleBorder(),
+                              onTap: () {
+                                if (quote.id != null) {
+                                  ref.read(quotesProvider.notifier).toggleLove(
+                                      quote.id!, quote.isLoved);
+                                }
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(6),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      quote.isLoved
+                                          ? Icons.favorite_rounded
+                                          : Icons.favorite_border_rounded,
+                                      color: quote.isLoved
+                                          ? Colors.redAccent
+                                          : (isDark ? Colors.white70 : ManahColors.brand),
+                                      size: 16,
+                                    ),
+                                    if (quote.loveCount > 0) ...[
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        '${quote.loveCount}',
+                                        style: TextStyle(
+                                          color: quote.isLoved
+                                              ? Colors.redAccent
+                                              : (isDark ? Colors.white70 : ManahColors.brand),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
                           // Elegant Copy Button
                           Material(
                             color: isDark ? Colors.white.withOpacity(0.06) : ManahColors.brandSurface,

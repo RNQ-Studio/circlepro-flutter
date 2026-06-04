@@ -14,6 +14,8 @@ class QuoteEntity extends Equatable {
     this.isActive = true,
     this.isSynced = false,
     this.syncAction,
+    this.loveCount = 0,
+    this.isLoved = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -42,6 +44,12 @@ class QuoteEntity extends Equatable {
   /// Pending sync action: `'create'`, `'update'`, `'delete'`, or `null`.
   final String? syncAction;
 
+  /// Total number of users who loved this quote.
+  final int loveCount;
+
+  /// Whether the current user has loved this quote.
+  final bool isLoved;
+
   /// Server-side creation timestamp.
   final DateTime? createdAt;
 
@@ -58,6 +66,8 @@ class QuoteEntity extends Equatable {
     bool? isActive,
     bool? isSynced,
     String? Function()? syncAction,
+    int? loveCount,
+    bool? isLoved,
     DateTime? Function()? createdAt,
     DateTime? Function()? updatedAt,
   }) {
@@ -70,6 +80,8 @@ class QuoteEntity extends Equatable {
       isActive: isActive ?? this.isActive,
       isSynced: isSynced ?? this.isSynced,
       syncAction: syncAction != null ? syncAction() : this.syncAction,
+      loveCount: loveCount ?? this.loveCount,
+      isLoved: isLoved ?? this.isLoved,
       createdAt: createdAt != null ? createdAt() : this.createdAt,
       updatedAt: updatedAt != null ? updatedAt() : this.updatedAt,
     );
@@ -85,6 +97,8 @@ class QuoteEntity extends Equatable {
         isActive,
         isSynced,
         syncAction,
+        loveCount,
+        isLoved,
         createdAt,
         updatedAt,
       ];
