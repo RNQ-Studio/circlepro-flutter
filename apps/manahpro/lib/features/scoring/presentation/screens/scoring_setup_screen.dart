@@ -202,7 +202,10 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
                           SizedBox(
                             width: 54,
                             height: 54,
-                            child: TargetFacePreview(code: selected.code),
+                            child: TargetFacePreview(
+                              code: selected.code,
+                              imagePath: selected.imagePath,
+                            ),
                           ),
                           const SizedBox(width: ManahSpacing.base),
                           Expanded(
@@ -358,12 +361,48 @@ class _Stepper extends StatelessWidget {
 }
 
 class TargetFacePreview extends StatelessWidget {
-  const TargetFacePreview({super.key, required this.code});
+  const TargetFacePreview({
+    super.key,
+    required this.code,
+    this.imagePath,
+  });
 
   final String code;
+  final String? imagePath;
 
   @override
   Widget build(BuildContext context) {
+    final path = imagePath;
+    if (path != null && path.isNotEmpty) {
+      if (path.startsWith('http://') || path.startsWith('https://')) {
+        return AspectRatio(
+          aspectRatio: 1.0,
+          child: Image.network(
+            path,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return CustomPaint(
+                painter: _TargetFacePainter(code),
+              );
+            },
+          ),
+        );
+      } else if (path.startsWith('assets/')) {
+        return AspectRatio(
+          aspectRatio: 1.0,
+          child: Image.asset(
+            path,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return CustomPaint(
+                painter: _TargetFacePainter(code),
+              );
+            },
+          ),
+        );
+      }
+    }
+
     return AspectRatio(
       aspectRatio: 1.0,
       child: CustomPaint(

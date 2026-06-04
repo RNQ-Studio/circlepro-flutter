@@ -149,7 +149,10 @@ class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionS
                                       Expanded(
                                         child: Padding(
                                           padding: const EdgeInsets.all(4.0),
-                                          child: TargetFacePreview(code: target.code),
+                                          child: TargetFacePreview(
+                                            code: target.code,
+                                            imagePath: target.imagePath,
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(height: ManahSpacing.xs),
