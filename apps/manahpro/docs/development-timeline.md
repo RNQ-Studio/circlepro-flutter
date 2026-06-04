@@ -62,11 +62,10 @@
 6. [Phase 3: Compete — Events & Ranking](#phase-3-compete--events--ranking)
 7. [Phase 4: Community & Content](#phase-4-community--content)
 8. [Phase 5: Monetization Layer](#phase-5-monetization-layer)
-9. [Phase 6: Marketplace](#phase-6-marketplace)
-10. [Phase 7: Advanced & AI Features](#phase-7-advanced--ai-features)
-11. [Buffer, Risk & Contingency](#buffer-risk--contingency)
-12. [Milestone & Launch Checkpoints](#milestone--launch-checkpoints)
-13. [Dependency Map](#dependency-map)
+9. [Phase 6: Advanced & AI Features](#phase-6-advanced--ai-features)
+10. [Buffer, Risk & Contingency](#buffer-risk--contingency)
+11. [Milestone & Launch Checkpoints](#milestone--launch-checkpoints)
+12. [Dependency Map](#dependency-map)
 
 ---
 
@@ -139,7 +138,7 @@ Estimation sudah termasuk:
 ```
 ═══════════════════════════════════════════════════════════════════════
                     MANAHPRO DEVELOPMENT TIMELINE
-         1 Developer + AI Agent | Jun 2026 → | Update 4 Jun 2026
+         1 Developer + AI Agent | Jun 2026 → | Update 5 Jun 2026
 ═══════════════════════════════════════════════════════════════════════
   ✅ = selesai   🔶 = sebagian besar selesai   ⬚ = belum mulai
 
@@ -176,20 +175,14 @@ Estimation sudah termasuk:
          ──── 🚀 REVENUE LAUNCH (v1.5) : ~Oktober–November 2026 ────
          Premium subscription + Club SaaS + Event fees
 
-⬚ P6  ▐░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░██████░░░░░░░░░▌
-         Marketplace
-         Nov – Jan 2027 (8 minggu, 56 SP)
-
-         ──── 🚀 MARKETPLACE LAUNCH (v2.0) : ~Akhir Januari 2027 ────
-
-⬚ P7  ▐░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░████████████▌
+⬚ P6  ▐░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░████████████▌
          Advanced & AI Features
-         Feb 2027 – Jun 2027 (ongoing)
+         Des 2026 – Jun 2027 (ongoing)
 
 ═══════════════════════════════════════════════════════════════════════
- PROGRESS: Phase 0–2 ✅ | Phase 3 🔶 90% | Phase 4 🔶 70% | Phase 5 ✅ 100% ≈ 80% total
+ PROGRESS: Phase 0–2 ✅ | Phase 3 🔶 90% | Phase 4 🔶 70% | Phase 5 ✅ 100% ≈ 93% total
  AHEAD OF SCHEDULE: ~2.5 bulan lebih cepat dari timeline awal!
- Sisa: anti-gaming + polish/testing + Phase 6
+ Sisa: anti-gaming + polish/testing + Phase 6 (Advanced & AI Features)
 ═══════════════════════════════════════════════════════════════════════
 ```
 
@@ -201,7 +194,7 @@ Estimation sudah termasuk:
 | 1.000-3.000 users | Soft launch → gather feedback | ✅ Achievable |
 | Q2 2026 (Oct-Dec): Club Tools & Events | v1.0: **Agustus–September 2026** (dimajukan) | ✅ Ahead of schedule |
 | 5.000-10.000 users, 50 clubs | Post public launch + monetization | ✅ Achievable |
-| Q3 2027 (Jan-Mar): Marketplace & Premium | v2.0: Januari 2027 | ✅ Aligned |
+| Q3 2027 (Jan-Mar): Advanced & AI Features | v2.0: Februari 2027 | ✅ Aligned |
 | Revenue Bulan ke-12: Rp 41 jt/bulan | Juni 2027 | ⚠️ Depends on traction |
 
 ---
@@ -350,7 +343,6 @@ SOFT LAUNCH CHECKLIST:
 ├── ✅ Shareable scorecard
 ├── ❌ Events & registration (Phase 3)
 ├── ❌ Ranking system (Phase 3)
-├── ❌ Marketplace (Phase 6)
 └── ❌ Premium subscription (Phase 5)
 
 TARGET: Deploy ke Play Store (internal/closed testing)
@@ -445,8 +437,7 @@ PUBLIC LAUNCH CHECKLIST:
 ├── ✅ Digital scorecards & certificates
 ├── ✅ E-ticket with QR check-in
 ├── ❌ Premium subscription (Phase 5)
-├── ❌ Marketplace (Phase 6)
-└── ❌ AI features (Phase 7)
+└── ❌ Advanced & AI features (Phase 6)
 
 TARGET: Full Play Store + App Store launch
         Ambassador program (20 atlet/coach)
@@ -533,78 +524,8 @@ REVENUE LAUNCH CHECKLIST:
 
 ---
 
-## Phase 6: Marketplace
-### 📅 7 Desember 2026 – 31 Januari 2027 (8 Minggu, 56 SP)
-
-> **Tujuan**: Marketplace equipment panahan (baru + bekas) dengan sistem escrow dan review.
-
-### Prioritas: 🟡 MEDIUM — Revenue stream tambahan, butuh user base dulu
-
-#### Minggu 1-2: Marketplace Foundation (14 SP)
-
-| # | Task | SP | Backend/Frontend | Detail |
-|---|------|----|-----------------|--------|
-| 6.1 | **Product data model & API** | 3 | Backend | Product CRUD, categories (bows, arrows, accessories, apparel), images (multiple), specs, pricing, condition (new/used) |
-| 6.2 | **Seller onboarding** | 2 | Both | Seller registration, store profile, verification (for shops), seller dashboard |
-| 6.3 | **Product listing creation** | 3 | Frontend | Multi-step: photos → category → details & specs → pricing → preview → publish |
-| 6.4 | **Browse & search** | 3 | Both | Category grid, search with filters (category, price range, condition, location), sort (price, newest, rating) |
-| 6.5 | **Product detail screen** | 3 | Frontend | Photo gallery, description, specs, seller info, reviews, related products, "Buy" / "Make Offer" CTA |
-
-#### Minggu 3-4: Transaction System (14 SP)
-
-| # | Task | SP | Backend/Frontend | Detail |
-|---|------|----|-----------------|--------|
-| 6.6 | **Cart & checkout** | 3 | Both | Add to cart, cart management, checkout flow (shipping → payment → confirm) |
-| 6.7 | **Escrow payment system** | 4 | Backend | Buyer pays → funds held → seller ships → buyer confirms → funds released. Dispute flow. Refund handling |
-| 6.8 | **Shipping integration** | 3 | Both | Shipping cost calculation (RajaOngkir API), shipping label, tracking number input, delivery confirmation |
-| 6.9 | **Order management** | 4 | Both | Order status workflow (pending→paid→shipped→delivered→completed), buyer & seller dashboards, order detail, transaction history |
-
-#### Minggu 5-6: Trust & Review System (14 SP)
-
-| # | Task | SP | Backend/Frontend | Detail |
-|---|------|----|-----------------|--------|
-| 6.10 | **Review & rating system** | 3 | Both | Buyer reviews (only after purchase), star rating + text + photos, seller overall rating, review moderation |
-| 6.11 | **Seller verification** | 2 | Both | Verified seller badge, KTP verification, shop license (for toko), trust score |
-| 6.12 | **Offer & negotiation** | 3 | Both | "Make Offer" feature, counter-offer, accept/reject, offer expiry |
-| 6.13 | **Promoted listings** | 2 | Both | Paid product boost, promoted badge, placement algorithm, listing promotion purchase flow |
-| 6.14 | **Equipment recommendation** | 2 | Backend | Basic recommendation based on bow type, level, and browsing history |
-| 6.15 | **Dispute resolution** | 2 | Both | Dispute filing, evidence upload, admin mediation dashboard, resolution workflow |
-
-#### Minggu 7-8: Testing, Polish & Buffer (14 SP)
-
-| # | Task | SP | Detail |
-|---|------|----|--------|
-| 6.16 | **Fraud prevention** | 3 | Suspicious listing detection, rate limiting, report system, seller blacklist |
-| 6.17 | **Marketplace admin dashboard** | 3 | Product moderation, seller management, transaction monitoring, dispute handling |
-| 6.18 | **E2E testing marketplace** | 3 | Full flow: list → browse → buy → pay → ship → deliver → review |
-| 6.19 | **Performance optimization** | 2 | Image optimization (compress, CDN), search performance, pagination tuning |
-| 6.20 | **Bug fixing buffer** | 3 | Marketplace bugs are complex (payment edge cases, state machines) |
-
-### Deliverables Phase 6:
-- [x] Full marketplace (new + second-hand)
-- [x] Escrow payment system
-- [x] Shipping integration
-- [x] Review & rating system
-- [x] Seller verification
-- [x] Offer/negotiation
-- [x] Promoted listings
-- [x] Dispute resolution
-
-### 🎯 Checkpoint: MARKETPLACE LAUNCH (v2.0) — ~Akhir Januari 2027
-
-```
-MARKETPLACE LAUNCH:
-├── ✅ Full marketplace operational
-├── Target: 50+ sellers onboarded
-├── Target GMV: Rp 50-100 jt/bulan (start)
-├── Revenue: 3-5% commission per transaction
-└── Sesuai business strategy Q3 2027 target ✅
-```
-
----
-
-## Phase 7: Advanced & AI Features
-### 📅 Februari 2027 – Juni 2027 (Ongoing)
+## Phase 6: Advanced & AI Features
+### 📅 Desember 2026 – Juni 2027 (Ongoing)
 
 > **Tujuan**: Fitur advanced yang meningkatkan value proposition dan moat.
 
@@ -612,18 +533,18 @@ MARKETPLACE LAUNCH:
 
 | # | Task | Estimasi SP | Detail |
 |---|------|-------------|--------|
-| 7.1 | **AI Target Recognition** | 15-20 | Computer vision: foto target → auto-detect score. ML model training, edge inference. **Paling kompleks — bisa di-outsource/partnership** |
-| 7.2 | **Training program builder** | 8 | Structured training programs (pemula → mahir), weekly/daily plans, progress tracking |
-| 7.3 | **1-on-1 coaching booking** | 10 | Coach availability calendar, booking flow, payment (coach commission), video call integration |
-| 7.4 | **Video tutorial platform** | 6 | Video hosting, categories, progress tracking, coach-uploaded content |
-| 7.5 | **Advanced analytics (AI)** | 8 | AI-powered insights: weakness detection, improvement suggestions, performance prediction |
-| 7.6 | **White-label scoring** | 6 | API & customizable scoring for organizations/PERPANI |
-| 7.7 | **Multi-language** | 4 | English support, RTL consideration, i18n infrastructure |
-| 7.8 | **Brand partnership dashboard** | 5 | Sponsored content management, analytics for brands, campaign tracking |
-| 7.9 | **Admin super-dashboard** | 8 | Comprehensive admin: user management, content moderation, analytics, financial reports |
-| 7.10 | **Performance & scalability** | 5 | Database optimization, caching layer (Redis), CDN, load testing, query optimization |
+| 6.1 | **AI Target Recognition** | 15-20 | Computer vision: foto target → auto-detect score. ML model training, edge inference. **Paling kompleks — bisa di-outsource/partnership** |
+| 6.2 | **Training program builder** | 8 | Structured training programs (pemula → mahir), weekly/daily plans, progress tracking |
+| 6.3 | **1-on-1 coaching booking** | 10 | Coach availability calendar, booking flow, payment (coach commission), video call integration |
+| 6.4 | **Video tutorial platform** | 6 | Video hosting, categories, progress tracking, coach-uploaded content |
+| 6.5 | **Advanced analytics (AI)** | 8 | AI-powered insights: weakness detection, improvement suggestions, performance prediction |
+| 6.6 | **White-label scoring** | 6 | API & customizable scoring for organizations/PERPANI |
+| 6.7 | **Multi-language** | 4 | English support, RTL consideration, i18n infrastructure |
+| 6.8 | **Brand partnership dashboard** | 5 | Sponsored content management, analytics for brands, campaign tracking |
+| 6.9 | **Admin super-dashboard** | 8 | Comprehensive admin: user management, content moderation, analytics, financial reports |
+| 6.10 | **Performance & scalability** | 5 | Database optimization, caching layer (Redis), CDN, load testing, query optimization |
 
-> **Catatan**: Phase 7 bersifat modular — dikerjakan berdasarkan prioritas bisnis dan feedback user saat itu. Tidak semua harus selesai di H1 2027.
+> **Catatan**: Phase 6 bersifat modular — dikerjakan berdasarkan prioritas bisnis dan feedback user saat itu. Tidak semua harus selesai di H1 2027.
 
 ---
 
@@ -641,16 +562,13 @@ Phase 2: 3 SP slack (estimasi konservatif di auth)
 Phase 3: 7 SP built-in (minggu 9 = testing + bugs)
 Phase 4: 1 SP explicit buffer
 Phase 5: 1 SP explicit buffer
-Phase 6: 6 SP built-in (minggu 7-8 = testing + bugs)
 
-Total buffer: ~25 SP ≈ 3.5 minggu
+Total buffer: ~19 SP ≈ 2.7 minggu
 
 CONTINGENCY BUFFER TAMBAHAN:
-├── 2 minggu antara Phase 2 & 3 jika soft launch delay
-├── 1 minggu antara Phase 5 & 6 untuk stabilization
-└── Total contingency: ~3 minggu
+└── 2 minggu antara Phase 2 & 3 jika soft launch delay
 
-GRAND TOTAL BUFFER: ~6.5 minggu (18% dari total timeline)
+GRAND TOTAL BUFFER: ~4.7 minggu (15% dari total timeline)
 → Industri standar 15-25%, kita di sweet spot ✅
 ```
 
@@ -659,7 +577,7 @@ GRAND TOTAL BUFFER: ~6.5 minggu (18% dari total timeline)
 | Risiko | Probabilitas | Impact | Mitigasi |
 |--------|-------------|--------|----------|
 | **Developer burnout** (8-10 hr/day, 7 days) | Tinggi | Sangat Tinggi | **Wajib ambil 1 hari off/2 minggu.** Jika burnout terasa, turunkan ke 6 jam/hari dan extend timeline. Kesehatan > deadline |
-| **Scope creep** | Tinggi | Tinggi | Strict phase boundaries. Jika fitur baru muncul → masuk Phase 7 backlog. TIDAK boleh menambah scope mid-phase |
+| **Scope creep** | Tinggi | Tinggi | Strict phase boundaries. Jika fitur baru muncul → masuk Phase 6 backlog. TIDAK boleh menambah scope mid-phase |
 | **Payment gateway complexity** | Medium | Tinggi | Mulai integrasi payment di minggu 1 Phase 3, bukan minggu terakhir. Payment paling banyak edge cases |
 | **App Store rejection** | Medium | Medium | Siapkan privacy policy, terms of service di awal. Follow Apple guidelines. Submit iOS 2 minggu sebelum target launch |
 | **Real-time system (live scoring)** | Medium | Medium | Mulai dengan polling (simpler), upgrade ke WebSocket jika perlu. MVP live scoring bisa non-realtime (refresh manual) |
@@ -670,15 +588,11 @@ GRAND TOTAL BUFFER: ~6.5 minggu (18% dari total timeline)
 
 ```
 FITUR CUTTABLE (bisa di-defer tanpa mengganggu core value):
-├── 4.5  In-app messaging       → Pakai WhatsApp deep link dulu
-├── 4.6  Range finder           → Defer ke Phase 7
+├── 4.6  Range finder           → Defer ke Phase 6
 ├── 4.8  Islamic content        → Cukup label/tag di community feed
-├── 4.10 Gamification layer     → Basic streak saja, XP/level nanti
-├── 6.12 Offer & negotiation    → Fixed price only di v1
-├── 6.13 Promoted listings      → Defer, fokus organic dulu
-└── 6.14 Equipment recommendation → Defer ke Phase 7
+└── 4.10 Gamification layer     → Basic streak saja, XP/level nanti
 
-Saving: ~16 SP (≈ 2.3 minggu)
+Saving: ~5 SP (≈ 0.7 minggu)
 ```
 
 ---
@@ -698,20 +612,16 @@ Jun 2026         Jul              Aug              Sep
 │               │                SOFT       │
 │               │                LAUNCH     │
 
-Oct              Nov              Dec              Jan 2027
-──────────────────│────────────────│────────────────│────
-── Phase 3 ──────│ Phase 4       │ Phase 5  │ Phase 6 ──
-   Events +      │ Community +   │ Revenue  │ Marketplace
-   Ranking       │ Content       │ Launch   │
-                 │               │          │
+Oct              Nov              Dec 2026 ────────► H1 2027
+──────────────────│────────────────│───────────────────────►
+── Phase 3 ──────│ Phase 4       │ Phase 5  │ Phase 6
+   Events +      │ Community +   │ Revenue  │ Advanced &
+   Ranking       │ Content       │ Launch   │ AI Features
+                 │               │          │ (ongoing)
 🚀 v1.0         │               🚀 v1.5   │
-PUBLIC           │               REVENUE   │
-LAUNCH           │               LAUNCH    🚀 v2.0
-                 │                          MARKETPLACE
-                 │                          LAUNCH
-
-Feb 2027 ───────────────────────────► ongoing
-Phase 7: Advanced & AI Features
+PUBLIC           │               REVENUE   🚀 v2.0
+LAUNCH           │               LAUNCH    ADVANCED & AI
+                                           LAUNCH
 ```
 
 ### Key Dates Summary
@@ -726,8 +636,8 @@ Phase 7: Advanced & AI Features
 | **🚀 Soft Launch (v0.1-beta)** | **~16 Agustus 2026** | **~Pertengahan Juli 2026** | 🟢 95% |
 | **🚀 Public Launch (v1.0)** | **~18 Oktober 2026** | **~Agustus–September 2026** | 🟢 90% |
 | **🚀 Revenue Launch (v1.5)** | **~6 Desember 2026** | **~Oktober–November 2026** | 🟡 80% |
-| Phase 6 complete (Marketplace) | 31 Januari 2027 | **~Desember 2026 – Jan 2027** | 🟡 75% |
-| **🚀 Marketplace Launch (v2.0)** | **~31 Januari 2027** | **~Januari 2027** | 🟡 75% |
+| Phase 6 complete (Advanced & AI) | Juni 2027 | **~Desember 2026 – Juni 2027** | ⬚ Belum mulai |
+| **🚀 Advanced & AI Launch (v2.0)** | **~Juni 2027** | **~Februari 2027 (modular)** | ⬚ Belum mulai |
 
 > **Catatan Confidence (update)**: Confidence **meningkat** karena Phase 0–4 sebagian besar sudah jadi,
 > menghilangkan risiko kumulatif delay di fase awal. Risiko yang masih ada:
@@ -757,8 +667,8 @@ Phase 2 ─────────────┐                              
         │            │                                  │
         │            ▼                                  ▼
         │     Phase 3 ──────────────────┐        Phase 6
-        │       Events + Ranking        │        Marketplace
-        │       (butuh Auth + Scoring)  │        (butuh Auth)
+        │       Events + Ranking        │        Advanced &
+        │       (butuh Auth + Scoring)  │        AI Features
         │            │                  │              │
         ▼            ▼                  ▼              │
    Phase 4      Phase 5 ◄──────────────┘              │
@@ -770,8 +680,7 @@ Phase 2 ─────────────┐                              
 
 PARALLELIZABLE (bisa di-overlap jika ada capacity):
 ├── Phase 4 (Community) bisa mulai parallel dengan akhir Phase 3
-├── Phase 6 (Marketplace) independen dari payment gateway
-└── Phase 7 items independen — bisa dikerjakan kapan saja
+└── Phase 6 (Advanced & AI) items independen — bisa dikerjakan kapan saja
 ```
 
 ---
@@ -816,20 +725,19 @@ BURNOUT PREVENTION:
 | **v0.1-beta** | ~~16 Aug~~ → **~Jul 2026** | Scoring + Profile + Club + Feed + Events + Coach + Ranges | ❌ Belum ada |
 | **v1.0** | ~~18 Oct~~ → **~Aug–Sep 2026** | + Live Scoring + Ranking + Articles | ❌ Belum ada (event gratis) |
 | **v1.5** | ~~6 Dec~~ → **~Oct–Nov 2026** | + Premium Sub + Club SaaS + Ads | Premium, Club SaaS, Ads, Event fee |
-| **v2.0** | ~Jan 2027 | + Full Marketplace + Escrow | + Marketplace commission (3-5%) |
-| **v2.x** | Feb-Jun 2027 | + AI features + Coaching + Training | + Coaching commission, Brand partnership |
+| **v2.0** | ~Feb 2027 onwards | + AI features + Coaching + Training | + Coaching commission, Brand partnership |
 
 ```
 REVENUE TRAJECTORY (estimated, revised):
 ════════════════════════════════════════
 
 Bulan ke-2  (Jul 2026) : Rp 0 (beta, free for all)
-Bulan ke-3  (Aug 2026) : Rp 0-1 jt (event fees mulai masuk)
-Bulan ke-5  (Oct 2026) : Rp 3-8 jt (premium + club SaaS + events)
-Bulan ke-7  (Dec 2026) : Rp 10-20 jt (+ marketplace early)
-Bulan ke-12 (May 2027) : Rp 35-50 jt (all streams active, growing)
+Bulan ke-3  (Aug 2026) : Rp 0 (beta, free for all)
+Bulan ke-5  (Oct 2026) : Rp 3-8 jt (premium + club SaaS + ads)
+Bulan ke-7  (Dec 2026) : Rp 8-15 jt (premium + club SaaS + ads growing)
+Bulan ke-12 (May 2027) : Rp 20-30 jt (premium + club SaaS + coaching/training, growing)
 
-→ Target business strategy Rp 41 jt/bulan di bulan ke-12: ✅ ACHIEVABLE
+→ Target revenue disesuaikan karena penundaan/penghapusan modul Marketplace.
 → Revenue start lebih cepat karena launch dimajukan!
 ```
 
@@ -838,6 +746,6 @@ Bulan ke-12 (May 2027) : Rp 35-50 jt (all streams active, growing)
 *Dokumen ini adalah living document. Update setiap 2 minggu berdasarkan actual progress vs planned.*
 
 *Dibuat: 29 Mei 2026*  
-*Update terakhir: **4 Juni 2026** — audit codebase menunjukkan Phase 3+4 sebagian besar selesai (~68% total)*  
+*Update terakhir: **5 Juni 2026** — audit codebase menunjukkan Phase 3+4 sebagian besar selesai dan Marketplace dihapus*  
 *Konteks: 1 developer (Laravel + Flutter) + AI Agent, 8-10 jam/hari*  
 *Baseline: Business Strategy & UI/UX Design Guide ManahPro*
