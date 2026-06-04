@@ -22,7 +22,6 @@ class QuotesScreen extends ConsumerStatefulWidget {
 
 class _QuotesScreenState extends ConsumerState<QuotesScreen> {
   PageController? _pageController;
-  int _currentPage = 0;
 
   @override
   void dispose() {
@@ -93,18 +92,27 @@ class _QuotesScreenState extends ConsumerState<QuotesScreen> {
           );
         }
 
-        // Initialize PageController with initialId if present
+        // Initialize PageController with infinite scroll support
         if (_pageController == null) {
           int initialPage = 0;
+          final N = activeQuotes.length;
           if (widget.initialId != null) {
             final index =
                 activeQuotes.indexWhere((q) => q.id == widget.initialId);
             if (index != -1) {
-              initialPage = index;
+              if (N > 1) {
+                final middlePage = (50000 ~/ N) * N;
+                initialPage = middlePage + index;
+              } else {
+                initialPage = index;
+              }
+            }
+          } else {
+            if (N > 1) {
+              initialPage = (50000 ~/ N) * N;
             }
           }
           _pageController = PageController(initialPage: initialPage);
-          _currentPage = initialPage;
         }
 
         return Scaffold(
@@ -114,53 +122,18 @@ class _QuotesScreenState extends ConsumerState<QuotesScreen> {
               // Ambient glow background
               _buildAmbientBackground(),
 
-              // PageView for swiping quotes
+              // PageView for swiping quotes (infinite scroll)
               PageView.builder(
                 controller: _pageController,
-                itemCount: activeQuotes.length,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentPage = index;
-                  });
-                },
+                itemCount: activeQuotes.length > 1 ? 100000 : 1,
                 itemBuilder: (context, index) {
-                  final quote = activeQuotes[index];
+                  final quote = activeQuotes[index % activeQuotes.length];
                   return _buildQuoteCard(context, quote);
                 },
               ),
 
               // Back button at top-left
               _buildBackButton(context),
-
-              // Page indicator at bottom center
-              Positioned(
-                bottom: 40,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.04),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.08),
-                        width: 1,
-                      ),
-                    ),
-                    child: Text(
-                      '${_currentPage + 1} / ${activeQuotes.length}',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.6),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         );

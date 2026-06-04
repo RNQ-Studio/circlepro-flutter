@@ -16,7 +16,10 @@ class QuotesRemoteDataSource {
   /// `GET /v1/quotes`
   /// Returns a list of [QuoteModel] parsed from `response.data['data']`.
   Future<List<QuoteModel>> fetchAll() async {
-    final response = await _dio.get('v1/quotes');
+    final response = await _dio.get(
+      'v1/quotes',
+      queryParameters: {'per_page': 1000},
+    );
     final data = response.data['data'] as List<dynamic>;
     return data
         .map((json) => QuoteModel.fromJson(json as Map<String, dynamic>))
