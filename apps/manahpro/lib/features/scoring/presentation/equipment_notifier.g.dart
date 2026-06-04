@@ -50,7 +50,7 @@ final class _EquipmentRemoteProvider extends $FunctionalProvider<
   }
 }
 
-String _$_equipmentRemoteHash() => r'739ad5f5bda90b10bc89dbd62d708ed240fec308';
+String _$_equipmentRemoteHash() => r'ba04ad4a84243cbf1cadf2a0cc08e0d28e8df790';
 
 /// Online CRUD of the user's equipment profiles (Module 1, task 1.11b).
 

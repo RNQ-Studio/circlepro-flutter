@@ -48,7 +48,7 @@ final class _ScoringDioClientProvider
   }
 }
 
-String _$_scoringDioClientHash() => r'c9f95d63b9f4ac0bc9b039cc65d18c11bcd3de8a';
+String _$_scoringDioClientHash() => r'a1d65af5c6c72b7e4b7de8996b8bcbd71de41553';
 
 @ProviderFor(scoringDatabase)
 final scoringDatabaseProvider = ScoringDatabaseProvider._();

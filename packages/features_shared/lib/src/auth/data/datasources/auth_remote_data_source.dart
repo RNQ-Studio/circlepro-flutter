@@ -49,7 +49,7 @@ class AuthRemoteDataSource {
         token: token,
       );
     } on DioException catch (e) {
-      throw e.error ?? ServerException(e.message ?? 'Login failed');
+      _handleError(e, 'Login failed');
     }
   }
 
@@ -92,7 +92,7 @@ class AuthRemoteDataSource {
         token: token,
       );
     } on DioException catch (e) {
-      throw e.error ?? ServerException(e.message ?? 'Login dengan Google gagal');
+      _handleError(e, 'Login dengan Google gagal');
     }
   }
 
@@ -138,7 +138,7 @@ class AuthRemoteDataSource {
         token: token,
       );
     } on DioException catch (e) {
-      throw e.error ?? ServerException(e.message ?? 'Register failed');
+      _handleError(e, 'Register failed');
     }
   }
 
@@ -161,7 +161,7 @@ class AuthRemoteDataSource {
         token: null, // Token will be merged in repository layer
       );
     } on DioException catch (e) {
-      throw e.error ?? ServerException(e.message ?? 'Failed to fetch profile');
+      _handleError(e, 'Failed to fetch profile');
     }
   }
 
@@ -191,7 +191,7 @@ class AuthRemoteDataSource {
         token: null, // Token will be merged in repository layer
       );
     } on DioException catch (e) {
-      throw e.error ?? ServerException(e.message ?? 'Update profile failed');
+      _handleError(e, 'Update profile failed');
     }
   }
 
@@ -223,7 +223,7 @@ class AuthRemoteDataSource {
         token: null, // Token will be merged in repository layer
       );
     } on DioException catch (e) {
-      throw e.error ?? ServerException(e.message ?? 'Upload avatar failed');
+      _handleError(e, 'Upload avatar failed');
     }
   }
 
@@ -231,7 +231,18 @@ class AuthRemoteDataSource {
     try {
       await _dio.post('v1/auth/logout');
     } on DioException catch (e) {
-      throw e.error ?? ServerException(e.message ?? 'Logout failed');
+      _handleError(e, 'Logout failed');
     }
+  }
+
+  Never _handleError(DioException e, String defaultMessage) {
+    final responseData = e.response?.data;
+    if (responseData is Map<String, dynamic>) {
+      final message = responseData['message']?.toString();
+      if (message != null) {
+        throw ServerException(message);
+      }
+    }
+    throw e.error ?? ServerException(e.message ?? defaultMessage);
   }
 }

@@ -48,7 +48,7 @@ final class _DioClientProvider
   }
 }
 
-String _$_dioClientHash() => r'c02614c50d6daebcbf60da2e604f251c42cb8cae';
+String _$_dioClientHash() => r'20a6a680cd73f336aff2a3caae7530b4e2e225a1';
 
 @ProviderFor(_quotesRemoteDataSource)
 final _quotesRemoteDataSourceProvider = _QuotesRemoteDataSourceProvider._();

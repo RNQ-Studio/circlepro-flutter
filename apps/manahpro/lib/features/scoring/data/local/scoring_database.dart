@@ -64,6 +64,7 @@ class ScoringArrowRows extends Table {
 class TargetFaceRows extends Table {
   TextColumn get id => text()();
   TextColumn get organizationId => text().nullable()();
+  TextColumn get organizationName => text().nullable()();
   TextColumn get code => text().unique()();
   TextColumn get name => text()();
   TextColumn get imagePath => text().nullable()();
@@ -80,7 +81,7 @@ class ScoringDatabase extends _$ScoringDatabase {
   ScoringDatabase([QueryExecutor? executor]) : super(executor ?? _open());
 
   @override
-  int get schemaVersion => 4; // Bump version to trigger upgrade and reset tables
+  int get schemaVersion => 5; // Bump version to trigger upgrade and reset tables
 
   @override
   MigrationStrategy get migration => MigrationStrategy(

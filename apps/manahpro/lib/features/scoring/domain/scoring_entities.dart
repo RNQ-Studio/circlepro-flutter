@@ -213,6 +213,7 @@ class TargetFaceEntity extends Equatable {
   const TargetFaceEntity({
     required this.id,
     this.organizationId,
+    this.organizationName,
     required this.code,
     required this.name,
     this.imagePath,
@@ -221,6 +222,7 @@ class TargetFaceEntity extends Equatable {
 
   final String id;
   final String? organizationId;
+  final String? organizationName;
   final String code;
   final String name;
   final String? imagePath;
@@ -228,9 +230,11 @@ class TargetFaceEntity extends Equatable {
 
   factory TargetFaceEntity.fromJson(Map<String, dynamic> json) {
     final rulesJson = json['scoring_rules'] as List<dynamic>? ?? [];
+    final orgJson = json['organization'] as Map<String, dynamic>?;
     return TargetFaceEntity(
       id: json['id'] as String? ?? '',
       organizationId: json['organization_id'] as String?,
+      organizationName: orgJson?['name'] as String?,
       code: json['code'] as String? ?? '',
       name: json['name'] as String? ?? '',
       imagePath: json['image_path'] as String?,
@@ -242,6 +246,7 @@ class TargetFaceEntity extends Equatable {
     return {
       'id': id,
       'organization_id': organizationId,
+      'organization_name': organizationName,
       'code': code,
       'name': name,
       'image_path': imagePath,
@@ -250,5 +255,5 @@ class TargetFaceEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, organizationId, code, name, imagePath, scoringRules];
+  List<Object?> get props => [id, organizationId, organizationName, code, name, imagePath, scoringRules];
 }

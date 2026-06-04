@@ -54,4 +54,4 @@ final class ManahDioProvider extends $FunctionalProvider<Dio, Dio, Dio>
   }
 }
 
-String _$manahDioHash() => r'b7d61edaae0534806e258bf62f0150b25b557e23';
+String _$manahDioHash() => r'8e2b553d8e62401823070f2e1734959d574322b9';

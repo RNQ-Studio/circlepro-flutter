@@ -212,6 +212,7 @@ class ScoringLocalDataSource {
               TargetFaceRowsCompanion.insert(
                 id: t.id,
                 organizationId: Value(t.organizationId),
+                organizationName: Value(t.organizationName),
                 code: t.code,
                 name: t.name,
                 imagePath: Value(t.imagePath),
@@ -229,6 +230,7 @@ class ScoringLocalDataSource {
       return TargetFaceEntity(
         id: r.id,
         organizationId: r.organizationId,
+        organizationName: r.organizationName,
         code: r.code,
         name: r.name,
         imagePath: r.imagePath,

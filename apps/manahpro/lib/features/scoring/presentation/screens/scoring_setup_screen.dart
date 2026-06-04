@@ -169,61 +169,86 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
                 if (targets.isEmpty) {
                   return const Center(child: Text('Tidak ada target face tersedia'));
                 }
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: targets.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: ManahSpacing.sm,
-                    mainAxisSpacing: ManahSpacing.sm,
-                    childAspectRatio: 1.3,
-                  ),
-                  itemBuilder: (context, idx) {
-                    final target = targets[idx];
-                    final isSelected = _selectedTargetFace?.id == target.id;
-                    return InkWell(
-                      onTap: () => setState(() => _selectedTargetFace = target),
-                      borderRadius: BorderRadius.circular(ManahRadius.md),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? ManahColors.brandSurface
-                              : theme.cardColor,
-                          borderRadius: BorderRadius.circular(ManahRadius.md),
-                          border: Border.all(
-                            color: isSelected
-                                ? ManahColors.brand
-                                : theme.dividerColor.withValues(alpha: 0.1),
-                            width: isSelected ? 2 : 1,
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(ManahSpacing.sm),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: TargetFacePreview(code: target.code),
-                                ),
-                              ),
-                              const SizedBox(height: ManahSpacing.xs),
-                              Text(
-                                target.name,
-                                textAlign: TextAlign.center,
-                                style: theme.textTheme.labelMedium?.copyWith(
-                                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
-                                  color: isSelected ? ManahColors.brand : null,
-                                ),
-                              ),
-                            ],
+
+                // Group target faces by organization name
+                final Map<String, List<TargetFaceEntity>> groupedTargets = {};
+                for (final target in targets) {
+                  final orgName = target.organizationName ?? 'Umum';
+                  groupedTargets.putIfAbsent(orgName, () => []).add(target);
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final entry in groupedTargets.entries) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(top: ManahSpacing.md, bottom: ManahSpacing.xs),
+                        child: Text(
+                          entry.key,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: theme.colorScheme.primary,
                           ),
                         ),
                       ),
-                    );
-                  },
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: entry.value.length,
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: ManahSpacing.sm,
+                          mainAxisSpacing: ManahSpacing.sm,
+                          childAspectRatio: 1.3,
+                        ),
+                        itemBuilder: (context, idx) {
+                          final target = entry.value[idx];
+                          final isSelected = _selectedTargetFace?.id == target.id;
+                          return InkWell(
+                            onTap: () => setState(() => _selectedTargetFace = target),
+                            borderRadius: BorderRadius.circular(ManahRadius.md),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? ManahColors.brandSurface
+                                    : theme.cardColor,
+                                borderRadius: BorderRadius.circular(ManahRadius.md),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? ManahColors.brand
+                                      : theme.dividerColor.withValues(alpha: 0.1),
+                                  width: isSelected ? 2 : 1,
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(ManahSpacing.sm),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(4.0),
+                                        child: TargetFacePreview(code: target.code),
+                                      ),
+                                    ),
+                                    const SizedBox(height: ManahSpacing.xs),
+                                    Text(
+                                      target.name,
+                                      textAlign: TextAlign.center,
+                                      style: theme.textTheme.labelMedium?.copyWith(
+                                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
+                                        color: isSelected ? ManahColors.brand : null,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ],
                 );
               },
             ),
