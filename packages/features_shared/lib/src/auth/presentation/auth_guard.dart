@@ -16,14 +16,16 @@ String? authRedirect(BuildContext context, GoRouterState state) {
   // While auth check is in progress, don't redirect.
   if (authState is AuthInitial || authState is AuthLoading) return null;
 
+  final isAuthenticated = authState is AuthAuthenticated;
+  final isOnLoginPage = location == '/login';
+  final isOnOnboardingPage = location == '/onboarding';
+
+  // If user is authenticated and on login or onboarding page, go to home
+  if (isAuthenticated && (isOnLoginPage || isOnOnboardingPage)) return '/';
+
   // Let public routes (splash, onboarding) render without auth.
   if (location == '/splash' || location == '/onboarding') return null;
 
-  final isAuthenticated = authState is AuthAuthenticated;
-  final isOnLoginPage = location == '/login';
-
-  // If user is authenticated and on login page, go to home
-  if (isAuthenticated && isOnLoginPage) return '/';
   return null;
 }
 

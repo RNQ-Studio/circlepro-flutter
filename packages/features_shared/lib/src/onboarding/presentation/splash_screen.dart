@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import 'onboarding_notifier.dart';
+import '../../auth/presentation/auth_provider.dart';
+import '../../auth/presentation/auth_state.dart';
 
 /// Premium splash screen with animated fade-in branding.
 ///
@@ -62,15 +64,30 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     if (!mounted) return;
 
     // Check onboarding status.
-    final onboardingAsync = ref.read(onboardingProvider);
-    final hasOnboarded = onboardingAsync.asData?.value ?? false;
+    bool hasOnboarded = false;
+    try {
+      hasOnboarded = await ref.read(onboardingProvider.future);
+    } catch (_) {
+      final onboardingAsync = ref.read(onboardingProvider);
+      hasOnboarded = onboardingAsync.asData?.value ?? false;
+    }
 
-    if (!hasOnboarded) {
+    // Wait for auth session check to finish (not AuthInitial or AuthLoading)
+    var authState = ref.read(authProvider);
+    while (authState is AuthInitial || authState is AuthLoading) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
+      authState = ref.read(authProvider);
+    }
+
+    final isAuthenticated = authState is AuthAuthenticated;
+
+    if (!hasOnboarded && !isAuthenticated) {
       if (mounted) context.go('/onboarding');
       return;
     }
 
-    // Always go to home — login is optional via home menu.
+    // Go to home if already onboarded or logged in
     if (mounted) context.go('/');
   }
 
