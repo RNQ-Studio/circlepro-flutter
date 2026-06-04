@@ -21,10 +21,10 @@ class ScoringSetupScreen extends ConsumerStatefulWidget {
 }
 
 class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
-  BowCategory _bowCategory = BowCategory.modern;
-  BowClass _bowClass = BowClass.recurve;
-  DistanceCategory _distance = DistanceCategory.d70m;
-  ArcheryEnvironment _environment = ArcheryEnvironment.outdoor;
+  BowCategory? _bowCategory;
+  BowClass? _bowClass;
+  DistanceCategory? _distance;
+  ArcheryEnvironment? _environment;
   TargetFaceEntity? _selectedTargetFace;
   int _numEnds = 6;
   int _arrowsPerEnd = 6;
@@ -45,10 +45,30 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
     try {
       final storage = SharedPreferencesStorage();
       await storage.init();
+      
       final lastId = await storage.read('last_selected_target_face_id');
+      final lastBowCat = await storage.read('last_selected_bow_category');
+      final lastBowClass = await storage.read('last_selected_bow_class');
+      final lastDist = await storage.read('last_selected_distance');
+      final lastEnv = await storage.read('last_selected_environment');
+
       if (mounted) {
         setState(() {
           _lastSelectedTargetFaceId = lastId;
+          
+          if (lastBowCat != null) {
+            _bowCategory = BowCategory.values.firstWhere((e) => e.value == lastBowCat, orElse: () => BowCategory.modern);
+          }
+          if (lastBowClass != null) {
+            _bowClass = BowClass.values.firstWhere((e) => e.value == lastBowClass, orElse: () => BowClass.recurve);
+          }
+          if (lastDist != null) {
+            _distance = DistanceCategory.values.firstWhere((e) => e.value == lastDist, orElse: () => DistanceCategory.d70m);
+          }
+          if (lastEnv != null) {
+            _environment = ArcheryEnvironment.values.firstWhere((e) => e.value == lastEnv, orElse: () => ArcheryEnvironment.outdoor);
+          }
+
           _hasLoadedLastSelected = true;
         });
       }
@@ -70,7 +90,48 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
     } catch (_) {}
   }
 
+  Future<void> _updateBowCategory(BowCategory cat) async {
+    setState(() {
+      _bowCategory = cat;
+      _bowClass = BowClass.ofCategory(cat).first;
+    });
+    try {
+      final storage = SharedPreferencesStorage();
+      await storage.init();
+      await storage.write('last_selected_bow_category', cat.value);
+      await storage.write('last_selected_bow_class', _bowClass!.value);
+    } catch (_) {}
+  }
+
+  Future<void> _updateBowClass(BowClass val) async {
+    setState(() => _bowClass = val);
+    try {
+      final storage = SharedPreferencesStorage();
+      await storage.init();
+      await storage.write('last_selected_bow_class', val.value);
+    } catch (_) {}
+  }
+
+  Future<void> _updateDistance(DistanceCategory val) async {
+    setState(() => _distance = val);
+    try {
+      final storage = SharedPreferencesStorage();
+      await storage.init();
+      await storage.write('last_selected_distance', val.value);
+    } catch (_) {}
+  }
+
+  Future<void> _updateEnvironment(ArcheryEnvironment val) async {
+    setState(() => _environment = val);
+    try {
+      final storage = SharedPreferencesStorage();
+      await storage.init();
+      await storage.write('last_selected_environment', val.value);
+    } catch (_) {}
+  }
+
   Future<void> _start() async {
+    if (_bowClass == null || _distance == null || _environment == null) return;
     setState(() => _starting = true);
     try {
       final targetFace = _selectedTargetFace;
@@ -84,12 +145,12 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
       }
 
       final session = await ref.read(scoringRepositoryProvider).startSession(
-            bowClass: _bowClass,
-            distanceCategory: _distance,
-            distanceM: _distance.meters,
+            bowClass: _bowClass!,
+            distanceCategory: _distance!,
+            distanceM: _distance!.meters,
             numEnds: _numEnds,
             arrowsPerEnd: _arrowsPerEnd,
-            environment: _environment,
+            environment: _environment!,
             targetFaceCm: targetFaceCm,
             targetFaceId: targetFace?.id,
             maxPossibleScoreOverride: _numEnds * _arrowsPerEnd * maxScore,
@@ -166,19 +227,17 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
                 ButtonSegment(value: BowCategory.traditional, label: Text('Tradisional')),
                 ButtonSegment(value: BowCategory.modern, label: Text('Modern')),
               ],
-              selected: {_bowCategory},
-              onSelectionChanged: (s) => setState(() {
-                _bowCategory = s.first;
-                _bowClass = BowClass.ofCategory(_bowCategory).first;
-              }),
+              selected: _bowCategory != null ? {_bowCategory!} : const <BowCategory>{},
+              onSelectionChanged: (s) => _updateBowCategory(s.first),
             ),
             const SizedBox(height: ManahSpacing.lg),
             _SectionLabel('Tipe Busur'),
             _Dropdown<BowClass>(
               value: _bowClass,
-              items: BowClass.ofCategory(_bowCategory),
+              items: _bowCategory != null ? BowClass.ofCategory(_bowCategory!) : const [],
               labelOf: (e) => e.label,
-              onChanged: (v) => setState(() => _bowClass = v),
+              hint: const Text('Pilih tipe busur'),
+              onChanged: (v) => _updateBowClass(v),
             ),
             const SizedBox(height: ManahSpacing.lg),
             _buildEquipmentPicker(),
@@ -187,7 +246,8 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
               value: _distance,
               items: DistanceCategory.values,
               labelOf: (e) => e.label,
-              onChanged: (v) => setState(() => _distance = v),
+              hint: const Text('Pilih jarak'),
+              onChanged: (v) => _updateDistance(v),
             ),
             const SizedBox(height: ManahSpacing.lg),
             _SectionLabel('Lingkungan'),
@@ -196,8 +256,8 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
                 ButtonSegment(value: ArcheryEnvironment.outdoor, label: Text('Outdoor')),
                 ButtonSegment(value: ArcheryEnvironment.indoor, label: Text('Indoor')),
               ],
-              selected: {_environment},
-              onSelectionChanged: (s) => setState(() => _environment = s.first),
+              selected: _environment != null ? {_environment!} : const <ArcheryEnvironment>{},
+              onSelectionChanged: (s) => _updateEnvironment(s.first),
             ),
             const SizedBox(height: ManahSpacing.lg),
             _SectionLabel('Pilihan Target Face'),
@@ -346,7 +406,7 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
             ),
             const SizedBox(height: ManahSpacing.lg),
             _Stepper(
-              label: 'Jumlah End',
+              label: 'Jumlah Ronde',
               value: _numEnds,
               min: 1,
               max: 30,
@@ -354,7 +414,7 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
             ),
             const SizedBox(height: ManahSpacing.md),
             _Stepper(
-              label: 'Panah / End',
+              label: 'Anak Panah',
               value: _arrowsPerEnd,
               min: 1,
               max: 12,
@@ -368,9 +428,9 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Total panah'),
+                    const Text('Total anak panah'),
                     Text(
-                      '${_numEnds * _arrowsPerEnd} panah · maks ${_numEnds * _arrowsPerEnd * maxScore}',
+                      '${_numEnds * _arrowsPerEnd} anak panah · maks ${_numEnds * _arrowsPerEnd * maxScore}',
                       style: const TextStyle(fontWeight: FontWeight.w700, color: ManahColors.brand),
                     ),
                   ],
@@ -379,7 +439,14 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
             ),
             const SizedBox(height: ManahSpacing.lg),
             FilledButton(
-              onPressed: (_starting || _selectedTargetFace == null) ? null : _start,
+              onPressed: (_starting ||
+                      _bowCategory == null ||
+                      _bowClass == null ||
+                      _distance == null ||
+                      _environment == null ||
+                      _selectedTargetFace == null)
+                  ? null
+                  : _start,
               child: _starting
                   ? const SizedBox(
                       height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
@@ -409,17 +476,20 @@ class _Dropdown<T> extends StatelessWidget {
     required this.items,
     required this.labelOf,
     required this.onChanged,
+    this.hint,
   });
 
-  final T value;
+  final T? value;
   final List<T> items;
   final String Function(T) labelOf;
   final ValueChanged<T> onChanged;
+  final Widget? hint;
 
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<T>(
-      initialValue: value,
+      value: value,
+      hint: hint,
       items: items
           .map((e) => DropdownMenuItem<T>(value: e, child: Text(labelOf(e))))
           .toList(),
