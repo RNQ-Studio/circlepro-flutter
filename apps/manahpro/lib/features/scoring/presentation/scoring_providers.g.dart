@@ -263,3 +263,46 @@ final class SessionsListProvider extends $FunctionalProvider<
 }
 
 String _$sessionsListHash() => r'e07e49e54708ff7dfb6b920a45d23fcc0dd74787';
+
+/// List of all target faces (cached locally).
+
+@ProviderFor(targetFacesList)
+final targetFacesListProvider = TargetFacesListProvider._();
+
+/// List of all target faces (cached locally).
+
+final class TargetFacesListProvider extends $FunctionalProvider<
+        AsyncValue<List<TargetFaceEntity>>,
+        List<TargetFaceEntity>,
+        FutureOr<List<TargetFaceEntity>>>
+    with
+        $FutureModifier<List<TargetFaceEntity>>,
+        $FutureProvider<List<TargetFaceEntity>> {
+  /// List of all target faces (cached locally).
+  TargetFacesListProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'targetFacesListProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$targetFacesListHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<TargetFaceEntity>> $createElement(
+          $ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<TargetFaceEntity>> create(Ref ref) {
+    return targetFacesList(ref);
+  }
+}
+
+String _$targetFacesListHash() => r'e01cec79132085a0397bf1fea8cf8cbbc39a68c9';

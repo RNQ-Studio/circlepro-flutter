@@ -2,6 +2,15 @@
 /// wire `value` (the string the API expects) plus a human label.
 library;
 
+enum BowCategory {
+  traditional('traditional', 'Tradisional'),
+  modern('modern', 'Modern');
+
+  const BowCategory(this.value, this.label);
+  final String value;
+  final String label;
+}
+
 enum BowClass {
   recurve('recurve', 'Recurve'),
   compound('compound', 'Compound'),
@@ -14,6 +23,22 @@ enum BowClass {
 
   final String value;
   final String label;
+
+  BowCategory get category {
+    switch (this) {
+      case BowClass.horsebow:
+      case BowClass.jemparingan:
+      case BowClass.barebowStandard:
+      case BowClass.barebowTradisional:
+        return BowCategory.traditional;
+      case BowClass.recurve:
+      case BowClass.compound:
+        return BowCategory.modern;
+    }
+  }
+
+  static List<BowClass> ofCategory(BowCategory cat) =>
+      BowClass.values.where((b) => b.category == cat).toList();
 
   static BowClass fromValue(String? value) =>
       BowClass.values.firstWhere((e) => e.value == value, orElse: () => BowClass.recurve);

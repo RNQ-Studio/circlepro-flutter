@@ -46,3 +46,9 @@ ScoringRepository scoringRepository(Ref ref) {
 Future<List<ScoringSessionEntity>> sessionsList(Ref ref) {
   return ref.watch(scoringRepositoryProvider).getSessions();
 }
+
+/// List of all target faces (cached locally).
+@riverpod
+Future<List<TargetFaceEntity>> targetFacesList(Ref ref) {
+  return ref.watch(scoringRepositoryProvider).getTargetFaces();
+}

@@ -12,6 +12,8 @@ abstract interface class ScoringRepository {
     required int arrowsPerEnd,
     ArcheryEnvironment environment = ArcheryEnvironment.outdoor,
     int? targetFaceCm,
+    String? targetFaceId,
+    int? maxPossibleScoreOverride,
     String? equipmentProfileId,
     String? title,
   });
@@ -37,4 +39,7 @@ abstract interface class ScoringRepository {
 
   /// Push all unsynced sessions to the server (idempotent batch sync).
   Future<void> sync();
+
+  /// Retrieve all target faces (master data), with automatic background fetch when online.
+  Future<List<TargetFaceEntity>> getTargetFaces();
 }

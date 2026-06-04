@@ -28,6 +28,8 @@ class ScoringRepositoryImpl implements ScoringRepository {
     required int arrowsPerEnd,
     ArcheryEnvironment environment = ArcheryEnvironment.outdoor,
     int? targetFaceCm,
+    String? targetFaceId,
+    int? maxPossibleScoreOverride,
     String? equipmentProfileId,
     String? title,
   }) async {
@@ -41,6 +43,7 @@ class ScoringRepositoryImpl implements ScoringRepository {
       arrowsPerEnd: arrowsPerEnd,
       environment: environment,
       targetFaceCm: targetFaceCm,
+      targetFaceId: targetFaceId,
       equipmentProfileId: equipmentProfileId,
       title: title,
       startedAt: DateTime.now(),
@@ -48,6 +51,7 @@ class ScoringRepositoryImpl implements ScoringRepository {
         numEnds,
         (i) => ScoringEndEntity(id: Ids.ulid(), endNumber: i + 1),
       ),
+      maxPossibleScoreOverride: maxPossibleScoreOverride,
     );
 
     await _local.upsertSession(session, syncAction: 'create');
@@ -167,6 +171,41 @@ class ScoringRepositoryImpl implements ScoringRepository {
   void _backgroundSync() {
     sync().catchError((Object e) {
       log('ScoringRepository background sync error: $e');
+    });
+  }
+
+  @override
+  Future<List<TargetFaceEntity>> getTargetFaces() async {
+    final localTargets = await _local.getTargetFaces();
+    if (localTargets.isNotEmpty) {
+      _backgroundSyncTargetFaces();
+      return localTargets;
+    }
+
+    try {
+      final online = await _remote.checkHealth();
+      if (online) {
+        final data = await _remote.getTargetFaces();
+        final entities = data.map((json) => TargetFaceEntity.fromJson(json)).toList();
+        await _local.saveTargetFaces(entities);
+        return entities;
+      }
+    } catch (e) {
+      log('ScoringRepository.getTargetFaces online fallback failed: $e');
+    }
+
+    return const [];
+  }
+
+  void _backgroundSyncTargetFaces() {
+    _remote.checkHealth().then((online) async {
+      if (online) {
+        final data = await _remote.getTargetFaces();
+        final entities = data.map((json) => TargetFaceEntity.fromJson(json)).toList();
+        await _local.saveTargetFaces(entities);
+      }
+    }).catchError((Object e) {
+      log('ScoringRepository.backgroundSyncTargetFaces failed: $e');
     });
   }
 }

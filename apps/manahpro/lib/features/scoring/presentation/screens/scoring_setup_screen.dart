@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
+import '../../domain/scoring_entities.dart';
 import '../../domain/scoring_enums.dart';
 import '../equipment_notifier.dart';
 import '../scoring_providers.dart';
@@ -19,20 +20,29 @@ class ScoringSetupScreen extends ConsumerStatefulWidget {
 }
 
 class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
+  BowCategory _bowCategory = BowCategory.modern;
   BowClass _bowClass = BowClass.recurve;
   DistanceCategory _distance = DistanceCategory.d70m;
   ArcheryEnvironment _environment = ArcheryEnvironment.outdoor;
-  int _targetFaceCm = 122;
+  TargetFaceEntity? _selectedTargetFace;
   int _numEnds = 6;
   int _arrowsPerEnd = 6;
   String? _equipmentProfileId;
   bool _starting = false;
 
-  static const _targetFaces = [40, 60, 80, 122];
-
   Future<void> _start() async {
     setState(() => _starting = true);
     try {
+      final targetFace = _selectedTargetFace;
+      final maxScore = targetFace != null
+          ? targetFace.scoringRules.map((r) => r.value).reduce((a, b) => a > b ? a : b)
+          : 10;
+
+      int? targetFaceCm;
+      if (targetFace != null && targetFace.code.startsWith('fita_')) {
+        targetFaceCm = int.tryParse(targetFace.code.replaceAll('fita_', ''));
+      }
+
       final session = await ref.read(scoringRepositoryProvider).startSession(
             bowClass: _bowClass,
             distanceCategory: _distance,
@@ -40,7 +50,9 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
             numEnds: _numEnds,
             arrowsPerEnd: _arrowsPerEnd,
             environment: _environment,
-            targetFaceCm: _targetFaceCm,
+            targetFaceCm: targetFaceCm,
+            targetFaceId: targetFace?.id,
+            maxPossibleScoreOverride: _numEnds * _arrowsPerEnd * maxScore,
             equipmentProfileId: _equipmentProfileId,
           );
       if (!mounted) return;
@@ -76,6 +88,27 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final targetFacesAsync = ref.watch(targetFacesListProvider);
+    final targetFaces = targetFacesAsync.value ?? const [];
+
+    if (_selectedTargetFace == null && targetFaces.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _selectedTargetFace == null) {
+          setState(() {
+            _selectedTargetFace = targetFaces.firstWhere(
+              (t) => t.code == 'fita_122',
+              orElse: () => targetFaces.first,
+            );
+          });
+        }
+      });
+    }
+
+    final maxScore = _selectedTargetFace != null
+        ? _selectedTargetFace!.scoringRules.map((r) => r.value).reduce((a, b) => a > b ? a : b)
+        : 10;
+
     return Scaffold(
       appBar: AppBar(title: const Text('Mulai Scoring')),
       body: SafeArea(
@@ -83,10 +116,23 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
         child: ListView(
           padding: const EdgeInsets.all(ManahSpacing.base),
           children: [
+            _SectionLabel('Kategori Busur'),
+            SegmentedButton<BowCategory>(
+              segments: const [
+                ButtonSegment(value: BowCategory.traditional, label: Text('Tradisional')),
+                ButtonSegment(value: BowCategory.modern, label: Text('Modern')),
+              ],
+              selected: {_bowCategory},
+              onSelectionChanged: (s) => setState(() {
+                _bowCategory = s.first;
+                _bowClass = BowClass.ofCategory(_bowCategory).first;
+              }),
+            ),
+            const SizedBox(height: ManahSpacing.lg),
             _SectionLabel('Tipe Busur'),
             _Dropdown<BowClass>(
               value: _bowClass,
-              items: BowClass.values,
+              items: BowClass.ofCategory(_bowCategory),
               labelOf: (e) => e.label,
               onChanged: (v) => setState(() => _bowClass = v),
             ),
@@ -110,16 +156,76 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
               onSelectionChanged: (s) => setState(() => _environment = s.first),
             ),
             const SizedBox(height: ManahSpacing.lg),
-            _SectionLabel('Target Face (cm)'),
-            Wrap(
-              spacing: ManahSpacing.sm,
-              children: _targetFaces
-                  .map((cm) => ChoiceChip(
-                        label: Text('$cm'),
-                        selected: _targetFaceCm == cm,
-                        onSelected: (_) => setState(() => _targetFaceCm = cm),
-                      ))
-                  .toList(),
+            _SectionLabel('Pilihan Target Face'),
+            targetFacesAsync.when(
+              loading: () => const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(ManahSpacing.base),
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+              error: (e, _) => Center(child: Text('Gagal memuat target face: $e')),
+              data: (targets) {
+                if (targets.isEmpty) {
+                  return const Center(child: Text('Tidak ada target face tersedia'));
+                }
+                return GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: targets.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: ManahSpacing.sm,
+                    mainAxisSpacing: ManahSpacing.sm,
+                    childAspectRatio: 1.3,
+                  ),
+                  itemBuilder: (context, idx) {
+                    final target = targets[idx];
+                    final isSelected = _selectedTargetFace?.id == target.id;
+                    return InkWell(
+                      onTap: () => setState(() => _selectedTargetFace = target),
+                      borderRadius: BorderRadius.circular(ManahRadius.md),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? ManahColors.brandSurface
+                              : theme.cardColor,
+                          borderRadius: BorderRadius.circular(ManahRadius.md),
+                          border: Border.all(
+                            color: isSelected
+                                ? ManahColors.brand
+                                : theme.dividerColor.withValues(alpha: 0.1),
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(ManahSpacing.sm),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(4.0),
+                                  child: TargetFacePreview(code: target.code),
+                                ),
+                              ),
+                              const SizedBox(height: ManahSpacing.xs),
+                              Text(
+                                target.name,
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
+                                  color: isSelected ? ManahColors.brand : null,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
             ),
             const SizedBox(height: ManahSpacing.lg),
             _Stepper(
@@ -147,7 +253,7 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
                   children: [
                     const Text('Total panah'),
                     Text(
-                      '${_numEnds * _arrowsPerEnd} panah · maks ${_numEnds * _arrowsPerEnd * 10}',
+                      '${_numEnds * _arrowsPerEnd} panah · maks ${_numEnds * _arrowsPerEnd * maxScore}',
                       style: const TextStyle(fontWeight: FontWeight.w700, color: ManahColors.brand),
                     ),
                   ],
@@ -242,4 +348,118 @@ class _Stepper extends StatelessWidget {
       ],
     );
   }
+}
+
+class TargetFacePreview extends StatelessWidget {
+  const TargetFacePreview({super.key, required this.code});
+
+  final String code;
+
+  @override
+  Widget build(BuildContext context) {
+    return AspectRatio(
+      aspectRatio: 1.0,
+      child: CustomPaint(
+        painter: _TargetFacePainter(code),
+      ),
+    );
+  }
+}
+
+class _TargetFacePainter extends CustomPainter {
+  _TargetFacePainter(this.code);
+  final String code;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+
+    if (code.startsWith('fita_')) {
+      // Draw FITA 10-ring: White, Black, Blue, Red, Gold concentric rings
+      final paint = Paint()..style = PaintingStyle.fill;
+      final strokePaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..color = Colors.grey.withValues(alpha: 0.3)
+        ..strokeWidth = 0.5;
+
+      final colors = [
+        Colors.white,
+        Colors.black,
+        const Color(0xFF1976D2), // Blue
+        const Color(0xFFD32F2F), // Red
+        const Color(0xFFFBC02D), // Gold
+      ];
+
+      for (int i = 0; i < colors.length; i++) {
+        paint.color = colors[i];
+        final r = radius * (1 - i * 0.2);
+        canvas.drawCircle(center, r, paint);
+        canvas.drawCircle(center, r, strokePaint);
+      }
+    } else if (code == 'jemparingan') {
+      // Draw Jemparingan vertical cylinder (cap is Red/Gold, body is White)
+      final paint = Paint()..style = PaintingStyle.fill;
+      final capHeight = size.height * 0.25;
+
+      // Cap (Sirah) - Red
+      paint.color = const Color(0xFFD32F2F);
+      canvas.drawRRect(
+        RRect.fromRectAndCorners(
+          Rect.fromLTWH(size.width * 0.35, 0, size.width * 0.3, capHeight),
+          topLeft: Radius.circular(size.width * 0.15),
+          topRight: Radius.circular(size.width * 0.15),
+        ),
+        paint,
+      );
+
+      // Body (Awak) - White
+      paint.color = Colors.white;
+      final borderPaint = Paint()
+        ..style = PaintingStyle.stroke
+        ..color = Colors.grey
+        ..strokeWidth = 1.0;
+
+      final bodyRect = Rect.fromLTWH(
+        size.width * 0.35,
+        capHeight,
+        size.width * 0.3,
+        size.height * 0.7,
+      );
+      canvas.drawRect(bodyRect, paint);
+      canvas.drawRect(bodyRect, borderPaint);
+    } else if (code == 'las_vegas_3spot') {
+      // Draw Las Vegas 3 Spot: 3 small concentric spots
+      final paint = Paint()..style = PaintingStyle.fill;
+      final spotRadius = radius * 0.3;
+      final spots = [
+        Offset(size.width * 0.5, size.height * 0.28),
+        Offset(size.width * 0.25, size.height * 0.7),
+        Offset(size.width * 0.75, size.height * 0.7),
+      ];
+
+      final colors = [
+        const Color(0xFF1976D2), // Blue
+        const Color(0xFFD32F2F), // Red
+        const Color(0xFFFBC02D), // Gold
+      ];
+
+      for (final spotCenter in spots) {
+        for (int i = 0; i < colors.length; i++) {
+          paint.color = colors[i];
+          final r = spotRadius * (1 - i * 0.33);
+          canvas.drawCircle(spotCenter, r, paint);
+        }
+      }
+    } else {
+      // Fallback: draw generic target face
+      final paint = Paint()
+        ..color = const Color(0xFFFBC02D)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(center, radius, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

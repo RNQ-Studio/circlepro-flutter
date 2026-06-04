@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:drift/drift.dart';
 
 import '../../domain/scoring_entities.dart';
@@ -31,6 +32,7 @@ class ScoringLocalDataSource {
               distanceM: session.distanceM,
               environment: Value(session.environment.value),
               targetFaceCm: Value(session.targetFaceCm),
+              targetFaceId: Value(session.targetFaceId),
               numEnds: session.numEnds,
               arrowsPerEnd: session.arrowsPerEnd,
               status: Value(session.status.value),
@@ -188,6 +190,7 @@ class ScoringLocalDataSource {
       distanceM: row.distanceM,
       environment: ArcheryEnvironment.fromValue(row.environment),
       targetFaceCm: row.targetFaceCm,
+      targetFaceId: row.targetFaceId,
       numEnds: row.numEnds,
       arrowsPerEnd: row.arrowsPerEnd,
       status: ScoringSessionStatus.fromValue(row.status),
@@ -199,5 +202,36 @@ class ScoringLocalDataSource {
       syncAction: row.syncAction,
       ends: ends,
     );
+  }
+
+  Future<void> saveTargetFaces(List<TargetFaceEntity> targets) async {
+    await _db.transaction(() async {
+      await _db.delete(_db.targetFaceRows).go();
+      for (final t in targets) {
+        await _db.into(_db.targetFaceRows).insertOnConflictUpdate(
+              TargetFaceRowsCompanion.insert(
+                id: t.id,
+                code: t.code,
+                name: t.name,
+                imagePath: Value(t.imagePath),
+                scoringRulesJson: jsonEncode(t.scoringRules.map((r) => r.toJson()).toList()),
+              ),
+            );
+      }
+    });
+  }
+
+  Future<List<TargetFaceEntity>> getTargetFaces() async {
+    final rows = await _db.select(_db.targetFaceRows).get();
+    return rows.map((r) {
+      final rulesJson = jsonDecode(r.scoringRulesJson) as List<dynamic>;
+      return TargetFaceEntity(
+        id: r.id,
+        code: r.code,
+        name: r.name,
+        imagePath: r.imagePath,
+        scoringRules: rulesJson.map((x) => TargetFaceRule.fromJson(x as Map<String, dynamic>)).toList(),
+      );
+    }).toList();
   }
 }

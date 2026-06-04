@@ -63,6 +63,12 @@ class $ScoringSessionRowsTable extends ScoringSessionRows
   late final GeneratedColumn<int> targetFaceCm = GeneratedColumn<int>(
       'target_face_cm', aliasedName, true,
       type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _targetFaceIdMeta =
+      const VerificationMeta('targetFaceId');
+  @override
+  late final GeneratedColumn<String> targetFaceId = GeneratedColumn<String>(
+      'target_face_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _numEndsMeta =
       const VerificationMeta('numEnds');
   @override
@@ -188,6 +194,7 @@ class $ScoringSessionRowsTable extends ScoringSessionRows
         distanceM,
         environment,
         targetFaceCm,
+        targetFaceId,
         numEnds,
         arrowsPerEnd,
         status,
@@ -269,6 +276,12 @@ class $ScoringSessionRowsTable extends ScoringSessionRows
           _targetFaceCmMeta,
           targetFaceCm.isAcceptableOrUnknown(
               data['target_face_cm']!, _targetFaceCmMeta));
+    }
+    if (data.containsKey('target_face_id')) {
+      context.handle(
+          _targetFaceIdMeta,
+          targetFaceId.isAcceptableOrUnknown(
+              data['target_face_id']!, _targetFaceIdMeta));
     }
     if (data.containsKey('num_ends')) {
       context.handle(_numEndsMeta,
@@ -379,6 +392,8 @@ class $ScoringSessionRowsTable extends ScoringSessionRows
           .read(DriftSqlType.string, data['${effectivePrefix}environment'])!,
       targetFaceCm: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}target_face_cm']),
+      targetFaceId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}target_face_id']),
       numEnds: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}num_ends'])!,
       arrowsPerEnd: attachedDatabase.typeMapping
@@ -431,6 +446,7 @@ class ScoringSessionRow extends DataClass
   final int distanceM;
   final String environment;
   final int? targetFaceCm;
+  final String? targetFaceId;
   final int numEnds;
   final int arrowsPerEnd;
   final String status;
@@ -459,6 +475,7 @@ class ScoringSessionRow extends DataClass
       required this.distanceM,
       required this.environment,
       this.targetFaceCm,
+      this.targetFaceId,
       required this.numEnds,
       required this.arrowsPerEnd,
       required this.status,
@@ -492,6 +509,9 @@ class ScoringSessionRow extends DataClass
     map['environment'] = Variable<String>(environment);
     if (!nullToAbsent || targetFaceCm != null) {
       map['target_face_cm'] = Variable<int>(targetFaceCm);
+    }
+    if (!nullToAbsent || targetFaceId != null) {
+      map['target_face_id'] = Variable<String>(targetFaceId);
     }
     map['num_ends'] = Variable<int>(numEnds);
     map['arrows_per_end'] = Variable<int>(arrowsPerEnd);
@@ -536,6 +556,9 @@ class ScoringSessionRow extends DataClass
       targetFaceCm: targetFaceCm == null && nullToAbsent
           ? const Value.absent()
           : Value(targetFaceCm),
+      targetFaceId: targetFaceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetFaceId),
       numEnds: Value(numEnds),
       arrowsPerEnd: Value(arrowsPerEnd),
       status: Value(status),
@@ -576,6 +599,7 @@ class ScoringSessionRow extends DataClass
       distanceM: serializer.fromJson<int>(json['distanceM']),
       environment: serializer.fromJson<String>(json['environment']),
       targetFaceCm: serializer.fromJson<int?>(json['targetFaceCm']),
+      targetFaceId: serializer.fromJson<String?>(json['targetFaceId']),
       numEnds: serializer.fromJson<int>(json['numEnds']),
       arrowsPerEnd: serializer.fromJson<int>(json['arrowsPerEnd']),
       status: serializer.fromJson<String>(json['status']),
@@ -607,6 +631,7 @@ class ScoringSessionRow extends DataClass
       'distanceM': serializer.toJson<int>(distanceM),
       'environment': serializer.toJson<String>(environment),
       'targetFaceCm': serializer.toJson<int?>(targetFaceCm),
+      'targetFaceId': serializer.toJson<String?>(targetFaceId),
       'numEnds': serializer.toJson<int>(numEnds),
       'arrowsPerEnd': serializer.toJson<int>(arrowsPerEnd),
       'status': serializer.toJson<String>(status),
@@ -636,6 +661,7 @@ class ScoringSessionRow extends DataClass
           int? distanceM,
           String? environment,
           Value<int?> targetFaceCm = const Value.absent(),
+          Value<String?> targetFaceId = const Value.absent(),
           int? numEnds,
           int? arrowsPerEnd,
           String? status,
@@ -665,6 +691,8 @@ class ScoringSessionRow extends DataClass
         environment: environment ?? this.environment,
         targetFaceCm:
             targetFaceCm.present ? targetFaceCm.value : this.targetFaceCm,
+        targetFaceId:
+            targetFaceId.present ? targetFaceId.value : this.targetFaceId,
         numEnds: numEnds ?? this.numEnds,
         arrowsPerEnd: arrowsPerEnd ?? this.arrowsPerEnd,
         status: status ?? this.status,
@@ -701,6 +729,9 @@ class ScoringSessionRow extends DataClass
       targetFaceCm: data.targetFaceCm.present
           ? data.targetFaceCm.value
           : this.targetFaceCm,
+      targetFaceId: data.targetFaceId.present
+          ? data.targetFaceId.value
+          : this.targetFaceId,
       numEnds: data.numEnds.present ? data.numEnds.value : this.numEnds,
       arrowsPerEnd: data.arrowsPerEnd.present
           ? data.arrowsPerEnd.value
@@ -740,6 +771,7 @@ class ScoringSessionRow extends DataClass
           ..write('distanceM: $distanceM, ')
           ..write('environment: $environment, ')
           ..write('targetFaceCm: $targetFaceCm, ')
+          ..write('targetFaceId: $targetFaceId, ')
           ..write('numEnds: $numEnds, ')
           ..write('arrowsPerEnd: $arrowsPerEnd, ')
           ..write('status: $status, ')
@@ -771,6 +803,7 @@ class ScoringSessionRow extends DataClass
         distanceM,
         environment,
         targetFaceCm,
+        targetFaceId,
         numEnds,
         arrowsPerEnd,
         status,
@@ -801,6 +834,7 @@ class ScoringSessionRow extends DataClass
           other.distanceM == this.distanceM &&
           other.environment == this.environment &&
           other.targetFaceCm == this.targetFaceCm &&
+          other.targetFaceId == this.targetFaceId &&
           other.numEnds == this.numEnds &&
           other.arrowsPerEnd == this.arrowsPerEnd &&
           other.status == this.status &&
@@ -829,6 +863,7 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
   final Value<int> distanceM;
   final Value<String> environment;
   final Value<int?> targetFaceCm;
+  final Value<String?> targetFaceId;
   final Value<int> numEnds;
   final Value<int> arrowsPerEnd;
   final Value<String> status;
@@ -856,6 +891,7 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
     this.distanceM = const Value.absent(),
     this.environment = const Value.absent(),
     this.targetFaceCm = const Value.absent(),
+    this.targetFaceId = const Value.absent(),
     this.numEnds = const Value.absent(),
     this.arrowsPerEnd = const Value.absent(),
     this.status = const Value.absent(),
@@ -884,6 +920,7 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
     required int distanceM,
     this.environment = const Value.absent(),
     this.targetFaceCm = const Value.absent(),
+    this.targetFaceId = const Value.absent(),
     required int numEnds,
     required int arrowsPerEnd,
     this.status = const Value.absent(),
@@ -919,6 +956,7 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
     Expression<int>? distanceM,
     Expression<String>? environment,
     Expression<int>? targetFaceCm,
+    Expression<String>? targetFaceId,
     Expression<int>? numEnds,
     Expression<int>? arrowsPerEnd,
     Expression<String>? status,
@@ -948,6 +986,7 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
       if (distanceM != null) 'distance_m': distanceM,
       if (environment != null) 'environment': environment,
       if (targetFaceCm != null) 'target_face_cm': targetFaceCm,
+      if (targetFaceId != null) 'target_face_id': targetFaceId,
       if (numEnds != null) 'num_ends': numEnds,
       if (arrowsPerEnd != null) 'arrows_per_end': arrowsPerEnd,
       if (status != null) 'status': status,
@@ -978,6 +1017,7 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
       Value<int>? distanceM,
       Value<String>? environment,
       Value<int?>? targetFaceCm,
+      Value<String?>? targetFaceId,
       Value<int>? numEnds,
       Value<int>? arrowsPerEnd,
       Value<String>? status,
@@ -1005,6 +1045,7 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
       distanceM: distanceM ?? this.distanceM,
       environment: environment ?? this.environment,
       targetFaceCm: targetFaceCm ?? this.targetFaceCm,
+      targetFaceId: targetFaceId ?? this.targetFaceId,
       numEnds: numEnds ?? this.numEnds,
       arrowsPerEnd: arrowsPerEnd ?? this.arrowsPerEnd,
       status: status ?? this.status,
@@ -1054,6 +1095,9 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
     }
     if (targetFaceCm.present) {
       map['target_face_cm'] = Variable<int>(targetFaceCm.value);
+    }
+    if (targetFaceId.present) {
+      map['target_face_id'] = Variable<String>(targetFaceId.value);
     }
     if (numEnds.present) {
       map['num_ends'] = Variable<int>(numEnds.value);
@@ -1121,6 +1165,7 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
           ..write('distanceM: $distanceM, ')
           ..write('environment: $environment, ')
           ..write('targetFaceCm: $targetFaceCm, ')
+          ..write('targetFaceId: $targetFaceId, ')
           ..write('numEnds: $numEnds, ')
           ..write('arrowsPerEnd: $arrowsPerEnd, ')
           ..write('status: $status, ')
@@ -1724,6 +1769,320 @@ class ScoringArrowRowsCompanion extends UpdateCompanion<ScoringArrowRow> {
   }
 }
 
+class $TargetFaceRowsTable extends TargetFaceRows
+    with TableInfo<$TargetFaceRowsTable, TargetFaceRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TargetFaceRowsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _codeMeta = const VerificationMeta('code');
+  @override
+  late final GeneratedColumn<String> code = GeneratedColumn<String>(
+      'code', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+      'name', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _imagePathMeta =
+      const VerificationMeta('imagePath');
+  @override
+  late final GeneratedColumn<String> imagePath = GeneratedColumn<String>(
+      'image_path', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _scoringRulesJsonMeta =
+      const VerificationMeta('scoringRulesJson');
+  @override
+  late final GeneratedColumn<String> scoringRulesJson = GeneratedColumn<String>(
+      'scoring_rules_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, code, name, imagePath, scoringRulesJson];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'target_face_rows';
+  @override
+  VerificationContext validateIntegrity(Insertable<TargetFaceRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('code')) {
+      context.handle(
+          _codeMeta, code.isAcceptableOrUnknown(data['code']!, _codeMeta));
+    } else if (isInserting) {
+      context.missing(_codeMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('image_path')) {
+      context.handle(_imagePathMeta,
+          imagePath.isAcceptableOrUnknown(data['image_path']!, _imagePathMeta));
+    }
+    if (data.containsKey('scoring_rules_json')) {
+      context.handle(
+          _scoringRulesJsonMeta,
+          scoringRulesJson.isAcceptableOrUnknown(
+              data['scoring_rules_json']!, _scoringRulesJsonMeta));
+    } else if (isInserting) {
+      context.missing(_scoringRulesJsonMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  TargetFaceRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TargetFaceRow(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      code: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}code'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      imagePath: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}image_path']),
+      scoringRulesJson: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}scoring_rules_json'])!,
+    );
+  }
+
+  @override
+  $TargetFaceRowsTable createAlias(String alias) {
+    return $TargetFaceRowsTable(attachedDatabase, alias);
+  }
+}
+
+class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
+  final String id;
+  final String code;
+  final String name;
+  final String? imagePath;
+  final String scoringRulesJson;
+  const TargetFaceRow(
+      {required this.id,
+      required this.code,
+      required this.name,
+      this.imagePath,
+      required this.scoringRulesJson});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['code'] = Variable<String>(code);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || imagePath != null) {
+      map['image_path'] = Variable<String>(imagePath);
+    }
+    map['scoring_rules_json'] = Variable<String>(scoringRulesJson);
+    return map;
+  }
+
+  TargetFaceRowsCompanion toCompanion(bool nullToAbsent) {
+    return TargetFaceRowsCompanion(
+      id: Value(id),
+      code: Value(code),
+      name: Value(name),
+      imagePath: imagePath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(imagePath),
+      scoringRulesJson: Value(scoringRulesJson),
+    );
+  }
+
+  factory TargetFaceRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TargetFaceRow(
+      id: serializer.fromJson<String>(json['id']),
+      code: serializer.fromJson<String>(json['code']),
+      name: serializer.fromJson<String>(json['name']),
+      imagePath: serializer.fromJson<String?>(json['imagePath']),
+      scoringRulesJson: serializer.fromJson<String>(json['scoringRulesJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'code': serializer.toJson<String>(code),
+      'name': serializer.toJson<String>(name),
+      'imagePath': serializer.toJson<String?>(imagePath),
+      'scoringRulesJson': serializer.toJson<String>(scoringRulesJson),
+    };
+  }
+
+  TargetFaceRow copyWith(
+          {String? id,
+          String? code,
+          String? name,
+          Value<String?> imagePath = const Value.absent(),
+          String? scoringRulesJson}) =>
+      TargetFaceRow(
+        id: id ?? this.id,
+        code: code ?? this.code,
+        name: name ?? this.name,
+        imagePath: imagePath.present ? imagePath.value : this.imagePath,
+        scoringRulesJson: scoringRulesJson ?? this.scoringRulesJson,
+      );
+  TargetFaceRow copyWithCompanion(TargetFaceRowsCompanion data) {
+    return TargetFaceRow(
+      id: data.id.present ? data.id.value : this.id,
+      code: data.code.present ? data.code.value : this.code,
+      name: data.name.present ? data.name.value : this.name,
+      imagePath: data.imagePath.present ? data.imagePath.value : this.imagePath,
+      scoringRulesJson: data.scoringRulesJson.present
+          ? data.scoringRulesJson.value
+          : this.scoringRulesJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TargetFaceRow(')
+          ..write('id: $id, ')
+          ..write('code: $code, ')
+          ..write('name: $name, ')
+          ..write('imagePath: $imagePath, ')
+          ..write('scoringRulesJson: $scoringRulesJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, code, name, imagePath, scoringRulesJson);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TargetFaceRow &&
+          other.id == this.id &&
+          other.code == this.code &&
+          other.name == this.name &&
+          other.imagePath == this.imagePath &&
+          other.scoringRulesJson == this.scoringRulesJson);
+}
+
+class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
+  final Value<String> id;
+  final Value<String> code;
+  final Value<String> name;
+  final Value<String?> imagePath;
+  final Value<String> scoringRulesJson;
+  final Value<int> rowid;
+  const TargetFaceRowsCompanion({
+    this.id = const Value.absent(),
+    this.code = const Value.absent(),
+    this.name = const Value.absent(),
+    this.imagePath = const Value.absent(),
+    this.scoringRulesJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TargetFaceRowsCompanion.insert({
+    required String id,
+    required String code,
+    required String name,
+    this.imagePath = const Value.absent(),
+    required String scoringRulesJson,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        code = Value(code),
+        name = Value(name),
+        scoringRulesJson = Value(scoringRulesJson);
+  static Insertable<TargetFaceRow> custom({
+    Expression<String>? id,
+    Expression<String>? code,
+    Expression<String>? name,
+    Expression<String>? imagePath,
+    Expression<String>? scoringRulesJson,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (code != null) 'code': code,
+      if (name != null) 'name': name,
+      if (imagePath != null) 'image_path': imagePath,
+      if (scoringRulesJson != null) 'scoring_rules_json': scoringRulesJson,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TargetFaceRowsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? code,
+      Value<String>? name,
+      Value<String?>? imagePath,
+      Value<String>? scoringRulesJson,
+      Value<int>? rowid}) {
+    return TargetFaceRowsCompanion(
+      id: id ?? this.id,
+      code: code ?? this.code,
+      name: name ?? this.name,
+      imagePath: imagePath ?? this.imagePath,
+      scoringRulesJson: scoringRulesJson ?? this.scoringRulesJson,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (code.present) {
+      map['code'] = Variable<String>(code.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (imagePath.present) {
+      map['image_path'] = Variable<String>(imagePath.value);
+    }
+    if (scoringRulesJson.present) {
+      map['scoring_rules_json'] = Variable<String>(scoringRulesJson.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TargetFaceRowsCompanion(')
+          ..write('id: $id, ')
+          ..write('code: $code, ')
+          ..write('name: $name, ')
+          ..write('imagePath: $imagePath, ')
+          ..write('scoringRulesJson: $scoringRulesJson, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$ScoringDatabase extends GeneratedDatabase {
   _$ScoringDatabase(QueryExecutor e) : super(e);
   $ScoringDatabaseManager get managers => $ScoringDatabaseManager(this);
@@ -1732,12 +2091,13 @@ abstract class _$ScoringDatabase extends GeneratedDatabase {
   late final $ScoringEndRowsTable scoringEndRows = $ScoringEndRowsTable(this);
   late final $ScoringArrowRowsTable scoringArrowRows =
       $ScoringArrowRowsTable(this);
+  late final $TargetFaceRowsTable targetFaceRows = $TargetFaceRowsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
   List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [scoringSessionRows, scoringEndRows, scoringArrowRows];
+      [scoringSessionRows, scoringEndRows, scoringArrowRows, targetFaceRows];
 }
 
 typedef $$ScoringSessionRowsTableCreateCompanionBuilder
@@ -1751,6 +2111,7 @@ typedef $$ScoringSessionRowsTableCreateCompanionBuilder
   required int distanceM,
   Value<String> environment,
   Value<int?> targetFaceCm,
+  Value<String?> targetFaceId,
   required int numEnds,
   required int arrowsPerEnd,
   Value<String> status,
@@ -1780,6 +2141,7 @@ typedef $$ScoringSessionRowsTableUpdateCompanionBuilder
   Value<int> distanceM,
   Value<String> environment,
   Value<int?> targetFaceCm,
+  Value<String?> targetFaceId,
   Value<int> numEnds,
   Value<int> arrowsPerEnd,
   Value<String> status,
@@ -1836,6 +2198,9 @@ class $$ScoringSessionRowsTableFilterComposer
 
   ColumnFilters<int> get targetFaceCm => $composableBuilder(
       column: $table.targetFaceCm, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get targetFaceId => $composableBuilder(
+      column: $table.targetFaceId, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<int> get numEnds => $composableBuilder(
       column: $table.numEnds, builder: (column) => ColumnFilters(column));
@@ -1926,6 +2291,10 @@ class $$ScoringSessionRowsTableOrderingComposer
       column: $table.targetFaceCm,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get targetFaceId => $composableBuilder(
+      column: $table.targetFaceId,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<int> get numEnds => $composableBuilder(
       column: $table.numEnds, builder: (column) => ColumnOrderings(column));
 
@@ -2012,6 +2381,9 @@ class $$ScoringSessionRowsTableAnnotationComposer
 
   GeneratedColumn<int> get targetFaceCm => $composableBuilder(
       column: $table.targetFaceCm, builder: (column) => column);
+
+  GeneratedColumn<String> get targetFaceId => $composableBuilder(
+      column: $table.targetFaceId, builder: (column) => column);
 
   GeneratedColumn<int> get numEnds =>
       $composableBuilder(column: $table.numEnds, builder: (column) => column);
@@ -2100,6 +2472,7 @@ class $$ScoringSessionRowsTableTableManager extends RootTableManager<
             Value<int> distanceM = const Value.absent(),
             Value<String> environment = const Value.absent(),
             Value<int?> targetFaceCm = const Value.absent(),
+            Value<String?> targetFaceId = const Value.absent(),
             Value<int> numEnds = const Value.absent(),
             Value<int> arrowsPerEnd = const Value.absent(),
             Value<String> status = const Value.absent(),
@@ -2128,6 +2501,7 @@ class $$ScoringSessionRowsTableTableManager extends RootTableManager<
             distanceM: distanceM,
             environment: environment,
             targetFaceCm: targetFaceCm,
+            targetFaceId: targetFaceId,
             numEnds: numEnds,
             arrowsPerEnd: arrowsPerEnd,
             status: status,
@@ -2156,6 +2530,7 @@ class $$ScoringSessionRowsTableTableManager extends RootTableManager<
             required int distanceM,
             Value<String> environment = const Value.absent(),
             Value<int?> targetFaceCm = const Value.absent(),
+            Value<String?> targetFaceId = const Value.absent(),
             required int numEnds,
             required int arrowsPerEnd,
             Value<String> status = const Value.absent(),
@@ -2184,6 +2559,7 @@ class $$ScoringSessionRowsTableTableManager extends RootTableManager<
             distanceM: distanceM,
             environment: environment,
             targetFaceCm: targetFaceCm,
+            targetFaceId: targetFaceId,
             numEnds: numEnds,
             arrowsPerEnd: arrowsPerEnd,
             status: status,
@@ -2558,6 +2934,182 @@ typedef $$ScoringArrowRowsTableProcessedTableManager = ProcessedTableManager<
     ),
     ScoringArrowRow,
     PrefetchHooks Function()>;
+typedef $$TargetFaceRowsTableCreateCompanionBuilder = TargetFaceRowsCompanion
+    Function({
+  required String id,
+  required String code,
+  required String name,
+  Value<String?> imagePath,
+  required String scoringRulesJson,
+  Value<int> rowid,
+});
+typedef $$TargetFaceRowsTableUpdateCompanionBuilder = TargetFaceRowsCompanion
+    Function({
+  Value<String> id,
+  Value<String> code,
+  Value<String> name,
+  Value<String?> imagePath,
+  Value<String> scoringRulesJson,
+  Value<int> rowid,
+});
+
+class $$TargetFaceRowsTableFilterComposer
+    extends Composer<_$ScoringDatabase, $TargetFaceRowsTable> {
+  $$TargetFaceRowsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get code => $composableBuilder(
+      column: $table.code, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get imagePath => $composableBuilder(
+      column: $table.imagePath, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get scoringRulesJson => $composableBuilder(
+      column: $table.scoringRulesJson,
+      builder: (column) => ColumnFilters(column));
+}
+
+class $$TargetFaceRowsTableOrderingComposer
+    extends Composer<_$ScoringDatabase, $TargetFaceRowsTable> {
+  $$TargetFaceRowsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get code => $composableBuilder(
+      column: $table.code, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get imagePath => $composableBuilder(
+      column: $table.imagePath, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get scoringRulesJson => $composableBuilder(
+      column: $table.scoringRulesJson,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$TargetFaceRowsTableAnnotationComposer
+    extends Composer<_$ScoringDatabase, $TargetFaceRowsTable> {
+  $$TargetFaceRowsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get code =>
+      $composableBuilder(column: $table.code, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get imagePath =>
+      $composableBuilder(column: $table.imagePath, builder: (column) => column);
+
+  GeneratedColumn<String> get scoringRulesJson => $composableBuilder(
+      column: $table.scoringRulesJson, builder: (column) => column);
+}
+
+class $$TargetFaceRowsTableTableManager extends RootTableManager<
+    _$ScoringDatabase,
+    $TargetFaceRowsTable,
+    TargetFaceRow,
+    $$TargetFaceRowsTableFilterComposer,
+    $$TargetFaceRowsTableOrderingComposer,
+    $$TargetFaceRowsTableAnnotationComposer,
+    $$TargetFaceRowsTableCreateCompanionBuilder,
+    $$TargetFaceRowsTableUpdateCompanionBuilder,
+    (
+      TargetFaceRow,
+      BaseReferences<_$ScoringDatabase, $TargetFaceRowsTable, TargetFaceRow>
+    ),
+    TargetFaceRow,
+    PrefetchHooks Function()> {
+  $$TargetFaceRowsTableTableManager(
+      _$ScoringDatabase db, $TargetFaceRowsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TargetFaceRowsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TargetFaceRowsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TargetFaceRowsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> code = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String?> imagePath = const Value.absent(),
+            Value<String> scoringRulesJson = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              TargetFaceRowsCompanion(
+            id: id,
+            code: code,
+            name: name,
+            imagePath: imagePath,
+            scoringRulesJson: scoringRulesJson,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String code,
+            required String name,
+            Value<String?> imagePath = const Value.absent(),
+            required String scoringRulesJson,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              TargetFaceRowsCompanion.insert(
+            id: id,
+            code: code,
+            name: name,
+            imagePath: imagePath,
+            scoringRulesJson: scoringRulesJson,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$TargetFaceRowsTableProcessedTableManager = ProcessedTableManager<
+    _$ScoringDatabase,
+    $TargetFaceRowsTable,
+    TargetFaceRow,
+    $$TargetFaceRowsTableFilterComposer,
+    $$TargetFaceRowsTableOrderingComposer,
+    $$TargetFaceRowsTableAnnotationComposer,
+    $$TargetFaceRowsTableCreateCompanionBuilder,
+    $$TargetFaceRowsTableUpdateCompanionBuilder,
+    (
+      TargetFaceRow,
+      BaseReferences<_$ScoringDatabase, $TargetFaceRowsTable, TargetFaceRow>
+    ),
+    TargetFaceRow,
+    PrefetchHooks Function()>;
 
 class $ScoringDatabaseManager {
   final _$ScoringDatabase _db;
@@ -2568,4 +3120,6 @@ class $ScoringDatabaseManager {
       $$ScoringEndRowsTableTableManager(_db, _db.scoringEndRows);
   $$ScoringArrowRowsTableTableManager get scoringArrowRows =>
       $$ScoringArrowRowsTableTableManager(_db, _db.scoringArrowRows);
+  $$TargetFaceRowsTableTableManager get targetFaceRows =>
+      $$TargetFaceRowsTableTableManager(_db, _db.targetFaceRows);
 }

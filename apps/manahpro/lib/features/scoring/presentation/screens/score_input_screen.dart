@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
+import '../../domain/scoring_entities.dart';
 import '../active_scoring_notifier.dart';
+import '../scoring_providers.dart';
 import '../scoring_routes.dart';
 import '../widgets/arrow_slots.dart';
 import '../widgets/score_pad.dart';
@@ -20,6 +22,7 @@ class ScoreInputScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncState = ref.watch(activeScoringProvider(sessionId));
+    final targetFacesAsync = ref.watch(targetFacesListProvider);
     final notifier = ref.read(activeScoringProvider(sessionId).notifier);
 
     return asyncState.when(
@@ -28,17 +31,35 @@ class ScoreInputScreen extends ConsumerWidget {
         appBar: AppBar(),
         body: Center(child: Text('Gagal memuat sesi: $e')),
       ),
-      data: (s) => _ScoreInputView(state: s, notifier: notifier, sessionId: sessionId),
+      data: (s) {
+        final targetFaces = targetFacesAsync.value ?? const [];
+        final targetFace = s.session.targetFaceId != null
+            ? targetFaces.where((t) => t.id == s.session.targetFaceId).firstOrNull
+            : null;
+
+        return _ScoreInputView(
+          state: s,
+          notifier: notifier,
+          sessionId: sessionId,
+          targetFace: targetFace,
+        );
+      },
     );
   }
 }
 
 class _ScoreInputView extends StatelessWidget {
-  const _ScoreInputView({required this.state, required this.notifier, required this.sessionId});
+  const _ScoreInputView({
+    required this.state,
+    required this.notifier,
+    required this.sessionId,
+    this.targetFace,
+  });
 
   final ActiveScoringState state;
   final ActiveScoring notifier;
   final String sessionId;
+  final TargetFaceEntity? targetFace;
 
   Future<void> _onScore(ScoreKey key) async {
     // Audible + tactile feedback (dependency-free): a stronger reward cue for
@@ -146,6 +167,7 @@ class _ScoreInputView extends StatelessWidget {
                 onScore: _onScore,
                 onUndo: notifier.undo,
                 undoEnabled: end.arrows.isNotEmpty,
+                targetFace: targetFace,
               ),
             ),
             // End navigation.

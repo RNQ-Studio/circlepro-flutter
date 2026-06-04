@@ -14,6 +14,7 @@ Map<String, dynamic> scoringSessionToSyncJson(ScoringSessionEntity s) {
     'distance_m': s.distanceM,
     'environment': s.environment.value,
     if (s.targetFaceCm != null) 'target_face_cm': s.targetFaceCm,
+    if (s.targetFaceId != null) 'target_face_id': s.targetFaceId,
     'num_ends': s.numEnds,
     'arrows_per_end': s.arrowsPerEnd,
     'status': s.status.value,
@@ -72,6 +73,7 @@ ScoringSessionEntity scoringSessionFromJson(Map<String, dynamic> json) {
     distanceM: json['distance_m'] as int? ?? 0,
     environment: ArcheryEnvironment.fromValue(json['environment'] as String?),
     targetFaceCm: json['target_face_cm'] as int?,
+    targetFaceId: json['target_face_id'] as String?,
     numEnds: json['num_ends'] as int? ?? 0,
     arrowsPerEnd: json['arrows_per_end'] as int? ?? 6,
     status: ScoringSessionStatus.fromValue(json['status'] as String?),
@@ -85,5 +87,6 @@ ScoringSessionEntity scoringSessionFromJson(Map<String, dynamic> json) {
     isPersonalBest: json['is_personal_best'] as bool? ?? false,
     isSynced: true,
     ends: ends,
+    maxPossibleScoreOverride: json['max_possible_score'] as int?,
   );
 }

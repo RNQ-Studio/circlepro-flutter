@@ -16,6 +16,7 @@ class ScoringSessionRows extends Table {
   IntColumn get distanceM => integer()();
   TextColumn get environment => text().withDefault(const Constant('outdoor'))();
   IntColumn get targetFaceCm => integer().nullable()();
+  TextColumn get targetFaceId => text().nullable()();
   IntColumn get numEnds => integer()();
   IntColumn get arrowsPerEnd => integer()();
   TextColumn get status => text().withDefault(const Constant('in_progress'))();
@@ -60,14 +61,37 @@ class ScoringArrowRows extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+class TargetFaceRows extends Table {
+  TextColumn get id => text()();
+  TextColumn get code => text().unique()();
+  TextColumn get name => text()();
+  TextColumn get imagePath => text().nullable()();
+  TextColumn get scoringRulesJson => text()(); // Store rules as JSON string
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 /// Dedicated offline database for ManahPro scoring (separate from the shared
 /// `core` AppDatabase so the domain stays app-level).
-@DriftDatabase(tables: [ScoringSessionRows, ScoringEndRows, ScoringArrowRows])
+@DriftDatabase(tables: [ScoringSessionRows, ScoringEndRows, ScoringArrowRows, TargetFaceRows])
 class ScoringDatabase extends _$ScoringDatabase {
   ScoringDatabase([QueryExecutor? executor]) : super(executor ?? _open());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2; // Increment version for schema migration
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          if (from < 2) {
+            // Create target_face_rows table
+            await m.createTable(targetFaceRows);
+            // Add target_face_id to scoring_session_rows table
+            await m.addColumn(scoringSessionRows, scoringSessionRows.targetFaceId);
+          }
+        },
+      );
 
   static QueryExecutor _open() => driftDatabase(name: 'manah_scoring');
 }

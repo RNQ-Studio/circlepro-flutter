@@ -69,6 +69,7 @@ class ScoringSessionEntity extends Equatable {
     this.title,
     this.environment = ArcheryEnvironment.outdoor,
     this.targetFaceCm,
+    this.targetFaceId,
     this.status = ScoringSessionStatus.inProgress,
     this.notes,
     required this.startedAt,
@@ -77,6 +78,7 @@ class ScoringSessionEntity extends Equatable {
     this.isSynced = false,
     this.syncAction,
     this.ends = const [],
+    this.maxPossibleScoreOverride,
   });
 
   final String id;
@@ -88,6 +90,7 @@ class ScoringSessionEntity extends Equatable {
   final int distanceM;
   final ArcheryEnvironment environment;
   final int? targetFaceCm;
+  final String? targetFaceId;
   final int numEnds;
   final int arrowsPerEnd;
   final ScoringSessionStatus status;
@@ -98,6 +101,7 @@ class ScoringSessionEntity extends Equatable {
   final bool isSynced;
   final String? syncAction;
   final List<ScoringEndEntity> ends;
+  final int? maxPossibleScoreOverride;
 
   // ─── Derived aggregates (computed from arrows) ──────────────────
   Iterable<ArrowScore> get _allArrows => ends.expand((e) => e.arrows);
@@ -106,7 +110,7 @@ class ScoringSessionEntity extends Equatable {
 
   int get arrowsShot => _allArrows.length;
 
-  int get maxPossibleScore => numEnds * arrowsPerEnd * 10;
+  int get maxPossibleScore => maxPossibleScoreOverride ?? (numEnds * arrowsPerEnd * 10);
 
   int get xCount => _allArrows.where((a) => a.isX).length;
 
@@ -164,4 +168,83 @@ class ScoringSessionEntity extends Equatable {
         completedAt,
         ends,
       ];
+}
+
+class TargetFaceRule extends Equatable {
+  const TargetFaceRule({
+    required this.value,
+    required this.label,
+    required this.colorHex,
+    this.isX = false,
+    this.isMiss = false,
+  });
+
+  final int value;
+  final String label;
+  final String colorHex;
+  final bool isX;
+  final bool isMiss;
+
+  factory TargetFaceRule.fromJson(Map<String, dynamic> json) {
+    return TargetFaceRule(
+      value: json['value'] as int? ?? 0,
+      label: json['label'] as String? ?? '',
+      colorHex: json['color'] as String? ?? '#000000',
+      isX: json['is_x'] as bool? ?? false,
+      isMiss: json['is_miss'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'value': value,
+      'label': label,
+      'color': colorHex,
+      'is_x': isX,
+      'is_miss': isMiss,
+    };
+  }
+
+  @override
+  List<Object?> get props => [value, label, colorHex, isX, isMiss];
+}
+
+class TargetFaceEntity extends Equatable {
+  const TargetFaceEntity({
+    required this.id,
+    required this.code,
+    required this.name,
+    this.imagePath,
+    required this.scoringRules,
+  });
+
+  final String id;
+  final String code;
+  final String name;
+  final String? imagePath;
+  final List<TargetFaceRule> scoringRules;
+
+  factory TargetFaceEntity.fromJson(Map<String, dynamic> json) {
+    final rulesJson = json['scoring_rules'] as List<dynamic>? ?? [];
+    return TargetFaceEntity(
+      id: json['id'] as String? ?? '',
+      code: json['code'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      imagePath: json['image_path'] as String?,
+      scoringRules: rulesJson.map((r) => TargetFaceRule.fromJson(r as Map<String, dynamic>)).toList(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'code': code,
+      'name': name,
+      'image_path': imagePath,
+      'scoring_rules': scoringRules.map((r) => r.toJson()).toList(),
+    };
+  }
+
+  @override
+  List<Object?> get props => [id, code, name, imagePath, scoringRules];
 }

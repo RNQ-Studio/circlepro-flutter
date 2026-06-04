@@ -31,4 +31,11 @@ class ScoringRemoteDataSource {
       return false;
     }
   }
+
+  /// Fetch all target faces from the backend. `GET /v1/scoring/target-faces`.
+  Future<List<Map<String, dynamic>>> getTargetFaces() async {
+    final response = await _dio.get('v1/scoring/target-faces');
+    final data = response.data['data'] as List<dynamic>? ?? [];
+    return data.map((e) => e as Map<String, dynamic>).toList();
+  }
 }
