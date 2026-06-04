@@ -32,23 +32,15 @@ class HomeUserHeader extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [
-                  const Color(0xFF1E1E38),
-                  const Color(0xFF152A4A),
-                ]
-              : [
-                  ManahColors.brand,
-                  const Color(0xFF0D47A1),
-                ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: theme.cardTheme.color,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: theme.dividerColor.withValues(alpha: isDark ? 0.08 : 0.05),
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.12),
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -64,7 +56,7 @@ class HomeUserHeader extends StatelessWidget {
               Text(
                 'Selamat datang,',
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.75),
+                  color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
                   fontSize: 12,
                   fontWeight: FontWeight.w500,
                   letterSpacing: 0.2,
@@ -76,22 +68,30 @@ class HomeUserHeader extends StatelessWidget {
                 children: [
                   IconButton(
                     visualDensity: VisualDensity.compact,
-                    icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 20),
+                    icon: Icon(
+                      Icons.settings_outlined, 
+                      color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.8), 
+                      size: 20,
+                    ),
                     onPressed: onSettingsTap,
                     tooltip: 'Pengaturan',
                     style: IconButton.styleFrom(
-                      backgroundColor: Colors.white.withValues(alpha: 0.12),
+                      backgroundColor: theme.dividerColor.withValues(alpha: isDark ? 0.12 : 0.06),
                       padding: const EdgeInsets.all(6),
                     ),
                   ),
                   const SizedBox(width: 8),
                   IconButton(
                     visualDensity: VisualDensity.compact,
-                    icon: const Icon(Icons.logout_rounded, color: Colors.white, size: 20),
+                    icon: Icon(
+                      Icons.logout_rounded, 
+                      color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.8), 
+                      size: 20,
+                    ),
                     onPressed: onLogoutTap,
                     tooltip: 'Keluar',
                     style: IconButton.styleFrom(
-                      backgroundColor: Colors.white.withValues(alpha: 0.12),
+                      backgroundColor: theme.dividerColor.withValues(alpha: isDark ? 0.12 : 0.06),
                       padding: const EdgeInsets.all(6),
                     ),
                   ),
@@ -111,7 +111,7 @@ class HomeUserHeader extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.9),
+                      color: theme.dividerColor.withValues(alpha: isDark ? 0.25 : 0.15),
                       width: 2.0,
                     ),
                     boxShadow: [
@@ -124,15 +124,15 @@ class HomeUserHeader extends StatelessWidget {
                   ),
                   child: CircleAvatar(
                     radius: 24,
-                    backgroundColor: Colors.white.withValues(alpha: 0.15),
+                    backgroundColor: theme.dividerColor.withValues(alpha: 0.1),
                     backgroundImage: profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty
                         ? NetworkImage(profile.avatarUrl!)
                         : null,
                     child: profile.avatarUrl == null || profile.avatarUrl!.isEmpty
-                        ? const Icon(
+                        ? Icon(
                             Icons.person_rounded,
                             size: 24,
-                            color: Colors.white,
+                            color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.8),
                           )
                         : null,
                   ),
@@ -150,8 +150,8 @@ class HomeUserHeader extends StatelessWidget {
                     children: [
                       Text(
                         profile.name,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: theme.textTheme.titleMedium?.color ?? (isDark ? Colors.white : ManahColors.nearBlack),
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.1,
@@ -161,7 +161,7 @@ class HomeUserHeader extends StatelessWidget {
                       Text(
                         profile.email,
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                           fontSize: 12,
                           fontWeight: FontWeight.w400,
                         ),
@@ -173,13 +173,13 @@ class HomeUserHeader extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.18),
+                              color: theme.dividerColor.withValues(alpha: isDark ? 0.18 : 0.08),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
                               profile.role.toUpperCase(),
-                              style: const TextStyle(
-                                color: Colors.white,
+                              style: TextStyle(
+                                color: theme.textTheme.bodySmall?.color,
                                 fontSize: 8,
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: 0.5,
@@ -188,16 +188,16 @@ class HomeUserHeader extends StatelessWidget {
                           ),
                           if (stats != null && stats!.currentStreak > 0) ...[
                             const SizedBox(width: 8),
-                            Icon(
+                            const Icon(
                               Icons.local_fire_department_rounded,
-                              color: Colors.orangeAccent.shade200,
+                              color: ManahColors.error,
                               size: 14,
                             ),
                             const SizedBox(width: 2),
                             Text(
                               '${stats!.currentStreak} Hari Streak',
-                              style: TextStyle(
-                                color: Colors.orangeAccent.shade200,
+                              style: const TextStyle(
+                                color: ManahColors.error,
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -216,7 +216,7 @@ class HomeUserHeader extends StatelessWidget {
             // Divider
             Container(
               height: 1,
-              color: Colors.white.withOpacity(0.1),
+              color: theme.dividerColor.withValues(alpha: 0.08),
             ),
             const SizedBox(height: 12),
             // Level & XP bar
@@ -225,16 +225,14 @@ class HomeUserHeader extends StatelessWidget {
               children: [
                 Text(
                   'Level ${stats!.level}',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
+                  style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
                   '$currentLevelXp / 500 XP',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                   ),
@@ -246,8 +244,8 @@ class HomeUserHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
                 value: progress,
-                backgroundColor: Colors.white.withOpacity(0.15),
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                backgroundColor: theme.dividerColor.withValues(alpha: 0.1),
+                valueColor: const AlwaysStoppedAnimation<Color>(ManahColors.brand),
                 minHeight: 6,
               ),
             ),
