@@ -31,6 +31,20 @@ class HomeScreen extends ConsumerWidget {
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(),
           slivers: [
+            // Logo dipaling atas
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+                child: Center(
+                  child: Image.asset(
+                    'assets/images/logo_border_white.png',
+                    height: 48,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+
             // Welcoming User Banner
             SliverToBoxAdapter(
               child: isAuthenticated
@@ -46,10 +60,10 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
             
-            // Mulai Latihan Quick Card
-            const SliverToBoxAdapter(
-              child: _QuickStartCard(),
-            ),
+            // Mulai Latihan Quick Card (di-hide dulu)
+            // const SliverToBoxAdapter(
+            //   child: _QuickStartCard(),
+            // ),
 
             // Feature Menu Grid
             SliverToBoxAdapter(
@@ -173,53 +187,36 @@ class HomeScreen extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      padding: const EdgeInsets.all(18),
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [
-                  const Color(0xFF1E1E38),
-                  const Color(0xFF152A4A),
-                ]
-              : [
-                  ManahColors.brand,
-                  const Color(0xFF0D47A1),
-                ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        color: theme.cardTheme.color,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: theme.dividerColor.withValues(alpha: isDark ? 0.08 : 0.05),
+          width: 1.2,
         ),
-        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.12),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Mock Guest Avatar
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withOpacity(0.9),
-                width: 2.5,
-              ),
-            ),
-            child: const Icon(
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: theme.dividerColor.withValues(alpha: 0.1),
+            child: Icon(
               Icons.person_rounded,
-              size: 28,
-              color: Colors.white,
+              size: 20,
+              color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.7),
             ),
           ),
-          const SizedBox(width: 14),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,20 +224,18 @@ class HomeScreen extends ConsumerWidget {
               children: [
                 Text(
                   l10n.welcome,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
+                  style: TextStyle(
+                    color: theme.textTheme.titleMedium?.color ?? (isDark ? Colors.white : ManahColors.nearBlack),
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 0.1,
                   ),
                 ),
-                const SizedBox(height: 3),
+                const SizedBox(height: 2),
                 Text(
                   'Masuk untuk mencatat skor & naik level!',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.75),
+                    color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.55),
                     fontSize: 11,
-                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],
@@ -249,19 +244,19 @@ class HomeScreen extends ConsumerWidget {
           const SizedBox(width: 8),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              minimumSize: const Size(80, 36),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              backgroundColor: Colors.white,
-              foregroundColor: ManahColors.brand,
+              minimumSize: const Size(60, 32),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              backgroundColor: ManahColors.brand,
+              foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
               ),
               elevation: 0,
             ),
             onPressed: () => context.push('/login'),
             child: Text(
               l10n.login,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
             ),
           ),
         ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../theme/manah_colors.dart';
+import '../../../../theme/manah_tokens.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../../gamification/domain/gamification_entities.dart';
 
@@ -29,228 +30,178 @@ class HomeUserHeader extends StatelessWidget {
     final progress = stats != null ? (currentLevelXp / 500.0) : 0.0;
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-      padding: const EdgeInsets.all(18),
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       decoration: BoxDecoration(
         color: theme.cardTheme.color,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: theme.dividerColor.withValues(alpha: isDark ? 0.08 : 0.05),
-          width: 1.5,
+          width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Top Row: Greeting & Action Buttons
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Selamat datang,',
-                style: TextStyle(
-                  color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.6),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 0.2,
-                ),
-              ),
-              // Action Buttons (Settings & Logout)
-              Row(
-                mainAxisSize: MainAxisSize.min,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
                 children: [
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    icon: Icon(
-                      Icons.settings_outlined, 
-                      color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.8), 
-                      size: 20,
-                    ),
-                    onPressed: onSettingsTap,
-                    tooltip: 'Pengaturan',
-                    style: IconButton.styleFrom(
-                      backgroundColor: theme.dividerColor.withValues(alpha: isDark ? 0.12 : 0.06),
-                      padding: const EdgeInsets.all(6),
+                  // Avatar
+                  GestureDetector(
+                    onTap: onProfileTap,
+                    child: CircleAvatar(
+                      radius: 20,
+                      backgroundColor: theme.dividerColor.withValues(alpha: 0.1),
+                      backgroundImage: profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty
+                          ? NetworkImage(profile.avatarUrl!)
+                          : null,
+                      child: profile.avatarUrl == null || profile.avatarUrl!.isEmpty
+                          ? Icon(
+                              Icons.person_rounded,
+                              size: 20,
+                              color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.7),
+                            )
+                          : null,
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    icon: Icon(
-                      Icons.logout_rounded, 
-                      color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.8), 
-                      size: 20,
+                  const SizedBox(width: 12),
+                  // User Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                profile.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: theme.textTheme.titleMedium?.color ?? (isDark ? Colors.white : ManahColors.nearBlack),
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            if (stats != null) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: theme.dividerColor.withValues(alpha: isDark ? 0.15 : 0.06),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  'LVL ${stats!.level}',
+                                  style: TextStyle(
+                                    color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.8),
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                profile.email,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.55),
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                            if (stats != null && stats!.currentStreak > 0) ...[
+                              const SizedBox(width: 6),
+                              Text(
+                                '•',
+                                style: TextStyle(
+                                  color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.4),
+                                  fontSize: 11,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Icon(
+                                Icons.local_fire_department_rounded,
+                                color: ManahColors.error,
+                                size: 12,
+                              ),
+                              const SizedBox(width: 2),
+                              Text(
+                                '${stats!.currentStreak} Hari',
+                                style: const TextStyle(
+                                  color: ManahColors.error,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
                     ),
-                    onPressed: onLogoutTap,
-                    tooltip: 'Keluar',
-                    style: IconButton.styleFrom(
-                      backgroundColor: theme.dividerColor.withValues(alpha: isDark ? 0.12 : 0.06),
-                      padding: const EdgeInsets.all(6),
-                    ),
+                  ),
+                  // Action Buttons
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        icon: Icon(
+                          Icons.settings_outlined,
+                          color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6),
+                          size: 18,
+                        ),
+                        onPressed: onSettingsTap,
+                        tooltip: 'Pengaturan',
+                        style: IconButton.styleFrom(
+                          padding: const EdgeInsets.all(4),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      IconButton(
+                        visualDensity: VisualDensity.compact,
+                        icon: Icon(
+                          Icons.logout_rounded,
+                          color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6),
+                          size: 18,
+                        ),
+                        onPressed: onLogoutTap,
+                        tooltip: 'Keluar',
+                        style: IconButton.styleFrom(
+                          padding: const EdgeInsets.all(4),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // Middle Section: Avatar & Name + Email + Role/Streak
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Avatar
-              GestureDetector(
-                onTap: onProfileTap,
-                child: Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: theme.dividerColor.withValues(alpha: isDark ? 0.25 : 0.15),
-                      width: 2.0,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: CircleAvatar(
-                    radius: 24,
-                    backgroundColor: theme.dividerColor.withValues(alpha: 0.1),
-                    backgroundImage: profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty
-                        ? NetworkImage(profile.avatarUrl!)
-                        : null,
-                    child: profile.avatarUrl == null || profile.avatarUrl!.isEmpty
-                        ? Icon(
-                            Icons.person_rounded,
-                            size: 24,
-                            color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.8),
-                          )
-                        : null,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // User Info (Takes all remaining width so name can display fully!)
-              Expanded(
-                child: GestureDetector(
-                  onTap: onProfileTap,
-                  behavior: HitTestBehavior.opaque,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        profile.name,
-                        style: TextStyle(
-                          color: theme.textTheme.titleMedium?.color ?? (isDark ? Colors.white : ManahColors.nearBlack),
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.1,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        profile.email,
-                        style: TextStyle(
-                          color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: theme.dividerColor.withValues(alpha: isDark ? 0.18 : 0.08),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              profile.role.toUpperCase(),
-                              style: TextStyle(
-                                color: theme.textTheme.bodySmall?.color,
-                                fontSize: 8,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                          ),
-                          if (stats != null && stats!.currentStreak > 0) ...[
-                            const SizedBox(width: 8),
-                            const Icon(
-                              Icons.local_fire_department_rounded,
-                              color: ManahColors.error,
-                              size: 14,
-                            ),
-                            const SizedBox(width: 2),
-                            Text(
-                              '${stats!.currentStreak} Hari Streak',
-                              style: const TextStyle(
-                                color: ManahColors.error,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (stats != null) ...[
-            const SizedBox(height: 16),
-            // Divider
-            Container(
-              height: 1,
-              color: theme.dividerColor.withValues(alpha: 0.08),
             ),
-            const SizedBox(height: 12),
-            // Level & XP bar
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Level ${stats!.level}',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  '$currentLevelXp / 500 XP',
-                  style: TextStyle(
-                    color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: LinearProgressIndicator(
+            if (stats != null)
+              LinearProgressIndicator(
                 value: progress,
-                backgroundColor: theme.dividerColor.withValues(alpha: 0.1),
+                backgroundColor: theme.dividerColor.withValues(alpha: 0.05),
                 valueColor: const AlwaysStoppedAnimation<Color>(ManahColors.brand),
-                minHeight: 6,
+                minHeight: 2.5,
               ),
-            ),
           ],
-        ],
+        ),
       ),
     );
   }
