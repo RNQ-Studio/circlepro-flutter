@@ -21,10 +21,10 @@ class ScoringSetupScreen extends ConsumerStatefulWidget {
 }
 
 class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
-  BowCategory? _bowCategory;
-  BowClass? _bowClass;
-  DistanceCategory? _distance;
-  ArcheryEnvironment? _environment;
+  BowCategory? _bowCategory = BowCategory.modern;
+  BowClass? _bowClass = BowClass.recurve;
+  DistanceCategory? _distance = DistanceCategory.d50m;
+  ArcheryEnvironment? _environment = ArcheryEnvironment.outdoor;
   TargetFaceEntity? _selectedTargetFace;
   int _numEnds = 6;
   int _arrowsPerEnd = 6;
@@ -233,22 +233,44 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
             ),
             const SizedBox(height: ManahSpacing.lg),
             _SectionLabel('Tipe Busur'),
-            _Dropdown<BowClass>(
-              value: _bowClass,
-              items: _bowCategory != null ? BowClass.ofCategory(_bowCategory!) : const [],
-              labelOf: (e) => e.label,
-              hint: const Text('Pilih tipe busur'),
-              onChanged: (v) => _updateBowClass(v),
-            ),
+            if (_bowCategory == null)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: ManahSpacing.sm),
+                child: Text('Pilih kategori busur terlebih dahulu', style: TextStyle(fontStyle: FontStyle.italic)),
+              )
+            else
+              Wrap(
+                spacing: ManahSpacing.sm,
+                runSpacing: ManahSpacing.sm,
+                children: BowClass.ofCategory(_bowCategory!).map((bc) {
+                  return _ChoiceChip(
+                    label: bc.label,
+                    selected: _bowClass == bc,
+                    onSelected: (selected) {
+                      if (selected) {
+                        _updateBowClass(bc);
+                      }
+                    },
+                  );
+                }).toList(),
+              ),
             const SizedBox(height: ManahSpacing.lg),
             _buildEquipmentPicker(),
             _SectionLabel('Jarak'),
-            _Dropdown<DistanceCategory>(
-              value: _distance,
-              items: DistanceCategory.values,
-              labelOf: (e) => e.label,
-              hint: const Text('Pilih jarak'),
-              onChanged: (v) => _updateDistance(v),
+            Wrap(
+              spacing: ManahSpacing.sm,
+              runSpacing: ManahSpacing.sm,
+              children: DistanceCategory.values.map((d) {
+                return _ChoiceChip(
+                  label: d.label,
+                  selected: _distance == d,
+                  onSelected: (selected) {
+                    if (selected) {
+                      _updateDistance(d);
+                    }
+                  },
+                );
+              }).toList(),
             ),
             const SizedBox(height: ManahSpacing.lg),
             _SectionLabel('Lingkungan'),
@@ -472,32 +494,56 @@ class _SectionLabel extends StatelessWidget {
       );
 }
 
-class _Dropdown<T> extends StatelessWidget {
-  const _Dropdown({
-    required this.value,
-    required this.items,
-    required this.labelOf,
-    required this.onChanged,
-    this.hint,
+class _ChoiceChip extends StatelessWidget {
+  const _ChoiceChip({
+    required this.label,
+    required this.selected,
+    required this.onSelected,
   });
 
-  final T? value;
-  final List<T> items;
-  final String Function(T) labelOf;
-  final ValueChanged<T> onChanged;
-  final Widget? hint;
+  final String label;
+  final bool selected;
+  final ValueChanged<bool> onSelected;
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonFormField<T>(
-      value: value,
-      hint: hint,
-      items: items
-          .map((e) => DropdownMenuItem<T>(value: e, child: Text(labelOf(e))))
-          .toList(),
-      onChanged: (v) {
-        if (v != null) onChanged(v);
-      },
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final backgroundColor = selected
+        ? theme.colorScheme.primary
+        : (isDark ? ManahColors.darkSurface : ManahColors.lightGrey);
+    final foregroundColor = selected
+        ? Colors.white
+        : theme.colorScheme.onSurface;
+
+    return InkWell(
+      onTap: () => onSelected(!selected),
+      borderRadius: BorderRadius.circular(ManahRadius.sm),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(
+          horizontal: ManahSpacing.base,
+          vertical: ManahSpacing.sm,
+        ),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          border: Border.all(
+            color: selected 
+                ? theme.colorScheme.primary 
+                : theme.dividerColor.withValues(alpha: 0.1),
+            width: 1.5,
+          ),
+          borderRadius: BorderRadius.circular(ManahRadius.sm),
+        ),
+        child: Text(
+          label,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: foregroundColor,
+            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ),
     );
   }
 }
