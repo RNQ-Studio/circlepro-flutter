@@ -1780,6 +1780,12 @@ class $TargetFaceRowsTable extends TargetFaceRows
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
       'id', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _organizationIdMeta =
+      const VerificationMeta('organizationId');
+  @override
+  late final GeneratedColumn<String> organizationId = GeneratedColumn<String>(
+      'organization_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _codeMeta = const VerificationMeta('code');
   @override
   late final GeneratedColumn<String> code = GeneratedColumn<String>(
@@ -1806,7 +1812,7 @@ class $TargetFaceRowsTable extends TargetFaceRows
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, code, name, imagePath, scoringRulesJson];
+      [id, organizationId, code, name, imagePath, scoringRulesJson];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1821,6 +1827,12 @@ class $TargetFaceRowsTable extends TargetFaceRows
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
       context.missing(_idMeta);
+    }
+    if (data.containsKey('organization_id')) {
+      context.handle(
+          _organizationIdMeta,
+          organizationId.isAcceptableOrUnknown(
+              data['organization_id']!, _organizationIdMeta));
     }
     if (data.containsKey('code')) {
       context.handle(
@@ -1857,6 +1869,8 @@ class $TargetFaceRowsTable extends TargetFaceRows
     return TargetFaceRow(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      organizationId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}organization_id']),
       code: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}code'])!,
       name: attachedDatabase.typeMapping
@@ -1876,12 +1890,14 @@ class $TargetFaceRowsTable extends TargetFaceRows
 
 class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
   final String id;
+  final String? organizationId;
   final String code;
   final String name;
   final String? imagePath;
   final String scoringRulesJson;
   const TargetFaceRow(
       {required this.id,
+      this.organizationId,
       required this.code,
       required this.name,
       this.imagePath,
@@ -1890,6 +1906,9 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
+    if (!nullToAbsent || organizationId != null) {
+      map['organization_id'] = Variable<String>(organizationId);
+    }
     map['code'] = Variable<String>(code);
     map['name'] = Variable<String>(name);
     if (!nullToAbsent || imagePath != null) {
@@ -1902,6 +1921,9 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
   TargetFaceRowsCompanion toCompanion(bool nullToAbsent) {
     return TargetFaceRowsCompanion(
       id: Value(id),
+      organizationId: organizationId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(organizationId),
       code: Value(code),
       name: Value(name),
       imagePath: imagePath == null && nullToAbsent
@@ -1916,6 +1938,7 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TargetFaceRow(
       id: serializer.fromJson<String>(json['id']),
+      organizationId: serializer.fromJson<String?>(json['organizationId']),
       code: serializer.fromJson<String>(json['code']),
       name: serializer.fromJson<String>(json['name']),
       imagePath: serializer.fromJson<String?>(json['imagePath']),
@@ -1927,6 +1950,7 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
+      'organizationId': serializer.toJson<String?>(organizationId),
       'code': serializer.toJson<String>(code),
       'name': serializer.toJson<String>(name),
       'imagePath': serializer.toJson<String?>(imagePath),
@@ -1936,12 +1960,15 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
 
   TargetFaceRow copyWith(
           {String? id,
+          Value<String?> organizationId = const Value.absent(),
           String? code,
           String? name,
           Value<String?> imagePath = const Value.absent(),
           String? scoringRulesJson}) =>
       TargetFaceRow(
         id: id ?? this.id,
+        organizationId:
+            organizationId.present ? organizationId.value : this.organizationId,
         code: code ?? this.code,
         name: name ?? this.name,
         imagePath: imagePath.present ? imagePath.value : this.imagePath,
@@ -1950,6 +1977,9 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
   TargetFaceRow copyWithCompanion(TargetFaceRowsCompanion data) {
     return TargetFaceRow(
       id: data.id.present ? data.id.value : this.id,
+      organizationId: data.organizationId.present
+          ? data.organizationId.value
+          : this.organizationId,
       code: data.code.present ? data.code.value : this.code,
       name: data.name.present ? data.name.value : this.name,
       imagePath: data.imagePath.present ? data.imagePath.value : this.imagePath,
@@ -1963,6 +1993,7 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
   String toString() {
     return (StringBuffer('TargetFaceRow(')
           ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
           ..write('code: $code, ')
           ..write('name: $name, ')
           ..write('imagePath: $imagePath, ')
@@ -1972,12 +2003,14 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
   }
 
   @override
-  int get hashCode => Object.hash(id, code, name, imagePath, scoringRulesJson);
+  int get hashCode =>
+      Object.hash(id, organizationId, code, name, imagePath, scoringRulesJson);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TargetFaceRow &&
           other.id == this.id &&
+          other.organizationId == this.organizationId &&
           other.code == this.code &&
           other.name == this.name &&
           other.imagePath == this.imagePath &&
@@ -1986,6 +2019,7 @@ class TargetFaceRow extends DataClass implements Insertable<TargetFaceRow> {
 
 class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
   final Value<String> id;
+  final Value<String?> organizationId;
   final Value<String> code;
   final Value<String> name;
   final Value<String?> imagePath;
@@ -1993,6 +2027,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
   final Value<int> rowid;
   const TargetFaceRowsCompanion({
     this.id = const Value.absent(),
+    this.organizationId = const Value.absent(),
     this.code = const Value.absent(),
     this.name = const Value.absent(),
     this.imagePath = const Value.absent(),
@@ -2001,6 +2036,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
   });
   TargetFaceRowsCompanion.insert({
     required String id,
+    this.organizationId = const Value.absent(),
     required String code,
     required String name,
     this.imagePath = const Value.absent(),
@@ -2012,6 +2048,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
         scoringRulesJson = Value(scoringRulesJson);
   static Insertable<TargetFaceRow> custom({
     Expression<String>? id,
+    Expression<String>? organizationId,
     Expression<String>? code,
     Expression<String>? name,
     Expression<String>? imagePath,
@@ -2020,6 +2057,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (organizationId != null) 'organization_id': organizationId,
       if (code != null) 'code': code,
       if (name != null) 'name': name,
       if (imagePath != null) 'image_path': imagePath,
@@ -2030,6 +2068,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
 
   TargetFaceRowsCompanion copyWith(
       {Value<String>? id,
+      Value<String?>? organizationId,
       Value<String>? code,
       Value<String>? name,
       Value<String?>? imagePath,
@@ -2037,6 +2076,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
       Value<int>? rowid}) {
     return TargetFaceRowsCompanion(
       id: id ?? this.id,
+      organizationId: organizationId ?? this.organizationId,
       code: code ?? this.code,
       name: name ?? this.name,
       imagePath: imagePath ?? this.imagePath,
@@ -2050,6 +2090,9 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<String>(id.value);
+    }
+    if (organizationId.present) {
+      map['organization_id'] = Variable<String>(organizationId.value);
     }
     if (code.present) {
       map['code'] = Variable<String>(code.value);
@@ -2073,6 +2116,7 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
   String toString() {
     return (StringBuffer('TargetFaceRowsCompanion(')
           ..write('id: $id, ')
+          ..write('organizationId: $organizationId, ')
           ..write('code: $code, ')
           ..write('name: $name, ')
           ..write('imagePath: $imagePath, ')
@@ -2937,6 +2981,7 @@ typedef $$ScoringArrowRowsTableProcessedTableManager = ProcessedTableManager<
 typedef $$TargetFaceRowsTableCreateCompanionBuilder = TargetFaceRowsCompanion
     Function({
   required String id,
+  Value<String?> organizationId,
   required String code,
   required String name,
   Value<String?> imagePath,
@@ -2946,6 +2991,7 @@ typedef $$TargetFaceRowsTableCreateCompanionBuilder = TargetFaceRowsCompanion
 typedef $$TargetFaceRowsTableUpdateCompanionBuilder = TargetFaceRowsCompanion
     Function({
   Value<String> id,
+  Value<String?> organizationId,
   Value<String> code,
   Value<String> name,
   Value<String?> imagePath,
@@ -2964,6 +3010,10 @@ class $$TargetFaceRowsTableFilterComposer
   });
   ColumnFilters<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get organizationId => $composableBuilder(
+      column: $table.organizationId,
+      builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get code => $composableBuilder(
       column: $table.code, builder: (column) => ColumnFilters(column));
@@ -2991,6 +3041,10 @@ class $$TargetFaceRowsTableOrderingComposer
   ColumnOrderings<String> get id => $composableBuilder(
       column: $table.id, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get organizationId => $composableBuilder(
+      column: $table.organizationId,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get code => $composableBuilder(
       column: $table.code, builder: (column) => ColumnOrderings(column));
 
@@ -3016,6 +3070,9 @@ class $$TargetFaceRowsTableAnnotationComposer
   });
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get organizationId => $composableBuilder(
+      column: $table.organizationId, builder: (column) => column);
 
   GeneratedColumn<String> get code =>
       $composableBuilder(column: $table.code, builder: (column) => column);
@@ -3058,6 +3115,7 @@ class $$TargetFaceRowsTableTableManager extends RootTableManager<
               $$TargetFaceRowsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback: ({
             Value<String> id = const Value.absent(),
+            Value<String?> organizationId = const Value.absent(),
             Value<String> code = const Value.absent(),
             Value<String> name = const Value.absent(),
             Value<String?> imagePath = const Value.absent(),
@@ -3066,6 +3124,7 @@ class $$TargetFaceRowsTableTableManager extends RootTableManager<
           }) =>
               TargetFaceRowsCompanion(
             id: id,
+            organizationId: organizationId,
             code: code,
             name: name,
             imagePath: imagePath,
@@ -3074,6 +3133,7 @@ class $$TargetFaceRowsTableTableManager extends RootTableManager<
           ),
           createCompanionCallback: ({
             required String id,
+            Value<String?> organizationId = const Value.absent(),
             required String code,
             required String name,
             Value<String?> imagePath = const Value.absent(),
@@ -3082,6 +3142,7 @@ class $$TargetFaceRowsTableTableManager extends RootTableManager<
           }) =>
               TargetFaceRowsCompanion.insert(
             id: id,
+            organizationId: organizationId,
             code: code,
             name: name,
             imagePath: imagePath,

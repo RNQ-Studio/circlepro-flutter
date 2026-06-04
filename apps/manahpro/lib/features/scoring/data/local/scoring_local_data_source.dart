@@ -211,6 +211,7 @@ class ScoringLocalDataSource {
         await _db.into(_db.targetFaceRows).insertOnConflictUpdate(
               TargetFaceRowsCompanion.insert(
                 id: t.id,
+                organizationId: Value(t.organizationId),
                 code: t.code,
                 name: t.name,
                 imagePath: Value(t.imagePath),
@@ -227,6 +228,7 @@ class ScoringLocalDataSource {
       final rulesJson = jsonDecode(r.scoringRulesJson) as List<dynamic>;
       return TargetFaceEntity(
         id: r.id,
+        organizationId: r.organizationId,
         code: r.code,
         name: r.name,
         imagePath: r.imagePath,

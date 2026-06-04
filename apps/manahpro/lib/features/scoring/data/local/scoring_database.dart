@@ -63,6 +63,7 @@ class ScoringArrowRows extends Table {
 
 class TargetFaceRows extends Table {
   TextColumn get id => text()();
+  TextColumn get organizationId => text().nullable()();
   TextColumn get code => text().unique()();
   TextColumn get name => text()();
   TextColumn get imagePath => text().nullable()();
@@ -79,7 +80,7 @@ class ScoringDatabase extends _$ScoringDatabase {
   ScoringDatabase([QueryExecutor? executor]) : super(executor ?? _open());
 
   @override
-  int get schemaVersion => 2; // Increment version for schema migration
+  int get schemaVersion => 3; // Increment version for schema migration
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -89,6 +90,10 @@ class ScoringDatabase extends _$ScoringDatabase {
             await m.createTable(targetFaceRows);
             // Add target_face_id to scoring_session_rows table
             await m.addColumn(scoringSessionRows, scoringSessionRows.targetFaceId);
+          }
+          if (from < 3) {
+            // Add organizationId to target_face_rows table
+            await m.addColumn(targetFaceRows, targetFaceRows.organizationId);
           }
         },
       );
