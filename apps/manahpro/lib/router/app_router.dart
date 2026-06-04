@@ -12,6 +12,9 @@ import '../features/onboarding/presentation/manah_onboarding_screen.dart';
 import '../features/scoring/presentation/scoring_routes.dart';
 import '../shared/routes/social_routes.dart';
 import '../features/events/presentation/events_routes.dart';
+import '../features/stories/domain/story_entities.dart';
+import '../features/stories/presentation/screens/story_picker_preview_screen.dart';
+import '../features/stories/presentation/screens/story_viewer_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/splash',
@@ -60,5 +63,23 @@ final appRouter = GoRouter(
 
     // ManahPro — Phase 3: Events & Ranking (COMPETE)
     ...eventsRoutes,
+
+    // Stories system
+    GoRoute(
+      path: '/stories/preview',
+      builder: (context, state) {
+        final filePath = state.extra as String;
+        return StoryPickerPreviewScreen(filePath: filePath);
+      },
+    ),
+    GoRoute(
+      path: '/stories/view',
+      builder: (context, state) {
+        final data = state.extra as Map<String, dynamic>;
+        final groups = data['groups'] as List<StoryGroupEntity>;
+        final initialIndex = data['initialIndex'] as int;
+        return StoryViewerScreen(groups: groups, initialIndex: initialIndex);
+      },
+    ),
   ],
 );

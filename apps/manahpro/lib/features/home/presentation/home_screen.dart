@@ -10,6 +10,7 @@ import '../../../theme/manah_colors.dart';
 import '../../scoring/presentation/scoring_routes.dart';
 import '../../events/presentation/events_routes.dart';
 import '../../gamification/presentation/gamification_providers.dart';
+import '../../stories/presentation/widgets/story_header_list_widget.dart';
 import 'home_provider.dart';
 import 'widgets/home_user_header.dart';
 import 'widgets/home_menu_grid.dart';
@@ -36,6 +37,14 @@ class HomeScreen extends ConsumerWidget {
                   ? _buildAuthenticatedHeader(context, ref)
                   : _buildGuestHeader(context),
             ),
+
+            if (isAuthenticated)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.only(top: 8.0),
+                  child: StoryHeaderListWidget(),
+                ),
+              ),
             
             // Mulai Latihan Quick Card
             const SliverToBoxAdapter(
