@@ -176,36 +176,14 @@ class ScoringRepositoryImpl implements ScoringRepository {
 
   @override
   Future<List<TargetFaceEntity>> getTargetFaces() async {
-    final localTargets = await _local.getTargetFaces();
-    if (localTargets.isNotEmpty) {
-      _backgroundSyncTargetFaces();
-      return localTargets;
-    }
-
     try {
-      final online = await _remote.checkHealth();
-      if (online) {
-        final data = await _remote.getTargetFaces();
-        final entities = data.map((json) => TargetFaceEntity.fromJson(json)).toList();
-        await _local.saveTargetFaces(entities);
-        return entities;
-      }
+      final data = await _remote.getTargetFaces();
+      final entities = data.map((json) => TargetFaceEntity.fromJson(json)).toList();
+      await _local.saveTargetFaces(entities);
+      return entities;
     } catch (e) {
-      log('ScoringRepository.getTargetFaces online fallback failed: $e');
+      log('ScoringRepository.getTargetFaces remote fetch failed, falling back to local: $e');
+      return _local.getTargetFaces();
     }
-
-    return const [];
-  }
-
-  void _backgroundSyncTargetFaces() {
-    _remote.checkHealth().then((online) async {
-      if (online) {
-        final data = await _remote.getTargetFaces();
-        final entities = data.map((json) => TargetFaceEntity.fromJson(json)).toList();
-        await _local.saveTargetFaces(entities);
-      }
-    }).catchError((Object e) {
-      log('ScoringRepository.backgroundSyncTargetFaces failed: $e');
-    });
   }
 }
