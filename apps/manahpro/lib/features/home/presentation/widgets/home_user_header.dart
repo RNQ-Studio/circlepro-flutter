@@ -57,6 +57,50 @@ class HomeUserHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Top Row: Greeting & Action Buttons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Selamat datang,',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.75),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0.2,
+                ),
+              ),
+              // Action Buttons (Settings & Logout)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 20),
+                    onPressed: onSettingsTap,
+                    tooltip: 'Pengaturan',
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.white.withValues(alpha: 0.12),
+                      padding: const EdgeInsets.all(6),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    icon: const Icon(Icons.logout_rounded, color: Colors.white, size: 20),
+                    onPressed: onLogoutTap,
+                    tooltip: 'Keluar',
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.white.withValues(alpha: 0.12),
+                      padding: const EdgeInsets.all(6),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // Middle Section: Avatar & Name + Email + Role/Streak
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -67,35 +111,35 @@ class HomeUserHeader extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.9),
-                      width: 2.5,
+                      color: Colors.white.withValues(alpha: 0.9),
+                      width: 2.0,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
+                        color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
                     ],
                   ),
                   child: CircleAvatar(
-                    radius: 28,
-                    backgroundColor: Colors.white.withOpacity(0.15),
+                    radius: 24,
+                    backgroundColor: Colors.white.withValues(alpha: 0.15),
                     backgroundImage: profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty
                         ? NetworkImage(profile.avatarUrl!)
                         : null,
                     child: profile.avatarUrl == null || profile.avatarUrl!.isEmpty
                         ? const Icon(
                             Icons.person_rounded,
-                            size: 28,
+                            size: 24,
                             color: Colors.white,
                           )
                         : null,
                   ),
                 ),
               ),
-              const SizedBox(width: 14),
-              // User Info
+              const SizedBox(width: 12),
+              // User Info (Takes all remaining width so name can display fully!)
               Expanded(
                 child: GestureDetector(
                   onTap: onProfileTap,
@@ -105,34 +149,31 @@ class HomeUserHeader extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Selamat datang,',
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.75),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
                         profile.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 17,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.1,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
+                      Text(
+                        profile.email,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.18),
+                              color: Colors.white.withValues(alpha: 0.18),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -167,33 +208,6 @@ class HomeUserHeader extends StatelessWidget {
                     ],
                   ),
                 ),
-              ),
-              // Action Buttons (Settings & Logout)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    icon: const Icon(Icons.settings_outlined, color: Colors.white, size: 22),
-                    onPressed: onSettingsTap,
-                    tooltip: 'Pengaturan',
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.12),
-                      padding: const EdgeInsets.all(8),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    visualDensity: VisualDensity.compact,
-                    icon: const Icon(Icons.logout_rounded, color: Colors.white, size: 22),
-                    onPressed: onLogoutTap,
-                    tooltip: 'Keluar',
-                    style: IconButton.styleFrom(
-                      backgroundColor: Colors.white.withOpacity(0.12),
-                      padding: const EdgeInsets.all(8),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
