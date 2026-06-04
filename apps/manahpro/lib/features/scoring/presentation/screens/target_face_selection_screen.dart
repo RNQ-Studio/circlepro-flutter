@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
@@ -172,8 +173,8 @@ class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionS
                                       const SizedBox(height: 2),
                                       Text(
                                         target.usedCount > 0
-                                            ? '${target.usedCount} peserta'
-                                            : '0 peserta',
+                                            ? '${NumberFormat.decimalPattern('id').format(target.usedCount)}x digunakan'
+                                            : '0x digunakan',
                                         style: theme.textTheme.bodySmall?.copyWith(
                                           color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                                           fontSize: 10,
