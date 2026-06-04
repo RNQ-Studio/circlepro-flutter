@@ -17,10 +17,10 @@ class Stories extends _$Stories {
     return ref.watch(storyRepositoryProvider).getStories();
   }
 
-  Future<void> addStory(String filePath) async {
+  Future<void> addStory(String filePath, {String? caption}) async {
     state = const AsyncLoading();
     try {
-      await ref.read(storyRepositoryProvider).uploadStory(filePath);
+      await ref.read(storyRepositoryProvider).uploadStory(filePath, caption: caption);
       // Invalidate provider to fetch latest list
       ref.invalidateSelf();
       await future;

@@ -4,6 +4,8 @@ class StoryItemEntity {
     required this.mediaType,
     required this.mediaUrl,
     required this.expiresAt,
+    this.caption,
+    required this.viewsCount,
     this.createdAt,
   });
 
@@ -11,6 +13,8 @@ class StoryItemEntity {
   final String mediaType; // 'image' or 'video'
   final String mediaUrl;
   final DateTime expiresAt;
+  final String? caption;
+  final int viewsCount;
   final DateTime? createdAt;
 
   factory StoryItemEntity.fromJson(Map<String, dynamic> json) {
@@ -19,6 +23,8 @@ class StoryItemEntity {
       mediaType: json['media_type'] as String? ?? 'image',
       mediaUrl: json['media_url'] as String? ?? '',
       expiresAt: DateTime.parse(json['expires_at'] as String),
+      caption: json['caption'] as String?,
+      viewsCount: json['views_count'] as int? ?? 0,
       createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'] as String) : null,
     );
   }

@@ -18,6 +18,7 @@ class StoryPickerPreviewScreen extends ConsumerStatefulWidget {
 
 class _StoryPickerPreviewScreenState extends ConsumerState<StoryPickerPreviewScreen> {
   VideoPlayerController? _videoController;
+  final _captionController = TextEditingController();
   bool _isVideo = false;
   bool _isUploading = false;
 
@@ -54,6 +55,7 @@ class _StoryPickerPreviewScreenState extends ConsumerState<StoryPickerPreviewScr
   @override
   void dispose() {
     _videoController?.dispose();
+    _captionController.dispose();
     super.dispose();
   }
 
@@ -63,7 +65,11 @@ class _StoryPickerPreviewScreenState extends ConsumerState<StoryPickerPreviewScr
     });
 
     try {
-      await ref.read(storiesProvider.notifier).addStory(widget.filePath);
+      final caption = _captionController.text.trim();
+      await ref.read(storiesProvider.notifier).addStory(
+        widget.filePath,
+        caption: caption.isNotEmpty ? caption : null,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Cerita berhasil ditambahkan!')),
@@ -124,27 +130,52 @@ class _StoryPickerPreviewScreenState extends ConsumerState<StoryPickerPreviewScr
               ),
             ),
 
-            // Bottom Actions: Upload Button
+            // Bottom Actions: Caption Input & Upload Button
             Positioned(
               bottom: MediaQuery.of(context).padding.bottom + 24,
               left: 24,
               right: 24,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  minimumSize: const Size(double.infinity, 54),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: TextField(
+                      controller: _captionController,
+                      style: const TextStyle(color: Colors.white),
+                      maxLines: 2,
+                      minLines: 1,
+                      decoration: const InputDecoration(
+                        hintText: 'Tambahkan keterangan (caption)...',
+                        hintStyle: TextStyle(color: Colors.white60, fontSize: 14),
+                        border: InputBorder.none,
+                      ),
+                    ),
                   ),
-                  elevation: 4,
-                ),
-                onPressed: _isUploading ? null : _upload,
-                icon: const Icon(Icons.send_rounded),
-                label: const Text(
-                  'Bagikan ke Cerita Anda',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Colors.black,
+                      minimumSize: const Size(double.infinity, 54),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                      elevation: 4,
+                    ),
+                    onPressed: _isUploading ? null : _upload,
+                    icon: const Icon(Icons.send_rounded),
+                    label: const Text(
+                      'Bagikan ke Cerita Anda',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
             ),
 

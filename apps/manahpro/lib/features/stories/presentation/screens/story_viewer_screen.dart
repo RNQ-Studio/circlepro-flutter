@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
+import '../../../../shared/models/user_simple_entity.dart';
 import '../../domain/story_entities.dart';
 import '../stories_provider.dart';
 import 'package:features_shared/features_shared.dart';
@@ -118,6 +119,7 @@ class _StoryUserViewerState extends ConsumerState<StoryUserViewer> with SingleTi
   VideoPlayerController? _videoController;
   int _currentStoryIndex = 0;
   bool _isVideoInitialized = false;
+  final Set<String> _viewedStories = {};
 
   @override
   void initState() {
@@ -165,6 +167,18 @@ class _StoryUserViewerState extends ConsumerState<StoryUserViewer> with SingleTi
     }
 
     final story = widget.group.stories[_currentStoryIndex];
+
+    // Trigger story view tracking when watching other users' stories
+    final authState = ref.read(authProvider);
+    final currentUserId = authState is AuthAuthenticated ? authState.user.id : null;
+    final isMyStory = widget.group.userId.toString() == currentUserId;
+
+    if (!isMyStory && !_viewedStories.contains(story.id)) {
+      _viewedStories.add(story.id);
+      ref.read(storyRepositoryProvider).markStoryAsViewed(story.id).catchError((e) {
+        debugPrint('Failed to mark story as viewed: $e');
+      });
+    }
 
     if (story.mediaType == 'video') {
       _videoController = VideoPlayerController.networkUrl(Uri.parse(story.mediaUrl))
@@ -247,11 +261,9 @@ class _StoryUserViewerState extends ConsumerState<StoryUserViewer> with SingleTi
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Cerita berhasil dihapus')),
           );
-          // If deleted story was the only one in group, viewer pops. Otherwise load next/previous.
           if (widget.group.stories.length <= 1) {
             widget.onClose();
           } else {
-            // Refresh parent
             widget.onFinished(true);
           }
         }
@@ -268,6 +280,22 @@ class _StoryUserViewerState extends ConsumerState<StoryUserViewer> with SingleTi
     }
   }
 
+  void _showViewerList(String storyId) {
+    _pauseStory();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.grey[900],
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StoryViewerListSheet(storyId: storyId);
+      },
+    ).then((_) {
+      _resumeStory();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_currentStoryIndex >= widget.group.stories.length) {
@@ -279,7 +307,6 @@ class _StoryUserViewerState extends ConsumerState<StoryUserViewer> with SingleTi
     final currentUserId = authState is AuthAuthenticated ? authState.user.id : null;
     final isMyStory = widget.group.userId.toString() == currentUserId;
 
-
     return SafeArea(
       child: Stack(
         children: [
@@ -287,7 +314,6 @@ class _StoryUserViewerState extends ConsumerState<StoryUserViewer> with SingleTi
           Positioned.fill(
             child: GestureDetector(
               onTapDown: (details) {
-                // Pause on long press, navigate on tap
                 _pauseStory();
               },
               onTapUp: (details) {
@@ -393,6 +419,65 @@ class _StoryUserViewerState extends ConsumerState<StoryUserViewer> with SingleTi
               ],
             ),
           ),
+
+          // Caption & Views Count overlay (Bottom Actions)
+          Positioned(
+            bottom: 16,
+            left: 16,
+            right: 16,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (story.caption != null && story.caption!.isNotEmpty) ...[
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white10),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    child: Text(
+                      story.caption!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                if (isMyStory)
+                  GestureDetector(
+                    onTap: () => _showViewerList(story.id),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.6),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.remove_red_eye_outlined, color: Colors.white, size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Dilihat oleh ${story.viewsCount} orang',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -439,5 +524,115 @@ class _StoryUserViewerState extends ConsumerState<StoryUserViewer> with SingleTi
     if (diff.inMinutes < 60) return '${diff.inMinutes}m yang lalu';
     if (diff.inHours < 24) return '${diff.inHours}j yang lalu';
     return '${diff.inDays}d yang lalu';
+  }
+}
+
+class StoryViewerListSheet extends ConsumerWidget {
+  const StoryViewerListSheet({super.key, required this.storyId});
+
+  final String storyId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return FutureBuilder<List<UserSimpleEntity>>(
+      future: ref.read(storyRepositoryProvider).getStoryViewers(storyId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            height: 300,
+            child: Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return SizedBox(
+            height: 300,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Text(
+                  'Gagal memuat penonton: ${snapshot.error}',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white70),
+                ),
+              ),
+            ),
+          );
+        }
+
+        final viewers = snapshot.data ?? [];
+        if (viewers.isEmpty) {
+          return const SizedBox(
+            height: 250,
+            child: Center(
+              child: Text(
+                'Belum ada penonton',
+                style: TextStyle(color: Colors.white60, fontSize: 14),
+              ),
+            ),
+          );
+        }
+
+        return Container(
+          padding: const EdgeInsets.only(top: 16, bottom: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Text(
+                  'Penonton (${viewers.length})',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              const Divider(color: Colors.white10, height: 1),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: viewers.length,
+                  itemBuilder: (context, index) {
+                    final viewer = viewers[index];
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                      leading: CircleAvatar(
+                        radius: 20,
+                        backgroundImage: viewer.avatarUrl != null && viewer.avatarUrl!.isNotEmpty
+                            ? NetworkImage(viewer.avatarUrl!)
+                            : null,
+                        child: viewer.avatarUrl == null || viewer.avatarUrl!.isEmpty
+                            ? const Icon(Icons.person, color: Colors.white)
+                            : null,
+                      ),
+                      title: Text(
+                        viewer.displayName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      subtitle: Text(
+                        '@${viewer.username ?? ""}',
+                        style: const TextStyle(
+                          color: Colors.white54,
+                          fontSize: 12,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
