@@ -21,6 +21,7 @@ class QuotesScreen extends ConsumerStatefulWidget {
 
 class _QuotesScreenState extends ConsumerState<QuotesScreen> {
   PageController? _pageController;
+  List<QuoteEntity>? _shuffledQuotes;
 
   @override
   void dispose() {
@@ -74,6 +75,59 @@ class _QuotesScreenState extends ConsumerState<QuotesScreen> {
         final activeQuotes = quotes.where((q) => q.isActive).toList();
 
         if (activeQuotes.isEmpty) {
+          _shuffledQuotes = null;
+          return Scaffold(
+            backgroundColor: ManahColors.nearWhite,
+            body: Stack(
+              children: [
+                Center(
+                  child: Text(
+                    'Belum ada kutipan aktif.',
+                    style: TextStyle(
+                      color: ManahColors.mediumGrey,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                _buildBackButton(context),
+              ],
+            ),
+          );
+        }
+
+        // Initialize or update the shuffled quotes list.
+        // We preserve the shuffled order but update the objects inside it to reflect their latest state (e.g. loved).
+        if (_shuffledQuotes == null) {
+          final tempQuotes = List<QuoteEntity>.from(activeQuotes)..shuffle();
+          if (widget.initialId != null) {
+            final initialIndex =
+                tempQuotes.indexWhere((q) => q.id == widget.initialId);
+            if (initialIndex != -1) {
+              final initialQuote = tempQuotes.removeAt(initialIndex);
+              tempQuotes.insert(0, initialQuote);
+            }
+          }
+          _shuffledQuotes = tempQuotes;
+        } else {
+          // Remove quotes that are no longer active, and update existing ones with fresh data
+          _shuffledQuotes = _shuffledQuotes!
+              .where((shuffled) => activeQuotes.any((q) => q.id == shuffled.id))
+              .map((shuffled) {
+            return activeQuotes.firstWhere((q) => q.id == shuffled.id);
+          }).toList();
+
+          // If new active quotes were added while on the screen, append them at the end
+          final newQuotes = activeQuotes
+              .where((q) =>
+                  !_shuffledQuotes!.any((shuffled) => shuffled.id == q.id))
+              .toList();
+          if (newQuotes.isNotEmpty) {
+            newQuotes.shuffle();
+            _shuffledQuotes!.addAll(newQuotes);
+          }
+        }
+
+        if (_shuffledQuotes!.isEmpty) {
           return Scaffold(
             backgroundColor: ManahColors.nearWhite,
             body: Stack(
@@ -96,22 +150,9 @@ class _QuotesScreenState extends ConsumerState<QuotesScreen> {
         // Initialize PageController with infinite scroll support
         if (_pageController == null) {
           int initialPage = 0;
-          final N = activeQuotes.length;
-          if (widget.initialId != null) {
-            final index =
-                activeQuotes.indexWhere((q) => q.id == widget.initialId);
-            if (index != -1) {
-              if (N > 1) {
-                final middlePage = (50000 ~/ N) * N;
-                initialPage = middlePage + index;
-              } else {
-                initialPage = index;
-              }
-            }
-          } else {
-            if (N > 1) {
-              initialPage = (50000 ~/ N) * N;
-            }
+          final N = _shuffledQuotes!.length;
+          if (N > 1) {
+            initialPage = (50000 ~/ N) * N;
           }
           _pageController = PageController(initialPage: initialPage);
         }
@@ -134,9 +175,10 @@ class _QuotesScreenState extends ConsumerState<QuotesScreen> {
               // PageView for swiping quotes (infinite scroll)
               PageView.builder(
                 controller: _pageController,
-                itemCount: activeQuotes.length > 1 ? 100000 : 1,
+                itemCount: _shuffledQuotes!.length > 1 ? 100000 : 1,
                 itemBuilder: (context, index) {
-                  final quote = activeQuotes[index % activeQuotes.length];
+                  final quote =
+                      _shuffledQuotes![index % _shuffledQuotes!.length];
                   return _buildQuoteCard(context, quote);
                 },
               ),
