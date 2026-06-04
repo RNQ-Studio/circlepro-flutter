@@ -134,7 +134,19 @@ class _SessionCard extends StatelessWidget {
             ],
           ],
         ),
-        subtitle: Text(_date),
+        subtitle: Row(
+          children: [
+            Text(_date),
+            if (!inProgress) ...[
+              const SizedBox(width: ManahSpacing.xs),
+              Icon(
+                session.isSynced ? Icons.cloud_done_outlined : Icons.cloud_upload_outlined,
+                size: 14,
+                color: session.isSynced ? ManahColors.success : ManahColors.mediumGrey,
+              ),
+            ],
+          ],
+        ),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,

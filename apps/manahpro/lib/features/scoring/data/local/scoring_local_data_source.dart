@@ -98,7 +98,7 @@ class ScoringLocalDataSource {
   /// All non-deleted sessions, most recent first.
   Future<List<ScoringSessionEntity>> getAllSessions() async {
     final rows = await (_db.select(_db.scoringSessionRows)
-          ..where((t) => t.syncAction.equals('delete').not())
+          ..where((t) => t.syncAction.isNull() | t.syncAction.equals('delete').not())
           ..orderBy([(t) => OrderingTerm.desc(t.startedAt)]))
         .get();
     return Future.wait(rows.map(_hydrate));

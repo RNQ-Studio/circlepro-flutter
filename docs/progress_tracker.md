@@ -70,7 +70,7 @@ Dokumen ini memantau progress pengerjaan proyek **ManahPro** (monorepo backend L
 
 ### 🟨 Phase 2: User Identity & Social Foundation (89.3% Selesai)
 *Tujuan: Sistem profile lengkap, relasi sosial dasar (klub & feed) untuk meningkatkan retensi user.*
-- [ ] **2.1 Social auth implementation** (Both) — *Tertunda di Mobile.* API backend (Google login) sudah siap. UI tombol Google & Apple Sign-In di Flutter ditunda sampai integrasi Firebase OAuth/Apple Developer Key dan device testing siap. Auth email/OTP tetap jalan via starter.
+- [ ] **2.1 Social auth implementation** (Both) — *Tertunda di Mobile.* API backend (Google login) sudah siap. UI tombol Google Sign-In di Flutter ditunda sampai integrasi Firebase OAuth dan device testing siap (autentikasi dengan Apple ditiadakan). Auth email/OTP tetap jalan via starter.
 - [x] **2.2 User profile API** (Backend) — Endpoint profil, biodata, dan perhitungan kelompok umur otomatis.
 - [x] **2.3 Profile screen** (Frontend) — Tampilan profile dengan stats, badge pencapaian, dan bow setup.
 - [x] **2.4 Onboarding flow** (Frontend) — Wizard 3-layar (Welcome -> Bow type -> First score CTA).
