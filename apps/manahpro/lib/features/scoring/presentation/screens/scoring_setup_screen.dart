@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:core/core.dart';
 
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
@@ -29,6 +30,45 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
   int _arrowsPerEnd = 6;
   String? _equipmentProfileId;
   bool _starting = false;
+
+  String? _lastSelectedTargetFaceId;
+  bool _hasLoadedLastSelected = false;
+  bool _initialTargetFaceApplied = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLastSelectedId();
+  }
+
+  Future<void> _loadLastSelectedId() async {
+    try {
+      final storage = SharedPreferencesStorage();
+      await storage.init();
+      final lastId = await storage.read('last_selected_target_face_id');
+      if (mounted) {
+        setState(() {
+          _lastSelectedTargetFaceId = lastId;
+          _hasLoadedLastSelected = true;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _hasLoadedLastSelected = true;
+        });
+      }
+    }
+  }
+
+  Future<void> _updateSelectedTargetFace(TargetFaceEntity target) async {
+    setState(() => _selectedTargetFace = target);
+    try {
+      final storage = SharedPreferencesStorage();
+      await storage.init();
+      await storage.write('last_selected_target_face_id', target.id);
+    } catch (_) {}
+  }
 
   Future<void> _start() async {
     setState(() => _starting = true);
@@ -92,17 +132,21 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
     final targetFacesAsync = ref.watch(targetFacesListProvider);
     final targetFaces = targetFacesAsync.value ?? const [];
 
-    if (_selectedTargetFace == null && targetFaces.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _selectedTargetFace == null) {
-          setState(() {
-            _selectedTargetFace = targetFaces.firstWhere(
-              (t) => t.code == 'fita_122',
-              orElse: () => targetFaces.first,
-            );
+    if (!_initialTargetFaceApplied && targetFaces.isNotEmpty && _hasLoadedLastSelected) {
+      _initialTargetFaceApplied = true;
+      if (_lastSelectedTargetFaceId != null) {
+        final found = targetFaces.where((t) => t.id == _lastSelectedTargetFaceId);
+        if (found.isNotEmpty) {
+          final matched = found.first;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _selectedTargetFace == null) {
+              setState(() {
+                _selectedTargetFace = matched;
+              });
+            }
           });
         }
-      });
+      }
     }
 
     final maxScore = _selectedTargetFace != null
@@ -172,7 +216,70 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
 
                 final selected = _selectedTargetFace;
                 if (selected == null) {
-                  return const SizedBox.shrink();
+                  return Card(
+                    elevation: 0,
+                    margin: EdgeInsets.zero,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(ManahRadius.md),
+                      side: BorderSide(
+                        color: theme.dividerColor.withValues(alpha: 0.1),
+                      ),
+                    ),
+                    child: InkWell(
+                      onTap: () async {
+                        final result = await context.push<TargetFaceEntity>(
+                          ScoringRoutes.targetFaceSelection,
+                        );
+                        if (result != null && mounted) {
+                          _updateSelectedTargetFace(result);
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(ManahRadius.md),
+                      child: Padding(
+                        padding: const EdgeInsets.all(ManahSpacing.base),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 54,
+                              height: 54,
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(ManahRadius.md),
+                              ),
+                              child: Icon(
+                                Icons.adjust,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(width: ManahSpacing.base),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Pilih Target Face',
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Ketuk untuk memilih target face',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: theme.textTheme.bodySmall?.color,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: ManahSpacing.sm),
+                            const Icon(Icons.chevron_right, color: Colors.grey),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
                 }
 
                 return Card(
@@ -191,7 +298,7 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
                         extra: selected,
                       );
                       if (result != null && mounted) {
-                        setState(() => _selectedTargetFace = result);
+                        _updateSelectedTargetFace(result);
                       }
                     },
                     borderRadius: BorderRadius.circular(ManahRadius.md),
@@ -272,7 +379,7 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
             ),
             const SizedBox(height: ManahSpacing.lg),
             FilledButton(
-              onPressed: _starting ? null : _start,
+              onPressed: (_starting || _selectedTargetFace == null) ? null : _start,
               child: _starting
                   ? const SizedBox(
                       height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
