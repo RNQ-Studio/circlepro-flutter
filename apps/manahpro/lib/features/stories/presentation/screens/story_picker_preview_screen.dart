@@ -152,9 +152,12 @@ class _StoryPickerPreviewScreenState extends ConsumerState<StoryPickerPreviewScr
                       maxLines: 2,
                       minLines: 1,
                       decoration: const InputDecoration(
+                        filled: true,
+                        fillColor: Colors.transparent,
                         hintText: 'Tambahkan keterangan (caption)...',
                         hintStyle: TextStyle(color: Colors.white60, fontSize: 14),
                         border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: 8),
                       ),
                     ),
                   ),
