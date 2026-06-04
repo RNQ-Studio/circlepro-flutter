@@ -1,394 +1,404 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:core/core.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../domain/entities/quote_entity.dart';
 import '../quotes_notifier.dart';
 
-/// Filter options for the quotes list.
-enum _QuoteFilter { all, active, inactive }
-
-/// Sort options for the quotes list.
-enum _QuoteSort { newest, authorAZ, mostLoved }
-
 class QuotesScreen extends ConsumerStatefulWidget {
-  const QuotesScreen({super.key});
+  const QuotesScreen({
+    super.key,
+    this.initialId,
+  });
+
+  final int? initialId;
 
   @override
   ConsumerState<QuotesScreen> createState() => _QuotesScreenState();
 }
 
 class _QuotesScreenState extends ConsumerState<QuotesScreen> {
-  final _searchController = TextEditingController();
-  _QuoteFilter _filter = _QuoteFilter.all;
-  _QuoteSort _sort = _QuoteSort.newest;
-  String _searchQuery = '';
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(quotesProvider.notifier).syncInBackground();
-    });
-  }
+  PageController? _pageController;
+  int _currentPage = 0;
 
   @override
   void dispose() {
-    _searchController.dispose();
+    _pageController?.dispose();
     super.dispose();
-  }
-
-  List<QuoteEntity> _applyFiltersAndSort(List<QuoteEntity> quotes) {
-    var result = List<QuoteEntity>.from(quotes);
-
-    // Apply search
-    if (_searchQuery.isNotEmpty) {
-      final query = _searchQuery.toLowerCase();
-      result = result
-          .where((q) =>
-              q.text.toLowerCase().contains(query) ||
-              q.author.toLowerCase().contains(query))
-          .toList();
-    }
-
-    // Apply filter
-    switch (_filter) {
-      case _QuoteFilter.active:
-        result = result.where((q) => q.isActive).toList();
-      case _QuoteFilter.inactive:
-        result = result.where((q) => !q.isActive).toList();
-      case _QuoteFilter.all:
-        break;
-    }
-
-    // Apply sort
-    switch (_sort) {
-      case _QuoteSort.newest:
-        result.sort((a, b) => (b.createdAt ?? DateTime(2000))
-            .compareTo(a.createdAt ?? DateTime(2000)));
-      case _QuoteSort.authorAZ:
-        result.sort(
-            (a, b) => a.author.toLowerCase().compareTo(b.author.toLowerCase()));
-      case _QuoteSort.mostLoved:
-        result.sort((a, b) => b.loveCount.compareTo(a.loveCount));
-    }
-
-    return result;
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final quotesAsync = ref.watch(quotesProvider);
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          SliverAppBar(
-            floating: true,
-            snap: true,
-            pinned: true,
-            expandedHeight: 120,
-            backgroundColor: colorScheme.surface,
-            flexibleSpace: FlexibleSpaceBar(
-              titlePadding:
-                  const EdgeInsets.only(left: 56, bottom: 16, right: 16),
-              title: Text(
-                l10n.quotesTitle,
-                style: TextStyle(
-                  color: colorScheme.onSurface,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
+    return quotesAsync.when(
+      loading: () => const Scaffold(
+        backgroundColor: Color(0xFF0F172A),
+        body: Center(
+          child: CircularProgressIndicator(color: Colors.white70),
+        ),
+      ),
+      error: (error, _) => Scaffold(
+        backgroundColor: const Color(0xFF0F172A),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline_rounded,
+                    size: 64, color: Colors.redAccent),
+                const SizedBox(height: 16),
+                const Text(
+                  'Gagal memuat kutipan.',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                  textAlign: TextAlign.center,
                 ),
-              ),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      colorScheme.primaryContainer.withValues(alpha: 0.3),
-                      colorScheme.surface,
-                    ],
-                  ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: () =>
+                      ref.read(quotesProvider.notifier).refreshQuotes(),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Coba Lagi'),
                 ),
-              ),
+              ],
             ),
-            actions: [
-              PopupMenuButton<_QuoteSort>(
-                icon: const Icon(Icons.sort_rounded),
-                tooltip: 'Sort',
-                onSelected: (value) => setState(() => _sort = value),
-                itemBuilder: (_) => [
-                  PopupMenuItem(
-                    value: _QuoteSort.newest,
-                    child: Row(
-                      children: [
-                        Icon(Icons.schedule,
-                            size: 18,
-                            color: _sort == _QuoteSort.newest
-                                ? colorScheme.primary
-                                : null),
-                        const SizedBox(width: 8),
-                        Text(l10n.quotesSortNewest),
-                      ],
+          ),
+        ),
+      ),
+      data: (quotes) {
+        final activeQuotes = quotes.where((q) => q.isActive).toList();
+
+        if (activeQuotes.isEmpty) {
+          return Scaffold(
+            backgroundColor: const Color(0xFF0F172A),
+            body: Stack(
+              children: [
+                _buildAmbientBackground(),
+                Center(
+                  child: Text(
+                    'Belum ada kutipan aktif.',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 16,
                     ),
                   ),
-                  PopupMenuItem(
-                    value: _QuoteSort.authorAZ,
-                    child: Row(
-                      children: [
-                        Icon(Icons.sort_by_alpha,
-                            size: 18,
-                            color: _sort == _QuoteSort.authorAZ
-                                ? colorScheme.primary
-                                : null),
-                        const SizedBox(width: 8),
-                        Text(l10n.quotesSortAZ),
-                      ],
+                ),
+                _buildBackButton(context),
+              ],
+            ),
+          );
+        }
+
+        // Initialize PageController with initialId if present
+        if (_pageController == null) {
+          int initialPage = 0;
+          if (widget.initialId != null) {
+            final index =
+                activeQuotes.indexWhere((q) => q.id == widget.initialId);
+            if (index != -1) {
+              initialPage = index;
+            }
+          }
+          _pageController = PageController(initialPage: initialPage);
+          _currentPage = initialPage;
+        }
+
+        return Scaffold(
+          backgroundColor: const Color(0xFF0F172A),
+          body: Stack(
+            children: [
+              // Ambient glow background
+              _buildAmbientBackground(),
+
+              // PageView for swiping quotes
+              PageView.builder(
+                controller: _pageController,
+                itemCount: activeQuotes.length,
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentPage = index;
+                  });
+                },
+                itemBuilder: (context, index) {
+                  final quote = activeQuotes[index];
+                  return _buildQuoteCard(context, quote);
+                },
+              ),
+
+              // Back button at top-left
+              _buildBackButton(context),
+
+              // Page indicator at bottom center
+              Positioned(
+                bottom: 40,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.04),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      '${_currentPage + 1} / ${activeQuotes.length}',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 1.2,
+                      ),
                     ),
                   ),
-                  PopupMenuItem(
-                    value: _QuoteSort.mostLoved,
-                    child: Row(
-                      children: [
-                        Icon(Icons.favorite_rounded,
-                            size: 18,
-                            color: _sort == _QuoteSort.mostLoved
-                                ? colorScheme.primary
-                                : null),
-                        const SizedBox(width: 8),
-                        const Text('Paling Disukai'),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
-        ],
-        body: Column(
-          children: [
-            // Search bar
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-              child: TextField(
-                controller: _searchController,
-                decoration: InputDecoration(
-                  hintText: l10n.quotesSearchHint,
-                  prefixIcon: const Icon(Icons.search_rounded),
-                  suffixIcon: _searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _searchQuery = '');
-                          },
-                        )
-                      : null,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                  filled: true,
-                  fillColor: colorScheme.surfaceContainerHighest
-                      .withValues(alpha: 0.5),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                ),
-                onChanged: (value) => setState(() => _searchQuery = value),
+        );
+      },
+    );
+  }
+
+  Widget _buildAmbientBackground() {
+    return Stack(
+      children: [
+        // Solid deep dark base
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Color(0xFF0F172A), // Slate 900
+                Color(0xFF020617), // Slate 950
+              ],
+            ),
+          ),
+        ),
+
+        // Glowing Amber Orb at top-right
+        Positioned(
+          top: -80,
+          right: -80,
+          child: Container(
+            width: 280,
+            height: 280,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.amber.withValues(alpha: 0.12),
+            ),
+          ),
+        ),
+
+        // Glowing Indigo Orb at bottom-left
+        Positioned(
+          bottom: -100,
+          left: -100,
+          child: Container(
+            width: 320,
+            height: 320,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.indigo.withValues(alpha: 0.12),
+            ),
+          ),
+        ),
+
+        // Blur effect to soften orbs into high-end ambient light
+        Positioned.fill(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 90, sigmaY: 90),
+            child: Container(
+              color: Colors.transparent,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBackButton(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.only(left: 12, top: 12),
+        child: Align(
+          alignment: Alignment.topLeft,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.06),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.08),
+                width: 1,
               ),
             ),
-
-            // Filter chips
-            SizedBox(
-              height: 48,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: [
-                  _FilterChip(
-                    label: l10n.quotesFilterAll,
-                    selected: _filter == _QuoteFilter.all,
-                    onSelected: () =>
-                        setState(() => _filter = _QuoteFilter.all),
-                  ),
-                  const SizedBox(width: 8),
-                  _FilterChip(
-                    label: l10n.quotesFilterActive,
-                    selected: _filter == _QuoteFilter.active,
-                    onSelected: () =>
-                        setState(() => _filter = _QuoteFilter.active),
-                  ),
-                  const SizedBox(width: 8),
-                  _FilterChip(
-                    label: l10n.quotesFilterInactive,
-                    selected: _filter == _QuoteFilter.inactive,
-                    onSelected: () =>
-                        setState(() => _filter = _QuoteFilter.inactive),
-                  ),
-                ],
+            child: IconButton(
+              icon: const Icon(
+                Icons.close_rounded,
+                color: Colors.white,
+                size: 20,
               ),
+              onPressed: () => context.pop(),
+              tooltip: 'Kembali',
             ),
+          ),
+        ),
+      ),
+    );
+  }
 
-            // Premium background sync loading indicator
-            if (quotesAsync.isLoading && quotesAsync.hasValue) ...[
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                child: Column(
-                  children: [
-                    const ClipRRect(
-                      borderRadius: BorderRadius.all(Radius.circular(2)),
-                      child: SizedBox(
-                        height: 3,
-                        child: LinearProgressIndicator(),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          width: 10,
-                          height: 10,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 1.5,
-                            color: colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Menyinkronkan data dengan server...',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: colorScheme.primary,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 0.2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+  Widget _buildQuoteCard(BuildContext context, QuoteEntity quote) {
+    final size = MediaQuery.of(context).size;
+
+    return Center(
+      child: Container(
+        width: size.width * 0.85,
+        height: size.height * 0.65,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.03),
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.08),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.25),
+              blurRadius: 30,
+              offset: const Offset(0, 15),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(32),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: Stack(
+              children: [
+                // Elegant Watermark Quotes Icon
+                Positioned(
+                  top: -10,
+                  left: -20,
+                  child: Icon(
+                    Icons.format_quote_rounded,
+                    size: 140,
+                    color: Colors.white.withValues(alpha: 0.015),
+                  ),
                 ),
-              ),
-            ],
 
-            // Quotes list
-            Expanded(
-              child: quotesAsync.when(
-                loading: () => const Center(
-                  child: CircularProgressIndicator(),
-                ),
-                error: (error, _) => _ErrorState(
-                  message: l10n.quotesLoadError,
-                  onRetry: () =>
-                      ref.read(quotesProvider.notifier).refreshQuotes(),
-                  retryLabel: l10n.quotesRetry,
-                ),
-                data: (quotes) {
-                  final filtered = _applyFiltersAndSort(quotes);
-
-                  if (filtered.isEmpty) {
-                    return _EmptyState(
-                      message: quotes.isEmpty
-                          ? l10n.quotesEmpty
-                          : l10n.quotesSearchHint,
-                    );
-                  }
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(28, 36, 28, 28),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(18, 8, 16, 4),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.collections_bookmark_rounded,
-                              size: 14,
-                              color: colorScheme.onSurfaceVariant
-                                  .withValues(alpha: 0.7),
+                      // Top Quote Symbol
+                      Align(
+                        alignment: Alignment.topLeft,
+                        child: Icon(
+                          Icons.format_quote_rounded,
+                          color: Colors.amber.shade600.withValues(alpha: 0.7),
+                          size: 40,
+                        ),
+                      ),
+
+                      // Quote Body (Scrollable if long)
+                      Expanded(
+                        child: Center(
+                          child: SingleChildScrollView(
+                            physics: const BouncingScrollPhysics(),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              child: Text(
+                                quote.text,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w600,
+                                  fontStyle: FontStyle.italic,
+                                  height: 1.6,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
                             ),
-                            const SizedBox(width: 6),
+                          ),
+                        ),
+                      ),
+
+                      // Author & Source
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '— ${quote.author}',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          if (quote.source != null &&
+                              quote.source!.isNotEmpty) ...[
+                            const SizedBox(height: 6),
                             Text(
-                              _searchQuery.isNotEmpty
-                                  ? 'Ditemukan ${filtered.length} kutipan untuk pencarian "$_searchQuery"'
-                                  : 'Menampilkan ${filtered.length} kutipan',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.onSurfaceVariant
-                                    .withValues(alpha: 0.7),
+                              quote.source!,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.5),
+                                fontSize: 13,
                               ),
                             ),
                           ],
-                        ),
-                      ),
-                      Expanded(
-                        child: RefreshIndicator(
-                          onRefresh: () =>
-                              ref.read(quotesProvider.notifier).refreshQuotes(),
-                          child: ListView.builder(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
-                            itemCount: filtered.length,
-                            itemBuilder: (context, index) {
-                              final quote = filtered[index];
-                              return _QuoteCard(
+                          const SizedBox(height: 32),
+
+                          // Interaction Buttons (Love & Copy)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Love Button
+                              _FullscreenLoveButton(
                                 quote: quote,
                                 onToggleLove: () {
                                   if (quote.id != null) {
                                     ref
                                         .read(quotesProvider.notifier)
-                                        .toggleLove(
-                                            quote.id!, quote.isLoved);
+                                        .toggleLove(quote.id!, quote.isLoved);
                                   }
                                 },
-                              );
-                            },
+                              ),
+                              const SizedBox(width: 20),
+
+                              // Copy Button
+                              _FullscreenCopyButton(quote: quote),
+                            ],
                           ),
-                        ),
+                        ],
                       ),
                     ],
-                  );
-                },
-              ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-// ─── Supporting Widgets ─────────────────────────────────────────
-
-class _FilterChip extends StatelessWidget {
-  const _FilterChip({
-    required this.label,
-    required this.selected,
-    required this.onSelected,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return FilterChip(
-      label: Text(label),
-      selected: selected,
-      onSelected: (_) => onSelected(),
-      selectedColor: colorScheme.primaryContainer,
-      checkmarkColor: colorScheme.onPrimaryContainer,
-      side: BorderSide.none,
-    );
-  }
-}
-
-class _QuoteCard extends StatefulWidget {
-  const _QuoteCard({
+class _FullscreenLoveButton extends StatefulWidget {
+  const _FullscreenLoveButton({
     required this.quote,
     required this.onToggleLove,
   });
@@ -397,10 +407,10 @@ class _QuoteCard extends StatefulWidget {
   final VoidCallback onToggleLove;
 
   @override
-  State<_QuoteCard> createState() => _QuoteCardState();
+  State<_FullscreenLoveButton> createState() => _FullscreenLoveButtonState();
 }
 
-class _QuoteCardState extends State<_QuoteCard>
+class _FullscreenLoveButtonState extends State<_FullscreenLoveButton>
     with SingleTickerProviderStateMixin {
   late AnimationController _loveAnimController;
   late Animation<double> _loveScaleAnimation;
@@ -435,185 +445,24 @@ class _QuoteCardState extends State<_QuoteCard>
   @override
   Widget build(BuildContext context) {
     final quote = widget.quote;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context)!;
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header row: quote icon + status badge
-            Row(
-              children: [
-                Icon(
-                  Icons.format_quote_rounded,
-                  color: colorScheme.primary,
-                  size: 20,
-                ),
-                const SizedBox(width: 8),
-                _SyncBadge(quote: quote, l10n: l10n),
-                const Spacer(),
-                if (!quote.isActive)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: colorScheme.errorContainer,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      l10n.quotesFilterInactive,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: colorScheme.onErrorContainer,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Quote text
-            Text(
-              '"${quote.text}"',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                fontStyle: FontStyle.italic,
-                height: 1.5,
-              ),
-              maxLines: 4,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 12),
-
-            // Author & source
-            Row(
-              children: [
-                Icon(Icons.person_outline_rounded,
-                    size: 16, color: colorScheme.onSurfaceVariant),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    '— ${quote.author}',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-            if (quote.source != null && quote.source!.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(Icons.book_outlined,
-                      size: 14, color: colorScheme.onSurfaceVariant),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      quote.source!,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-
-            // Footer: timestamp + love button
-            const SizedBox(height: 12),
-            Divider(
-              height: 1,
-              thickness: 0.5,
-              color: colorScheme.outlineVariant.withValues(alpha: 0.4),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                if (quote.createdAt != null) ...[
-                  Icon(
-                    Icons.access_time_rounded,
-                    size: 12,
-                    color:
-                        colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      'Ditambahkan ${AppDateUtils.timeAgo(quote.createdAt!)}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontSize: 11,
-                        color: colorScheme.onSurfaceVariant
-                            .withValues(alpha: 0.6),
-                      ),
-                    ),
-                  ),
-                ] else
-                  const Spacer(),
-
-                // Love button
-                _LoveButton(
-                  isLoved: quote.isLoved,
-                  loveCount: quote.loveCount,
-                  scaleAnimation: _loveScaleAnimation,
-                  onTap: _handleLoveTap,
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _LoveButton extends StatelessWidget {
-  const _LoveButton({
-    required this.isLoved,
-    required this.loveCount,
-    required this.scaleAnimation,
-    required this.onTap,
-  });
-
-  final bool isLoved;
-  final int loveCount;
-  final Animation<double> scaleAnimation;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final isLoved = quote.isLoved;
 
     return Material(
-      color: Colors.transparent,
+      color: Colors.white.withValues(alpha: 0.05),
+      shape: const StadiumBorder(),
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
+        customBorder: const StadiumBorder(),
+        onTap: _handleLoveTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               AnimatedBuilder(
-                animation: scaleAnimation,
+                animation: _loveScaleAnimation,
                 builder: (context, child) {
                   return Transform.scale(
-                    scale: scaleAnimation.value,
+                    scale: _loveScaleAnimation.value,
                     child: child,
                   );
                 },
@@ -621,24 +470,18 @@ class _LoveButton extends StatelessWidget {
                   isLoved
                       ? Icons.favorite_rounded
                       : Icons.favorite_border_rounded,
-                  size: 18,
-                  color: isLoved
-                      ? Colors.redAccent
-                      : theme.colorScheme.onSurfaceVariant
-                          .withValues(alpha: 0.6),
+                  size: 20,
+                  color: isLoved ? Colors.redAccent : Colors.white70,
                 ),
               ),
-              if (loveCount > 0) ...[
-                const SizedBox(width: 4),
+              if (quote.loveCount > 0) ...[
+                const SizedBox(width: 8),
                 Text(
-                  '$loveCount',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: isLoved
-                        ? Colors.redAccent
-                        : theme.colorScheme.onSurfaceVariant
-                            .withValues(alpha: 0.6),
+                  '${quote.loveCount}',
+                  style: TextStyle(
+                    color: isLoved ? Colors.redAccent : Colors.white70,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
@@ -650,125 +493,60 @@ class _LoveButton extends StatelessWidget {
   }
 }
 
-class _SyncBadge extends StatelessWidget {
-  const _SyncBadge({required this.quote, required this.l10n});
-
-  final QuoteEntity quote;
-  final AppLocalizations l10n;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    IconData icon;
-    String label;
-    Color color;
-
-    if (quote.isSynced) {
-      icon = Icons.cloud_done_outlined;
-      label = l10n.quotesSynced;
-      color = Colors.green;
-    } else if (quote.syncAction == 'create') {
-      icon = Icons.cloud_upload_outlined;
-      label = l10n.quotesSyncPending;
-      color = Colors.orange;
-    } else if (quote.syncAction == 'update') {
-      icon = Icons.cloud_sync_outlined;
-      label = l10n.quotesSyncOfflineEdit;
-      color = colorScheme.tertiary;
-    } else {
-      icon = Icons.cloud_off_outlined;
-      label = l10n.quotesWorkingOffline;
-      color = colorScheme.error;
-    }
-
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 14, color: color),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: color,
-                fontSize: 10,
-              ),
-        ),
-      ],
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.message});
-
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.format_quote_rounded,
-              size: 80,
-              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ErrorState extends StatelessWidget {
-  const _ErrorState({
-    required this.message,
-    required this.onRetry,
-    required this.retryLabel,
+class _FullscreenCopyButton extends StatelessWidget {
+  const _FullscreenCopyButton({
+    required this.quote,
   });
 
-  final String message;
-  final VoidCallback onRetry;
-  final String retryLabel;
+  final QuoteEntity quote;
+
+  void _copyToClipboard(BuildContext context) {
+    final textToCopy =
+        '"${quote.text}"\n\n— ${quote.author}${quote.source != null && quote.source!.isNotEmpty ? " (${quote.source})" : ""}';
+    Clipboard.setData(ClipboardData(text: textToCopy)).then((_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded,
+                    color: Colors.white, size: 20),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'Kutipan berhasil disalin ke papan klip!',
+                    style: TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.indigoAccent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(24),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline_rounded,
-                size: 64, color: colorScheme.error),
-            const SizedBox(height: 16),
-            Text(
-              message,
-              style: Theme.of(context).textTheme.bodyLarge,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: Text(retryLabel),
-            ),
-          ],
+    return Material(
+      color: Colors.white.withValues(alpha: 0.05),
+      shape: const CircleBorder(),
+      child: IconButton(
+        icon: const Icon(
+          Icons.copy_rounded,
+          color: Colors.white70,
+          size: 20,
         ),
+        onPressed: () => _copyToClipboard(context),
+        constraints: const BoxConstraints(),
+        padding: const EdgeInsets.all(12),
       ),
     );
   }

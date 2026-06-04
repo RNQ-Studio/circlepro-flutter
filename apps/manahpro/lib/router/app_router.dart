@@ -41,7 +41,11 @@ final appRouter = GoRouter(
     // Quotes management
     GoRoute(
       path: AppRoutes.quotes,
-      builder: (context, state) => const QuotesScreen(),
+      builder: (context, state) {
+        final initialIdStr = state.uri.queryParameters['initialId'];
+        final initialId = initialIdStr != null ? int.tryParse(initialIdStr) : null;
+        return QuotesScreen(initialId: initialId);
+      },
     ),
 
 

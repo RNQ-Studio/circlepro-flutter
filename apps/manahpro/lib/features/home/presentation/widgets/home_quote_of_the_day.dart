@@ -198,7 +198,7 @@ class _HomeQuoteOfTheDayState extends ConsumerState<HomeQuoteOfTheDay> {
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(24),
-                onTap: () => context.push(AppRoutes.quotes),
+                onTap: () => context.push('${AppRoutes.quotes}${quote.id != null ? "?initialId=${quote.id}" : ""}'),
                 splashColor: ManahColors.brand.withOpacity(0.04),
                 highlightColor: ManahColors.brand.withOpacity(0.02),
                 child: Padding(
