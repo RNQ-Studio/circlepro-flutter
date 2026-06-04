@@ -252,9 +252,9 @@ class _HomeQuoteOfTheDayState extends ConsumerState<HomeQuoteOfTheDay> {
                           // Love Button
                           Material(
                             color: isDark ? Colors.white.withOpacity(0.06) : ManahColors.brandSurface,
-                            shape: const CircleBorder(),
+                            shape: const StadiumBorder(),
                             child: InkWell(
-                              customBorder: const CircleBorder(),
+                              customBorder: const StadiumBorder(),
                               onTap: () {
                                 if (quote.id != null) {
                                   ref.read(quotesProvider.notifier).toggleLove(
@@ -262,7 +262,10 @@ class _HomeQuoteOfTheDayState extends ConsumerState<HomeQuoteOfTheDay> {
                                 }
                               },
                               child: Padding(
-                                padding: const EdgeInsets.all(6),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 6,
+                                ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -276,7 +279,7 @@ class _HomeQuoteOfTheDayState extends ConsumerState<HomeQuoteOfTheDay> {
                                       size: 16,
                                     ),
                                     if (quote.loveCount > 0) ...[
-                                      const SizedBox(width: 3),
+                                      const SizedBox(width: 4),
                                       Text(
                                         '${quote.loveCount}',
                                         style: TextStyle(
