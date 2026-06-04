@@ -9,7 +9,7 @@
 
 ---
 
-## 🟢 Status Implementasi (update: 4 Juni 2026)
+## 🟢 Status Implementasi (update: 5 Juni 2026)
 
 > Repo: **`circlepro-flutter`** (app `apps/manahpro`) + **`circlepro-web`** (backend Laravel — _bukan_ `circlepro-laravel`; folder aktualnya `circlepro-web`).
 
@@ -35,6 +35,7 @@
 | **Phase 4 — Backend (sebagian besar)** | **Follow system** (`FollowController`: follow/unfollow/followers/following). **Coach directory** (`CoachController` + `CoachReviewController`: CRUD + reviews). **Club enhanced** (`ClubScheduleController` + `ClubAttendanceController`: schedules RRULE + attendance tracking). **Range finder** (`ArcheryRangeController`: CRUD `archery_ranges`). **Article system** (`ArticleController` + categories + tags). **Gamification** (`GamificationController` + `GamificationService`: stats/achievements/streaks). Tes: `FollowSystemTest`, `CoachSystemTest`, `ClubScheduleAndAttendanceTest`, `ArcheryRangeTest`, `GamificationTest` hijau. |
 | **Phase 4 — Mobile (sebagian)** | **Coach** (`features/coaches/`: `coach_directory_screen` + `coach_detail_screen`). **Club enhanced** (`club_schedule_screen` 23KB + `club_attendance_dashboard_screen`). **Range finder** (`range_finder_screen` 17KB). **Article reader** (`article_list_screen` + `article_reader_screen`). **Achievement** (`achievement_dashboard_widget` 12KB). **Gamification** (providers + widget). |
 | **Bonus (di luar timeline awal)** | **Stories** (Instagram-style): `StoryController` backend + `story_viewer_screen`/`story_picker_preview_screen` mobile + migrasi `stories`/`story_views`. Tes: `StoryTest` hijau. · **Quotes**: `QuoteController` (love/unlove) + full clean-arch `features/quotes/` mobile + migrasi `quotes`/`quote_loves` + seeder 150 quotes. · **Target Face management**: `TargetFaceController` + migrasi `target_faces` + enhanced scoring setup (pilih target face dengan preview visual). |
+| **Phase 5 — Monetization (penuh)** | **Subscription Billing** (Free/Pro/Elite untuk user, Starter/Pro/Enterprise untuk klub) · **Premium Gating** (3 sesi/minggu untuk Free) · **Ads Framework** (AdCardWidget di Community Feed, targeted, premium bypass) · **Revenue Dashboard** (MRR/churn/plan counts). **Tes: MonetizationTest.php & monetization_providers_test.dart hijau, analyze 0 error.** |
 
 **🚧 Yang benar-benar belum:**
 - **Phase 1–2 (device):** 1.15 uji keterbacaan outdoor **terukur** · 1.17 profiling 60fps.
@@ -168,9 +169,9 @@ Estimation sudah termasuk:
          ──── 🚀 PUBLIC LAUNCH (v1.0) : ~Agustus–September 2026 ────
          (dimajukan dari Oktober — tinggal polish + testing)
 
-⬚ P5  ▐░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░██░░░░░░░░░░░░░░░░░▌
+✅ P5  ▐░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░██░░░░░░░░░░░░░░░░░▌
          Monetization Layer
-         Sep – Oct 2026 (3 minggu, 21 SP)
+         Selesai & terverifikasi (5 Juni 2026)
 
          ──── 🚀 REVENUE LAUNCH (v1.5) : ~Oktober–November 2026 ────
          Premium subscription + Club SaaS + Event fees
@@ -186,9 +187,9 @@ Estimation sudah termasuk:
          Feb 2027 – Jun 2027 (ongoing)
 
 ═══════════════════════════════════════════════════════════════════════
- PROGRESS: Phase 0–2 ✅ | Phase 3 🔶 90% | Phase 4 🔶 70% ≈ 72% total
+ PROGRESS: Phase 0–2 ✅ | Phase 3 🔶 90% | Phase 4 🔶 70% | Phase 5 ✅ 100% ≈ 80% total
  AHEAD OF SCHEDULE: ~2.5 bulan lebih cepat dari timeline awal!
- Sisa: anti-gaming + polish/testing + Phase 5–6
+ Sisa: anti-gaming + polish/testing + Phase 6
 ═══════════════════════════════════════════════════════════════════════
 ```
 
