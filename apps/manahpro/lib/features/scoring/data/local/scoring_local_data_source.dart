@@ -27,7 +27,7 @@ class ScoringLocalDataSource {
               clientUuid: session.clientUuid,
               equipmentProfileId: Value(session.equipmentProfileId),
               title: Value(session.title),
-              bowClass: session.bowClass.value,
+              bowClass: Value(session.bowClass.value),
               distanceCategory: session.distanceCategory.value,
               distanceM: session.distanceM,
               environment: Value(session.environment.value),
@@ -61,9 +61,13 @@ class ScoringLocalDataSource {
           ..where((t) => t.sessionId.equals(session.id)))
         .get();
     for (final end in existingEnds) {
-      await (_db.delete(_db.scoringArrowRows)..where((t) => t.endId.equals(end.id))).go();
+      await (_db.delete(_db.scoringArrowRows)
+            ..where((t) => t.endId.equals(end.id)))
+          .go();
     }
-    await (_db.delete(_db.scoringEndRows)..where((t) => t.sessionId.equals(session.id))).go();
+    await (_db.delete(_db.scoringEndRows)
+          ..where((t) => t.sessionId.equals(session.id)))
+        .go();
 
     for (final end in session.ends) {
       await _db.into(_db.scoringEndRows).insert(
@@ -89,31 +93,43 @@ class ScoringLocalDataSource {
   }
 
   Future<ScoringSessionEntity?> getSession(String id) async {
-    final row = await (_db.select(_db.scoringSessionRows)..where((t) => t.id.equals(id)))
+    final row = await (_db.select(_db.scoringSessionRows)
+          ..where((t) => t.id.equals(id)))
         .getSingleOrNull();
     if (row == null) return null;
     return _hydrate(row);
   }
 
-  /// All non-deleted sessions, most recent first.
+  /// All non-deleted *solo* sessions, most recent first.
+  ///
+  /// Rows that belong to a Latihan Bersama (group scoring) are excluded — they
+  /// are owned by the host board and synced via the group endpoint, never the
+  /// solo `/scoring/sessions/sync`. This is the local mirror of the backend
+  /// guest-isolation filter (Sprint 05, task 5.6 / K2 §3.2): a guest the host
+  /// records never pollutes the host's history, dashboard or PB.
   Future<List<ScoringSessionEntity>> getAllSessions() async {
     final rows = await (_db.select(_db.scoringSessionRows)
-          ..where((t) => t.syncAction.isNull() | t.syncAction.equals('delete').not())
+          ..where((t) =>
+              (t.syncAction.isNull() | t.syncAction.equals('delete').not()) &
+              t.scoringSessionGroupId.isNull())
           ..orderBy([(t) => OrderingTerm.desc(t.startedAt)]))
         .get();
     return Future.wait(rows.map(_hydrate));
   }
 
-  /// Sessions with pending sync work.
+  /// Solo sessions with pending sync work (group rows excluded — see
+  /// [getAllSessions]).
   Future<List<ScoringSessionEntity>> getUnsynced() async {
     final rows = await (_db.select(_db.scoringSessionRows)
-          ..where((t) => t.isSynced.equals(false)))
+          ..where((t) =>
+              t.isSynced.equals(false) & t.scoringSessionGroupId.isNull()))
         .get();
     return Future.wait(rows.map(_hydrate));
   }
 
   Future<void> markSynced(String id) async {
-    await (_db.update(_db.scoringSessionRows)..where((t) => t.id.equals(id))).write(
+    await (_db.update(_db.scoringSessionRows)..where((t) => t.id.equals(id)))
+        .write(
       const ScoringSessionRowsCompanion(
         isSynced: Value(true),
         syncAction: Value(null),
@@ -123,14 +139,16 @@ class ScoringLocalDataSource {
 
   /// Soft-delete locally (queue server delete) or hard-delete if never synced.
   Future<void> markDeleted(String id) async {
-    final row = await (_db.select(_db.scoringSessionRows)..where((t) => t.id.equals(id)))
+    final row = await (_db.select(_db.scoringSessionRows)
+          ..where((t) => t.id.equals(id)))
         .getSingleOrNull();
     if (row == null) return;
 
     if (row.syncAction == 'create' && !row.isSynced) {
       await deletePermanently(id);
     } else {
-      await (_db.update(_db.scoringSessionRows)..where((t) => t.id.equals(id))).write(
+      await (_db.update(_db.scoringSessionRows)..where((t) => t.id.equals(id)))
+          .write(
         const ScoringSessionRowsCompanion(
           isSynced: Value(false),
           syncAction: Value('delete'),
@@ -141,12 +159,19 @@ class ScoringLocalDataSource {
 
   Future<void> deletePermanently(String id) async {
     await _db.transaction(() async {
-      final ends = await (_db.select(_db.scoringEndRows)..where((t) => t.sessionId.equals(id))).get();
+      final ends = await (_db.select(_db.scoringEndRows)
+            ..where((t) => t.sessionId.equals(id)))
+          .get();
       for (final end in ends) {
-        await (_db.delete(_db.scoringArrowRows)..where((t) => t.endId.equals(end.id))).go();
+        await (_db.delete(_db.scoringArrowRows)
+              ..where((t) => t.endId.equals(end.id)))
+            .go();
       }
-      await (_db.delete(_db.scoringEndRows)..where((t) => t.sessionId.equals(id))).go();
-      await (_db.delete(_db.scoringSessionRows)..where((t) => t.id.equals(id))).go();
+      await (_db.delete(_db.scoringEndRows)
+            ..where((t) => t.sessionId.equals(id)))
+          .go();
+      await (_db.delete(_db.scoringSessionRows)..where((t) => t.id.equals(id)))
+          .go();
     });
   }
 
@@ -217,7 +242,8 @@ class ScoringLocalDataSource {
                 code: t.code,
                 name: t.name,
                 imagePath: Value(t.imagePath),
-                scoringRulesJson: jsonEncode(t.scoringRules.map((r) => r.toJson()).toList()),
+                scoringRulesJson:
+                    jsonEncode(t.scoringRules.map((r) => r.toJson()).toList()),
                 usedCount: Value(t.usedCount),
               ),
             );
@@ -238,7 +264,9 @@ class ScoringLocalDataSource {
         name: r.name,
         imagePath: r.imagePath,
         usedCount: r.usedCount,
-        scoringRules: rulesJson.map((x) => TargetFaceRule.fromJson(x as Map<String, dynamic>)).toList(),
+        scoringRules: rulesJson
+            .map((x) => TargetFaceRule.fromJson(x as Map<String, dynamic>))
+            .toList(),
       );
     }).toList();
   }
@@ -256,7 +284,9 @@ class ScoringLocalDataSource {
           name: r.name,
           imagePath: r.imagePath,
           usedCount: r.usedCount,
-          scoringRules: rulesJson.map((x) => TargetFaceRule.fromJson(x as Map<String, dynamic>)).toList(),
+          scoringRules: rulesJson
+              .map((x) => TargetFaceRule.fromJson(x as Map<String, dynamic>))
+              .toList(),
         );
       }).toList();
     });

@@ -10,8 +10,8 @@ import '../group_scoring_providers.dart';
 import '../group_scoring_routes.dart';
 
 /// Entry point for Latihan Bersama: the groups the user hosts or joined
-/// (local-first, refreshed online — task 4.5). The full host board arrives in
-/// Sprint 05; for now a row reopens the join-code confirmation.
+/// (local-first, refreshed online — task 4.5). Tapping a group opens the host
+/// board (Sprint 05) to score the roster end-by-end.
 class GroupListScreen extends ConsumerWidget {
   const GroupListScreen({super.key});
 
@@ -63,10 +63,8 @@ class _GroupCard extends StatelessWidget {
         side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.1)),
       ),
       child: ListTile(
-        onTap: () => context.push(
-          GroupScoringRoutes.created(group.id),
-          extra: group,
-        ),
+        // Open the host board directly — that is the working surface (Sprint 05).
+        onTap: () => context.push(GroupScoringRoutes.board(group.id)),
         title: Text(
           group.title?.isNotEmpty == true ? group.title! : 'Latihan Bersama',
           style: const TextStyle(fontWeight: FontWeight.bold),

@@ -1,4 +1,6 @@
+import '../../scoring/domain/scoring_entities.dart';
 import '../../scoring/domain/scoring_enums.dart';
+import 'board_participant_entity.dart';
 import 'group_entities.dart';
 
 /// Contract for the Latihan Bersama (group scoring) repository — Phase 0.
@@ -32,4 +34,30 @@ abstract interface class GroupScoringRepository {
 
   /// Preview a group by its join code before joining (online-only, no cache).
   Future<ScoringGroupEntity> lookup(String joinCode);
+
+  // ─── Host board (Sprint 05) ─────────────────────────────────────────────
+
+  /// Load the host board for [group]: seed local participant rows from the
+  /// roster (so they can be scored offline), then return them with their local
+  /// ends/arrows. Offline-first — works from cache when the network is down.
+  Future<List<BoardParticipant>> loadBoard(ScoringGroupEntity group);
+
+  /// Add a guest to the board entirely offline (minimal add — Sprint 05). The
+  /// guest is minted on the server on the next sync. Returns the updated board.
+  Future<List<BoardParticipant>> addGuest(
+      ScoringGroupEntity group, String name);
+
+  /// Save one end's arrows for several participants at once ("Simpan Rambahan"),
+  /// keyed by participant session id. Persists locally first (never fails on a
+  /// dead network), kicks a best-effort background sync, returns the updated
+  /// board. [endNumber] is 1-based.
+  Future<List<BoardParticipant>> saveEnd({
+    required ScoringGroupEntity group,
+    required int endNumber,
+    required Map<String, List<ArrowScore>> arrowsByParticipantId,
+  });
+
+  /// Best-effort push of unsynced participant scores to the group sync endpoint.
+  /// Forgives a dead/flaky connection (kept local for the next attempt).
+  Future<void> syncBoard(ScoringGroupEntity group);
 }

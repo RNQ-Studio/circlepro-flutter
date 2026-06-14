@@ -1,0 +1,115 @@
+import 'package:equatable/equatable.dart';
+
+import '../../scoring/domain/scoring_entities.dart';
+import '../../scoring/domain/scoring_enums.dart';
+
+/// A participant as seen on the **host board** (Sprint 05): one local
+/// `scoring_sessions` row that belongs to a group, carrying its ends/arrows so
+/// the host can fill them in end-by-end, fully offline.
+///
+/// It is keyed by the participant's session [id] (a ULID), **not** by `user_id`
+/// (task 5.2) — that is what lets a guest (`userId == null`) sit on the board
+/// next to an owned row. [clientUuid] is the idempotency key the group sync
+/// endpoint dedups on. The score figures are derived from [ends] so the board
+/// and the local store never disagree.
+class BoardParticipant extends Equatable {
+  const BoardParticipant({
+    required this.id,
+    required this.clientUuid,
+    this.userId,
+    this.guestName,
+    this.displayName,
+    this.bowClass,
+    this.status = ScoringSessionStatus.inProgress,
+    this.isSynced = false,
+    this.syncAction,
+    this.completedAt,
+    this.ends = const [],
+  });
+
+  /// Participant scoring_sessions ULID (client-generated for an offline guest).
+  final String id;
+
+  /// Idempotency key for the group sync endpoint (resolve-or-create).
+  final String clientUuid;
+
+  /// Owner of the row, or `null` for a guest (the binder's guest isolation).
+  final int? userId;
+
+  /// Display name of a guest (no account). `null` for an owned/host row.
+  final String? guestName;
+
+  /// Server-provided display name (e.g. the host's own name). Optional; the UI
+  /// falls back to [guestName] for guests.
+  final String? displayName;
+
+  final BowClass? bowClass;
+  final ScoringSessionStatus status;
+  final bool isSynced;
+
+  /// Pending sync action: 'create' | 'update' | null.
+  final String? syncAction;
+  final DateTime? completedAt;
+  final List<ScoringEndEntity> ends;
+
+  /// A guest has no account. Phase 0: an owned row is always the host.
+  bool get isGuest => userId == null && guestName != null;
+
+  /// Best label for the board: the guest's name, else a server display name.
+  String labelOr(String fallback) => guestName ?? displayName ?? fallback;
+
+  Iterable<ArrowScore> get _allArrows => ends.expand((e) => e.arrows);
+
+  int get totalScore => _allArrows.fold(0, (sum, a) => sum + a.scoreValue);
+
+  int get arrowsShot => _allArrows.length;
+
+  int get xCount => _allArrows.where((a) => a.isX).length;
+
+  int get tenCount => _allArrows.where((a) => a.isTen).length;
+
+  /// Arrows recorded for a given end number (empty when not yet scored).
+  List<ArrowScore> arrowsForEnd(int endNumber) {
+    for (final end in ends) {
+      if (end.endNumber == endNumber) return end.arrows;
+    }
+    return const [];
+  }
+
+  BoardParticipant copyWith({
+    ScoringSessionStatus? status,
+    bool? isSynced,
+    String? syncAction,
+    DateTime? completedAt,
+    List<ScoringEndEntity>? ends,
+  }) {
+    return BoardParticipant(
+      id: id,
+      clientUuid: clientUuid,
+      userId: userId,
+      guestName: guestName,
+      displayName: displayName,
+      bowClass: bowClass,
+      status: status ?? this.status,
+      isSynced: isSynced ?? this.isSynced,
+      syncAction: syncAction ?? this.syncAction,
+      completedAt: completedAt ?? this.completedAt,
+      ends: ends ?? this.ends,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        id,
+        clientUuid,
+        userId,
+        guestName,
+        displayName,
+        bowClass,
+        status,
+        isSynced,
+        syncAction,
+        completedAt,
+        ends,
+      ];
+}

@@ -1,8 +1,11 @@
 import 'dart:developer';
 
+import '../../scoring/domain/scoring_entities.dart';
 import '../../scoring/domain/scoring_enums.dart';
+import '../domain/board_participant_entity.dart';
 import '../domain/group_entities.dart';
 import '../domain/group_scoring_repository.dart';
+import 'board_participant_mapper.dart';
 import 'local/group_scoring_local_data_source.dart';
 import 'remote/group_scoring_remote_data_source.dart';
 
@@ -81,5 +84,75 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
   Future<ScoringGroupEntity> lookup(String joinCode) async {
     final json = await _remote.lookup(joinCode);
     return ScoringGroupEntity.fromJson(json);
+  }
+
+  // ─── Host board (Sprint 05) ─────────────────────────────────────────────
+
+  @override
+  Future<List<BoardParticipant>> loadBoard(ScoringGroupEntity group) async {
+    await _local.seedParticipantsFromRoster(group);
+    return _local.getBoardParticipants(group.id);
+  }
+
+  @override
+  Future<List<BoardParticipant>> addGuest(
+    ScoringGroupEntity group,
+    String name,
+  ) async {
+    await _local.createLocalGuest(group, name);
+    _backgroundSync(group);
+    return _local.getBoardParticipants(group.id);
+  }
+
+  @override
+  Future<List<BoardParticipant>> saveEnd({
+    required ScoringGroupEntity group,
+    required int endNumber,
+    required Map<String, List<ArrowScore>> arrowsByParticipantId,
+  }) async {
+    final current = await _local.getBoardParticipants(group.id);
+    final byId = {for (final p in current) p.id: p};
+
+    for (final entry in arrowsByParticipantId.entries) {
+      final participant = byId[entry.key];
+      if (participant == null) continue;
+      await _local.saveParticipantEnd(
+        group: group,
+        participant: participant,
+        endNumber: endNumber,
+        arrows: entry.value,
+      );
+    }
+
+    _backgroundSync(group);
+    return _local.getBoardParticipants(group.id);
+  }
+
+  @override
+  Future<void> syncBoard(ScoringGroupEntity group) async {
+    final unsynced = await _local.getUnsyncedParticipants(group.id);
+    if (unsynced.isEmpty) return;
+
+    try {
+      await _remote.syncBoard(
+        group.id,
+        unsynced.map(boardParticipantToSyncJson).toList(),
+      );
+      for (final participant in unsynced) {
+        await _local.markParticipantSynced(participant.id);
+      }
+    } catch (e) {
+      // Offline / flaky network is expected on the field — keep rows unsynced
+      // for the next attempt; never surface a fatal error (K2 / task 5.5).
+      log('GroupScoringRepository.syncBoard: deferred (will retry): $e');
+    }
+  }
+
+  /// Fire-and-forget sync; swallow errors (the field has no signal half the
+  /// time, and the local store already holds the truth).
+  void _backgroundSync(ScoringGroupEntity group) {
+    syncBoard(group).catchError((Object e) {
+      log('GroupScoringRepository background board sync error: $e');
+    });
   }
 }

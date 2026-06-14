@@ -12,8 +12,8 @@ import '../group_scoring_routes.dart';
 
 /// Shows the freshly created group's `join_code` — big, copyable and shareable
 /// (task 4.4). The share text is a Phase-0 placeholder; the full deep link /
-/// QR distribution arrives in Phase 1 (Sprint 09). The live host board that
-/// replaces this confirmation screen arrives in Sprint 05.
+/// QR distribution arrives in Phase 1 (Sprint 09). A primary action opens the
+/// host board (Sprint 05) to start recording right away.
 class GroupCreatedScreen extends ConsumerWidget {
   const GroupCreatedScreen({super.key, required this.groupId, this.group});
 
@@ -165,18 +165,17 @@ class GroupCreatedScreen extends ConsumerWidget {
             ),
             const SizedBox(height: ManahSpacing.lg),
 
-            // Phase-0 note: the live host board lands in Sprint 05.
-            Text(
-              'Papan host untuk mencatat skor peserta menyusul di rilis berikutnya.',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.textTheme.bodySmall?.color),
+            // Straight into the host board to start recording (Sprint 05).
+            FilledButton.icon(
+              onPressed: () => context.go(GroupScoringRoutes.board(g.id)),
+              icon: const Icon(Icons.sports_score),
+              label: const Text('Buka Papan Skor'),
             ),
-            const SizedBox(height: ManahSpacing.lg),
+            const SizedBox(height: ManahSpacing.sm),
 
             TextButton(
               onPressed: () => context.go(GroupScoringRoutes.list),
-              child: const Text('Selesai'),
+              child: const Text('Nanti Saja'),
             ),
           ],
         ),

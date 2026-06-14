@@ -11,7 +11,9 @@ class ScoringSessionRows extends Table {
   TextColumn get clientUuid => text()();
   TextColumn get equipmentProfileId => text().nullable()();
   TextColumn get title => text().nullable()();
-  TextColumn get bowClass => text()();
+  // Nullable since Sprint 05: a guest row recorded on the host board has no
+  // bow class (K8 — metadata optional). Solo sessions always set it.
+  TextColumn get bowClass => text().nullable()();
   TextColumn get distanceCategory => text()();
   IntColumn get distanceM => integer()();
   TextColumn get environment => text().withDefault(const Constant('outdoor'))();
@@ -161,7 +163,7 @@ class ScoringDatabase extends _$ScoringDatabase {
 
   @override
   int get schemaVersion =>
-      9; // Bump version to trigger upgrade and reset tables
+      10; // Sprint 05: bowClass nullable (guest rows) — bump to reset tables
 
   @override
   MigrationStrategy get migration => MigrationStrategy(

@@ -36,4 +36,21 @@ class GroupScoringRemoteDataSource {
     );
     return response.data['data'] as Map<String, dynamic>;
   }
+
+  /// Idempotent batch sync of participant scores for the host board (Sprint 05).
+  /// `POST /v1/scoring/groups/{group}/sync`. Each item is a pre-built payload
+  /// (see [boardParticipantToSyncJson]); the server resolves-or-creates per row
+  /// by id/client_uuid so a re-send never duplicates. Returns the reconciled
+  /// participant rows.
+  Future<List<Map<String, dynamic>>> syncBoard(
+    String groupId,
+    List<Map<String, dynamic>> sessions,
+  ) async {
+    final response = await _dio.post(
+      'v1/scoring/groups/$groupId/sync',
+      data: {'sessions': sessions},
+    );
+    final data = response.data['data'] as List<dynamic>? ?? const [];
+    return data.map((e) => e as Map<String, dynamic>).toList();
+  }
 }

@@ -35,8 +35,8 @@ class $ScoringSessionRowsTable extends ScoringSessionRows
       const VerificationMeta('bowClass');
   @override
   late final GeneratedColumn<String> bowClass = GeneratedColumn<String>(
-      'bow_class', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      'bow_class', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _distanceCategoryMeta =
       const VerificationMeta('distanceCategory');
   @override
@@ -262,8 +262,6 @@ class $ScoringSessionRowsTable extends ScoringSessionRows
     if (data.containsKey('bow_class')) {
       context.handle(_bowClassMeta,
           bowClass.isAcceptableOrUnknown(data['bow_class']!, _bowClassMeta));
-    } else if (isInserting) {
-      context.missing(_bowClassMeta);
     }
     if (data.containsKey('distance_category')) {
       context.handle(
@@ -407,7 +405,7 @@ class $ScoringSessionRowsTable extends ScoringSessionRows
       title: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}title']),
       bowClass: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}bow_class'])!,
+          .read(DriftSqlType.string, data['${effectivePrefix}bow_class']),
       distanceCategory: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}distance_category'])!,
       distanceM: attachedDatabase.typeMapping
@@ -470,7 +468,7 @@ class ScoringSessionRow extends DataClass
   final String clientUuid;
   final String? equipmentProfileId;
   final String? title;
-  final String bowClass;
+  final String? bowClass;
   final String distanceCategory;
   final int distanceM;
   final String environment;
@@ -501,7 +499,7 @@ class ScoringSessionRow extends DataClass
       required this.clientUuid,
       this.equipmentProfileId,
       this.title,
-      required this.bowClass,
+      this.bowClass,
       required this.distanceCategory,
       required this.distanceM,
       required this.environment,
@@ -536,7 +534,9 @@ class ScoringSessionRow extends DataClass
     if (!nullToAbsent || title != null) {
       map['title'] = Variable<String>(title);
     }
-    map['bow_class'] = Variable<String>(bowClass);
+    if (!nullToAbsent || bowClass != null) {
+      map['bow_class'] = Variable<String>(bowClass);
+    }
     map['distance_category'] = Variable<String>(distanceCategory);
     map['distance_m'] = Variable<int>(distanceM);
     map['environment'] = Variable<String>(environment);
@@ -588,7 +588,9 @@ class ScoringSessionRow extends DataClass
           : Value(equipmentProfileId),
       title:
           title == null && nullToAbsent ? const Value.absent() : Value(title),
-      bowClass: Value(bowClass),
+      bowClass: bowClass == null && nullToAbsent
+          ? const Value.absent()
+          : Value(bowClass),
       distanceCategory: Value(distanceCategory),
       distanceM: Value(distanceM),
       environment: Value(environment),
@@ -639,7 +641,7 @@ class ScoringSessionRow extends DataClass
       equipmentProfileId:
           serializer.fromJson<String?>(json['equipmentProfileId']),
       title: serializer.fromJson<String?>(json['title']),
-      bowClass: serializer.fromJson<String>(json['bowClass']),
+      bowClass: serializer.fromJson<String?>(json['bowClass']),
       distanceCategory: serializer.fromJson<String>(json['distanceCategory']),
       distanceM: serializer.fromJson<int>(json['distanceM']),
       environment: serializer.fromJson<String>(json['environment']),
@@ -674,7 +676,7 @@ class ScoringSessionRow extends DataClass
       'clientUuid': serializer.toJson<String>(clientUuid),
       'equipmentProfileId': serializer.toJson<String?>(equipmentProfileId),
       'title': serializer.toJson<String?>(title),
-      'bowClass': serializer.toJson<String>(bowClass),
+      'bowClass': serializer.toJson<String?>(bowClass),
       'distanceCategory': serializer.toJson<String>(distanceCategory),
       'distanceM': serializer.toJson<int>(distanceM),
       'environment': serializer.toJson<String>(environment),
@@ -707,7 +709,7 @@ class ScoringSessionRow extends DataClass
           String? clientUuid,
           Value<String?> equipmentProfileId = const Value.absent(),
           Value<String?> title = const Value.absent(),
-          String? bowClass,
+          Value<String?> bowClass = const Value.absent(),
           String? distanceCategory,
           int? distanceM,
           String? environment,
@@ -738,7 +740,7 @@ class ScoringSessionRow extends DataClass
             ? equipmentProfileId.value
             : this.equipmentProfileId,
         title: title.present ? title.value : this.title,
-        bowClass: bowClass ?? this.bowClass,
+        bowClass: bowClass.present ? bowClass.value : this.bowClass,
         distanceCategory: distanceCategory ?? this.distanceCategory,
         distanceM: distanceM ?? this.distanceM,
         environment: environment ?? this.environment,
@@ -925,7 +927,7 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
   final Value<String> clientUuid;
   final Value<String?> equipmentProfileId;
   final Value<String?> title;
-  final Value<String> bowClass;
+  final Value<String?> bowClass;
   final Value<String> distanceCategory;
   final Value<int> distanceM;
   final Value<String> environment;
@@ -986,7 +988,7 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
     required String clientUuid,
     this.equipmentProfileId = const Value.absent(),
     this.title = const Value.absent(),
-    required String bowClass,
+    this.bowClass = const Value.absent(),
     required String distanceCategory,
     required int distanceM,
     this.environment = const Value.absent(),
@@ -1013,7 +1015,6 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         clientUuid = Value(clientUuid),
-        bowClass = Value(bowClass),
         distanceCategory = Value(distanceCategory),
         distanceM = Value(distanceM),
         numEnds = Value(numEnds),
@@ -1090,7 +1091,7 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
       Value<String>? clientUuid,
       Value<String?>? equipmentProfileId,
       Value<String?>? title,
-      Value<String>? bowClass,
+      Value<String?>? bowClass,
       Value<String>? distanceCategory,
       Value<int>? distanceM,
       Value<String>? environment,
@@ -3930,7 +3931,7 @@ typedef $$ScoringSessionRowsTableCreateCompanionBuilder
   required String clientUuid,
   Value<String?> equipmentProfileId,
   Value<String?> title,
-  required String bowClass,
+  Value<String?> bowClass,
   required String distanceCategory,
   required int distanceM,
   Value<String> environment,
@@ -3962,7 +3963,7 @@ typedef $$ScoringSessionRowsTableUpdateCompanionBuilder
   Value<String> clientUuid,
   Value<String?> equipmentProfileId,
   Value<String?> title,
-  Value<String> bowClass,
+  Value<String?> bowClass,
   Value<String> distanceCategory,
   Value<int> distanceM,
   Value<String> environment,
@@ -4315,7 +4316,7 @@ class $$ScoringSessionRowsTableTableManager extends RootTableManager<
             Value<String> clientUuid = const Value.absent(),
             Value<String?> equipmentProfileId = const Value.absent(),
             Value<String?> title = const Value.absent(),
-            Value<String> bowClass = const Value.absent(),
+            Value<String?> bowClass = const Value.absent(),
             Value<String> distanceCategory = const Value.absent(),
             Value<int> distanceM = const Value.absent(),
             Value<String> environment = const Value.absent(),
@@ -4377,7 +4378,7 @@ class $$ScoringSessionRowsTableTableManager extends RootTableManager<
             required String clientUuid,
             Value<String?> equipmentProfileId = const Value.absent(),
             Value<String?> title = const Value.absent(),
-            required String bowClass,
+            Value<String?> bowClass = const Value.absent(),
             required String distanceCategory,
             required int distanceM,
             Value<String> environment = const Value.absent(),

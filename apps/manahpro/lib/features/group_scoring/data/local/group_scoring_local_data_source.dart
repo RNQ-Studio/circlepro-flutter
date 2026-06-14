@@ -1,7 +1,10 @@
 import 'package:drift/drift.dart';
 
 import '../../../scoring/data/local/scoring_database.dart';
+import '../../../scoring/domain/scoring_entities.dart';
 import '../../../scoring/domain/scoring_enums.dart';
+import '../../../scoring/utils/ulid.dart';
+import '../../domain/board_participant_entity.dart';
 import '../../domain/group_entities.dart';
 
 /// Read-only local cache of group (Latihan Bersama) metadata & roster, backed
@@ -151,6 +154,308 @@ class GroupScoringLocalDataSource {
       status: row.status != null
           ? ScoringSessionStatus.fromValue(row.status)
           : null,
+    );
+  }
+
+  // ─── Host board participant scores (Sprint 05) ──────────────────────────
+  //
+  // Participant scores live in the *same* [ScoringSessionRows] table as solo
+  // sessions (Sprint 04 reuse decision), tagged with `scoringSessionGroupId`
+  // and, for guests, `guestName`. They are offline-first: every saved end marks
+  // the row unsynced + a `syncAction` so the group sync endpoint can reconcile
+  // it later. Display identity is merged from the roster cache so the board can
+  // label rows offline; a freshly-added guest carries its own cached label too.
+
+  /// All participants of [groupId] that exist locally, hydrated with their
+  /// ends/arrows for the host board. Display name / owner are merged from the
+  /// roster cache; a guest falls back to its own `guest_name`.
+  Future<List<BoardParticipant>> getBoardParticipants(String groupId) async {
+    final scoreRows = await (_db.select(_db.scoringSessionRows)
+          ..where((t) => t.scoringSessionGroupId.equals(groupId))
+          ..orderBy([(t) => OrderingTerm.asc(t.id)]))
+        .get();
+
+    final cacheRows = await (_db.select(_db.groupParticipantCacheRows)
+          ..where((t) => t.groupId.equals(groupId)))
+        .get();
+    final cacheById = {for (final c in cacheRows) c.id: c};
+
+    final result = <BoardParticipant>[];
+    for (final row in scoreRows) {
+      final cache = cacheById[row.id];
+      result.add(
+        BoardParticipant(
+          id: row.id,
+          clientUuid: row.clientUuid,
+          userId: cache?.userId,
+          guestName: row.guestName ?? cache?.guestName,
+          displayName: cache?.displayName,
+          bowClass:
+              row.bowClass != null ? BowClass.fromValue(row.bowClass) : null,
+          status: ScoringSessionStatus.fromValue(row.status),
+          isSynced: row.isSynced,
+          syncAction: row.syncAction,
+          completedAt: row.completedAt,
+          ends: await _loadEnds(row.id),
+        ),
+      );
+    }
+    return result;
+  }
+
+  /// Ensure a local score row exists for every roster participant of [group]
+  /// (so the host can score them offline). Existing local rows are left intact
+  /// to preserve unsynced progress.
+  Future<void> seedParticipantsFromRoster(ScoringGroupEntity group) async {
+    if (group.participants.isEmpty) return;
+    await _db.transaction(() async {
+      for (final p in group.participants) {
+        final existing = await (_db.select(_db.scoringSessionRows)
+              ..where((t) => t.id.equals(p.id)))
+            .getSingleOrNull();
+        if (existing != null) continue;
+        await _db.into(_db.scoringSessionRows).insert(
+              _participantScoreCompanion(
+                group: group,
+                id: p.id,
+                // The server row has no client_uuid exposed; mint one. Sync
+                // still resolves the row by its id, so no duplicate is created.
+                clientUuid: Ids.uuid(),
+                guestName: p.guestName,
+                bowClass: p.bowClass,
+                status: p.status ?? ScoringSessionStatus.inProgress,
+                isSynced: true,
+                syncAction: null,
+              ),
+            );
+      }
+    });
+  }
+
+  /// Create a guest participant entirely offline (minimal add — Sprint 05).
+  /// The row is minted on the server on first sync via its `name`. A roster
+  /// cache row is written too so the board can label it before any sync.
+  Future<BoardParticipant> createLocalGuest(
+    ScoringGroupEntity group,
+    String name,
+  ) async {
+    final id = Ids.ulid();
+    final clientUuid = Ids.uuid();
+    await _db.transaction(() async {
+      await _db.into(_db.scoringSessionRows).insert(
+            _participantScoreCompanion(
+              group: group,
+              id: id,
+              clientUuid: clientUuid,
+              guestName: name,
+              bowClass: null,
+              status: ScoringSessionStatus.inProgress,
+              isSynced: false,
+              syncAction: 'create',
+            ),
+          );
+      await _db.into(_db.groupParticipantCacheRows).insertOnConflictUpdate(
+            GroupParticipantCacheRowsCompanion.insert(
+              id: id,
+              groupId: group.id,
+              guestName: Value(name),
+              isGuest: const Value(true),
+              displayName: Value(name),
+              cachedAt: DateTime.now(),
+            ),
+          );
+    });
+    return BoardParticipant(
+      id: id,
+      clientUuid: clientUuid,
+      guestName: name,
+      displayName: name,
+      status: ScoringSessionStatus.inProgress,
+      isSynced: false,
+      syncAction: 'create',
+    );
+  }
+
+  /// Save one end's arrows for a participant, recompute cached aggregates, and
+  /// mark the row unsynced. When every planned arrow is in, the row is flipped
+  /// to `completed` so the backend can award PB/gamification for owned rows
+  /// (guests stay walled off, §3.2). Idempotent: re-saving an end replaces it.
+  Future<void> saveParticipantEnd({
+    required ScoringGroupEntity group,
+    required BoardParticipant participant,
+    required int endNumber,
+    required List<ArrowScore> arrows,
+  }) async {
+    await _db.transaction(() async {
+      final ends = [...participant.ends];
+      final idx = ends.indexWhere((e) => e.endNumber == endNumber);
+      final endId = idx >= 0 ? ends[idx].id : Ids.ulid();
+      final newEnd =
+          ScoringEndEntity(id: endId, endNumber: endNumber, arrows: arrows);
+      if (idx >= 0) {
+        ends[idx] = newEnd;
+      } else {
+        ends.add(newEnd);
+      }
+      ends.sort((a, b) => a.endNumber.compareTo(b.endNumber));
+
+      final allArrows = ends.expand((e) => e.arrows);
+      final total = allArrows.fold(0, (s, a) => s + a.scoreValue);
+      final shot = allArrows.length;
+      final x = allArrows.where((a) => a.isX).length;
+      final ten = allArrows.where((a) => a.isTen).length;
+      final miss = allArrows.where((a) => a.isMiss).length;
+
+      final plannedArrows = group.numEnds * group.arrowsPerEnd;
+      final completed = shot >= plannedArrows;
+      final status = completed
+          ? ScoringSessionStatus.completed
+          : ScoringSessionStatus.inProgress;
+      final completedAt =
+          completed ? (participant.completedAt ?? DateTime.now()) : null;
+
+      // Keep 'create' until first sync, then 'update' (mirror solo engine).
+      final nextAction =
+          (!participant.isSynced && participant.syncAction == 'create')
+              ? 'create'
+              : 'update';
+
+      await (_db.update(_db.scoringSessionRows)
+            ..where((t) => t.id.equals(participant.id)))
+          .write(
+        ScoringSessionRowsCompanion(
+          totalScore: Value(total),
+          arrowsShot: Value(shot),
+          xCount: Value(x),
+          tenCount: Value(ten),
+          missCount: Value(miss),
+          status: Value(status.value),
+          completedAt: Value(completedAt),
+          isSynced: const Value(false),
+          syncAction: Value(nextAction),
+          updatedAt: Value(DateTime.now()),
+        ),
+      );
+
+      await _replaceParticipantEnds(participant.id, ends);
+    });
+  }
+
+  /// Participants of [groupId] with pending sync work (for the group sync push).
+  Future<List<BoardParticipant>> getUnsyncedParticipants(String groupId) async {
+    final all = await getBoardParticipants(groupId);
+    return all.where((p) => !p.isSynced).toList();
+  }
+
+  /// Mark a participant row reconciled with the server after a successful sync.
+  Future<void> markParticipantSynced(String id) async {
+    await (_db.update(_db.scoringSessionRows)..where((t) => t.id.equals(id)))
+        .write(
+      const ScoringSessionRowsCompanion(
+        isSynced: Value(true),
+        syncAction: Value(null),
+      ),
+    );
+  }
+
+  Future<List<ScoringEndEntity>> _loadEnds(String sessionId) async {
+    final endRows = await (_db.select(_db.scoringEndRows)
+          ..where((t) => t.sessionId.equals(sessionId))
+          ..orderBy([(t) => OrderingTerm.asc(t.endNumber)]))
+        .get();
+
+    final ends = <ScoringEndEntity>[];
+    for (final endRow in endRows) {
+      final arrowRows = await (_db.select(_db.scoringArrowRows)
+            ..where((t) => t.endId.equals(endRow.id))
+            ..orderBy([(t) => OrderingTerm.asc(t.arrowIndex)]))
+          .get();
+      ends.add(
+        ScoringEndEntity(
+          id: endRow.id,
+          endNumber: endRow.endNumber,
+          arrows: arrowRows
+              .map((a) => ArrowScore(
+                    id: a.id,
+                    arrowIndex: a.arrowIndex,
+                    scoreValue: a.scoreValue,
+                    isX: a.isX,
+                    isMiss: a.isMiss,
+                  ))
+              .toList(),
+        ),
+      );
+    }
+    return ends;
+  }
+
+  Future<void> _replaceParticipantEnds(
+    String sessionId,
+    List<ScoringEndEntity> ends,
+  ) async {
+    final existing = await (_db.select(_db.scoringEndRows)
+          ..where((t) => t.sessionId.equals(sessionId)))
+        .get();
+    for (final end in existing) {
+      await (_db.delete(_db.scoringArrowRows)
+            ..where((t) => t.endId.equals(end.id)))
+          .go();
+    }
+    await (_db.delete(_db.scoringEndRows)
+          ..where((t) => t.sessionId.equals(sessionId)))
+        .go();
+
+    for (final end in ends) {
+      await _db.into(_db.scoringEndRows).insert(
+            ScoringEndRowsCompanion.insert(
+              id: end.id,
+              sessionId: sessionId,
+              endNumber: end.endNumber,
+            ),
+          );
+      for (final arrow in end.arrows) {
+        await _db.into(_db.scoringArrowRows).insert(
+              ScoringArrowRowsCompanion.insert(
+                id: arrow.id,
+                endId: end.id,
+                arrowIndex: arrow.arrowIndex,
+                scoreValue: arrow.scoreValue,
+                isX: Value(arrow.isX),
+                isMiss: Value(arrow.isMiss),
+              ),
+            );
+      }
+    }
+  }
+
+  ScoringSessionRowsCompanion _participantScoreCompanion({
+    required ScoringGroupEntity group,
+    required String id,
+    required String clientUuid,
+    String? guestName,
+    BowClass? bowClass,
+    required ScoringSessionStatus status,
+    required bool isSynced,
+    String? syncAction,
+  }) {
+    return ScoringSessionRowsCompanion.insert(
+      id: id,
+      clientUuid: clientUuid,
+      bowClass: Value(bowClass?.value),
+      distanceCategory: group.distanceCategory.value,
+      distanceM: group.distanceM,
+      environment: Value(group.environment.value),
+      targetFaceCm: Value(group.targetFaceCm),
+      targetFaceId: Value(group.targetFaceId),
+      numEnds: group.numEnds,
+      arrowsPerEnd: group.arrowsPerEnd,
+      status: Value(status.value),
+      startedAt: group.startedAt,
+      scoringSessionGroupId: Value(group.id),
+      guestName: Value(guestName),
+      isSynced: Value(isSynced),
+      syncAction: Value(syncAction),
+      updatedAt: Value(DateTime.now()),
     );
   }
 }

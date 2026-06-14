@@ -270,3 +270,115 @@ final class GroupDetailFamily extends $Family
   @override
   String toString() => r'groupDetailProvider';
 }
+
+/// Drives the host board (Sprint 05): loads the group + participants, adds
+/// guests, and saves each round offline-first (the repository persists locally
+/// then syncs in the background). The screen only ever talks to this notifier.
+
+@ProviderFor(HostBoardController)
+final hostBoardControllerProvider = HostBoardControllerFamily._();
+
+/// Drives the host board (Sprint 05): loads the group + participants, adds
+/// guests, and saves each round offline-first (the repository persists locally
+/// then syncs in the background). The screen only ever talks to this notifier.
+final class HostBoardControllerProvider
+    extends $AsyncNotifierProvider<HostBoardController, HostBoardState> {
+  /// Drives the host board (Sprint 05): loads the group + participants, adds
+  /// guests, and saves each round offline-first (the repository persists locally
+  /// then syncs in the background). The screen only ever talks to this notifier.
+  HostBoardControllerProvider._(
+      {required HostBoardControllerFamily super.from,
+      required String super.argument})
+      : super(
+          retry: null,
+          name: r'hostBoardControllerProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$hostBoardControllerHash();
+
+  @override
+  String toString() {
+    return r'hostBoardControllerProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  HostBoardController create() => HostBoardController();
+
+  @override
+  bool operator ==(Object other) {
+    return other is HostBoardControllerProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$hostBoardControllerHash() =>
+    r'a88810f8462b9df46a83cebc9c73fb119bd3e11d';
+
+/// Drives the host board (Sprint 05): loads the group + participants, adds
+/// guests, and saves each round offline-first (the repository persists locally
+/// then syncs in the background). The screen only ever talks to this notifier.
+
+final class HostBoardControllerFamily extends $Family
+    with
+        $ClassFamilyOverride<HostBoardController, AsyncValue<HostBoardState>,
+            HostBoardState, FutureOr<HostBoardState>, String> {
+  HostBoardControllerFamily._()
+      : super(
+          retry: null,
+          name: r'hostBoardControllerProvider',
+          dependencies: null,
+          $allTransitiveDependencies: null,
+          isAutoDispose: true,
+        );
+
+  /// Drives the host board (Sprint 05): loads the group + participants, adds
+  /// guests, and saves each round offline-first (the repository persists locally
+  /// then syncs in the background). The screen only ever talks to this notifier.
+
+  HostBoardControllerProvider call(
+    String groupId,
+  ) =>
+      HostBoardControllerProvider._(argument: groupId, from: this);
+
+  @override
+  String toString() => r'hostBoardControllerProvider';
+}
+
+/// Drives the host board (Sprint 05): loads the group + participants, adds
+/// guests, and saves each round offline-first (the repository persists locally
+/// then syncs in the background). The screen only ever talks to this notifier.
+
+abstract class _$HostBoardController extends $AsyncNotifier<HostBoardState> {
+  late final _$args = ref.$arg as String;
+  String get groupId => _$args;
+
+  FutureOr<HostBoardState> build(
+    String groupId,
+  );
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<HostBoardState>, HostBoardState>;
+    final element = ref.element as $ClassProviderElement<
+        AnyNotifier<AsyncValue<HostBoardState>, HostBoardState>,
+        AsyncValue<HostBoardState>,
+        Object?,
+        Object?>;
+    element.handleCreate(
+        ref,
+        () => build(
+              _$args,
+            ));
+  }
+}
