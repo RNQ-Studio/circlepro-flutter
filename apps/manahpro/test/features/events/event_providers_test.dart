@@ -44,8 +44,15 @@ void main() {
     'longitude': 110.3541,
     'starts_at': '2026-06-15T08:00:00Z',
     'ends_at': '2026-06-16T17:00:00Z',
-    'registration_opens_at': '2026-06-01T08:00:00Z',
-    'registration_closes_at': '2026-06-14T17:00:00Z',
+    // Relative to now so `isRegistrationOpen` (which compares against
+    // DateTime.now()) stays deterministic as the calendar moves — a fixed past
+    // date here is a time-bomb that closes the window and fails the test.
+    'registration_opens_at': DateTime.now()
+        .subtract(const Duration(days: 7))
+        .toUtc()
+        .toIso8601String(),
+    'registration_closes_at':
+        DateTime.now().add(const Duration(days: 7)).toUtc().toIso8601String(),
     'capacity': 100,
     'schedule': [
       {'time': '08:00 - 09:00', 'title': 'Registrasi Ulang'},
@@ -147,7 +154,8 @@ void main() {
     'avg_per_arrow': 9.17
   };
 
-  test('EventsRepository parses list of events correctly from JSON response', () async {
+  test('EventsRepository parses list of events correctly from JSON response',
+      () async {
     when(() => mockDio.get(
           any(),
           queryParameters: any(named: 'queryParameters'),
@@ -173,7 +181,8 @@ void main() {
   test('EventsRepository parses single event detail correctly', () async {
     when(() => mockDio.get('v1/events/01F8MECH3PG9MMEX6GMECH3PG9')).thenAnswer(
       (_) async => Response(
-        requestOptions: RequestOptions(path: 'v1/events/01F8MECH3PG9MMEX6GMECH3PG9'),
+        requestOptions:
+            RequestOptions(path: 'v1/events/01F8MECH3PG9MMEX6GMECH3PG9'),
         statusCode: 200,
         data: {'data': dummyEventJson},
       ),
@@ -212,7 +221,8 @@ void main() {
     expect(asyncValue.first.title, 'Sleman Archery Cup 2026');
   });
 
-  test('EventsRepository parses list of tickets correctly from JSON response', () async {
+  test('EventsRepository parses list of tickets correctly from JSON response',
+      () async {
     when(() => mockDio.get('v1/my-tickets')).thenAnswer(
       (_) async => Response(
         requestOptions: RequestOptions(path: 'v1/my-tickets'),
@@ -257,9 +267,11 @@ void main() {
   });
 
   test('EventsRepository parses scorecard items correctly', () async {
-    when(() => mockDio.get('v1/events/eventId/divisions/divId/targets/5/scorecard')).thenAnswer(
+    when(() => mockDio.get(
+        'v1/events/eventId/divisions/divId/targets/5/scorecard')).thenAnswer(
       (_) async => Response(
-        requestOptions: RequestOptions(path: 'v1/events/eventId/divisions/divId/targets/5/scorecard'),
+        requestOptions: RequestOptions(
+            path: 'v1/events/eventId/divisions/divId/targets/5/scorecard'),
         statusCode: 200,
         data: {
           'data': [dummyScorecardJson]
@@ -282,9 +294,11 @@ void main() {
       ],
     );
 
-    when(() => mockDio.get('v1/events/eventId/divisions/divId/targets/5/scorecard')).thenAnswer(
+    when(() => mockDio.get(
+        'v1/events/eventId/divisions/divId/targets/5/scorecard')).thenAnswer(
       (_) async => Response(
-        requestOptions: RequestOptions(path: 'v1/events/eventId/divisions/divId/targets/5/scorecard'),
+        requestOptions: RequestOptions(
+            path: 'v1/events/eventId/divisions/divId/targets/5/scorecard'),
         statusCode: 200,
         data: {
           'data': [dummyScorecardJson]
@@ -303,9 +317,11 @@ void main() {
   });
 
   test('EventsRepository parses leaderboard entries correctly', () async {
-    when(() => mockDio.get('v1/events/eventId/divisions/divId/leaderboard')).thenAnswer(
+    when(() => mockDio.get('v1/events/eventId/divisions/divId/leaderboard'))
+        .thenAnswer(
       (_) async => Response(
-        requestOptions: RequestOptions(path: 'v1/events/eventId/divisions/divId/leaderboard'),
+        requestOptions: RequestOptions(
+            path: 'v1/events/eventId/divisions/divId/leaderboard'),
         statusCode: 200,
         data: {
           'data': [dummyLeaderboardJson]
@@ -328,9 +344,11 @@ void main() {
       ],
     );
 
-    when(() => mockDio.get('v1/events/eventId/divisions/divId/leaderboard')).thenAnswer(
+    when(() => mockDio.get('v1/events/eventId/divisions/divId/leaderboard'))
+        .thenAnswer(
       (_) async => Response(
-        requestOptions: RequestOptions(path: 'v1/events/eventId/divisions/divId/leaderboard'),
+        requestOptions: RequestOptions(
+            path: 'v1/events/eventId/divisions/divId/leaderboard'),
         statusCode: 200,
         data: {
           'data': [dummyLeaderboardJson]
@@ -397,7 +415,8 @@ void main() {
     'computed_at': '2026-06-04T08:00:00Z',
   };
 
-  test('EventsRepository parses national leaderboard ratings correctly', () async {
+  test('EventsRepository parses national leaderboard ratings correctly',
+      () async {
     when(() => mockDio.get(
           'v1/leaderboard',
           queryParameters: any(named: 'queryParameters'),
@@ -424,7 +443,8 @@ void main() {
     expect(result.first.title, 'Expert Archer');
   });
 
-  test('Riverpod nationalLeaderboardProvider returns leaderboard data', () async {
+  test('Riverpod nationalLeaderboardProvider returns leaderboard data',
+      () async {
     final container = ProviderContainer(
       overrides: [
         eventsRepositoryProvider.overrideWithValue(repository),
@@ -470,7 +490,8 @@ void main() {
   test('EventsRepository parses rating history log correctly', () async {
     when(() => mockDio.get('v1/users/2/ratings/ratingId/history')).thenAnswer(
       (_) async => Response(
-        requestOptions: RequestOptions(path: 'v1/users/2/ratings/ratingId/history'),
+        requestOptions:
+            RequestOptions(path: 'v1/users/2/ratings/ratingId/history'),
         statusCode: 200,
         data: {
           'data': [dummyHistoryJson]

@@ -63,8 +63,9 @@ class _GroupCard extends StatelessWidget {
         side: BorderSide(color: theme.dividerColor.withValues(alpha: 0.1)),
       ),
       child: ListTile(
-        // Open the host board directly — that is the working surface (Sprint 05).
-        onTap: () => context.push(GroupScoringRoutes.board(group.id)),
+        // Open the session hub (Sprint 06): roster, running scores, share &
+        // quick-add — the board is one tap further in.
+        onTap: () => context.push(GroupScoringRoutes.detail(group.id)),
         title: Text(
           group.title?.isNotEmpty == true ? group.title! : 'Latihan Bersama',
           style: const TextStyle(fontWeight: FontWeight.bold),

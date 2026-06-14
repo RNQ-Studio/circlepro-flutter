@@ -91,6 +91,16 @@ class HostBoardController extends _$HostBoardController {
     state = AsyncData(current.copyWith(participants: participants));
   }
 
+  /// Quick-add several guests at once (Sprint 06, task 6.1) — one batch, one
+  /// background sync. Blank names are ignored downstream.
+  Future<void> addGuests(List<String> names) async {
+    final current = state.value;
+    if (current == null) return;
+    final repo = ref.read(groupScoringRepositoryProvider);
+    final participants = await repo.addGuests(current.group, names);
+    state = AsyncData(current.copyWith(participants: participants));
+  }
+
   /// Persist one round across the given participants (keyed by session id),
   /// offline-first. Never throws on a dead network — the save lands locally.
   Future<void> saveEnd(

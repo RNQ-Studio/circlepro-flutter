@@ -98,6 +98,9 @@ class BoardParticipant extends Equatable {
     );
   }
 
+  /// Number of rounds this participant has actually shot (ends with arrows).
+  int get endsShot => ends.where((e) => e.arrows.isNotEmpty).length;
+
   @override
   List<Object?> get props => [
         id,
@@ -112,4 +115,14 @@ class BoardParticipant extends Equatable {
         completedAt,
         ends,
       ];
+}
+
+/// Whether [endNumber] is a *saved* round across the whole board — i.e. every
+/// participant has arrows recorded for it. A saved round is one the host can
+/// re-open and correct (Sprint 06, task 6.2); an unsaved one is the live
+/// frontier still being filled following the whistle. Returns false for an
+/// empty board.
+bool boardRoundIsSaved(List<BoardParticipant> participants, int endNumber) {
+  if (participants.isEmpty) return false;
+  return participants.every((p) => p.arrowsForEnd(endNumber).isNotEmpty);
 }

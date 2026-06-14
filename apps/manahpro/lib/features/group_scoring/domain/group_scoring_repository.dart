@@ -47,6 +47,12 @@ abstract interface class GroupScoringRepository {
   Future<List<BoardParticipant>> addGuest(
       ScoringGroupEntity group, String name);
 
+  /// Quick-add several guests at once (Sprint 06): all names land locally in one
+  /// batch, then mint on the server in a single background sync. Returns the
+  /// updated board. Offline-first — never fails on a dead network.
+  Future<List<BoardParticipant>> addGuests(
+      ScoringGroupEntity group, List<String> names);
+
   /// Save one end's arrows for several participants at once ("Simpan Rambahan"),
   /// keyed by participant session id. Persists locally first (never fails on a
   /// dead network), kicks a best-effort background sync, returns the updated

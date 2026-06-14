@@ -165,11 +165,12 @@ class GroupCreatedScreen extends ConsumerWidget {
             ),
             const SizedBox(height: ManahSpacing.lg),
 
-            // Straight into the host board to start recording (Sprint 05).
+            // Into the session hub (Sprint 06) — add players (rich empty-state)
+            // or open the board from there.
             FilledButton.icon(
-              onPressed: () => context.go(GroupScoringRoutes.board(g.id)),
-              icon: const Icon(Icons.sports_score),
-              label: const Text('Buka Papan Skor'),
+              onPressed: () => context.go(GroupScoringRoutes.detail(g.id)),
+              icon: const Icon(Icons.groups),
+              label: const Text('Kelola Peserta'),
             ),
             const SizedBox(height: ManahSpacing.sm),
 

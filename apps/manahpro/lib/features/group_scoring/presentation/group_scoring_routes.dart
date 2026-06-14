@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../domain/group_entities.dart';
 import 'screens/create_group_screen.dart';
 import 'screens/group_created_screen.dart';
+import 'screens/group_detail_screen.dart';
 import 'screens/group_list_screen.dart';
 import 'screens/host_board_screen.dart';
 
@@ -14,8 +15,16 @@ abstract final class GroupScoringRoutes {
 
   static String created(String groupId) => '/group-scoring/$groupId/created';
 
+  /// The session hub (Sprint 06) — roster, running scores, share & quick-add.
+  static String detail(String groupId) => '/group-scoring/$groupId';
+
   /// The host board (Sprint 05) — end-by-end scoring for the whole roster.
-  static String board(String groupId) => '/group-scoring/$groupId/board';
+  /// Optionally focus a single participant (Sprint 06, task 6.4: tap a roster
+  /// card → land on that archer).
+  static String board(String groupId, {String? participantId}) {
+    final base = '/group-scoring/$groupId/board';
+    return participantId == null ? base : '$base?participant=$participantId';
+  }
 }
 
 /// GoRoutes for the group scoring feature, spread into the app router.
@@ -41,7 +50,16 @@ final List<RouteBase> groupScoringRoutes = [
   ),
   GoRoute(
     path: '/group-scoring/:id/board',
+    builder: (context, state) => HostBoardScreen(
+      groupId: state.pathParameters['id']!,
+      focusParticipantId: state.uri.queryParameters['participant'],
+    ),
+  ),
+  // Keep the bare `/:id` (detail hub) **last** so the more specific
+  // `/created` and `/board` segments match first.
+  GoRoute(
+    path: '/group-scoring/:id',
     builder: (context, state) =>
-        HostBoardScreen(groupId: state.pathParameters['id']!),
+        GroupDetailScreen(groupId: state.pathParameters['id']!),
   ),
 ];

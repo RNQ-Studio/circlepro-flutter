@@ -8,6 +8,7 @@ import '../../../scoring/domain/scoring_entities.dart';
 import '../../../scoring/utils/ulid.dart';
 import '../../domain/board_participant_entity.dart';
 import '../group_scoring_providers.dart';
+import '../widgets/add_participant_sheet.dart';
 
 /// The **host board** (Sprint 05) — the hero flow: one screen, every
 /// participant visible, scored *end-by-end following the whistle*. Generalized
@@ -17,9 +18,17 @@ import '../group_scoring_providers.dart';
 /// id, not `user_id`), and every "Simpan Rambahan" lands offline-first in Drift
 /// then syncs in the background — never blocking on a dead signal (K2).
 class HostBoardScreen extends ConsumerStatefulWidget {
-  const HostBoardScreen({super.key, required this.groupId});
+  const HostBoardScreen({
+    super.key,
+    required this.groupId,
+    this.focusParticipantId,
+  });
 
   final String groupId;
+
+  /// When set (Sprint 06, task 6.4), the board opens focused on this
+  /// participant's tab — e.g. tapping a roster card on the detail screen.
+  final String? focusParticipantId;
 
   @override
   ConsumerState<HostBoardScreen> createState() => _HostBoardScreenState();
@@ -53,6 +62,18 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
   final Map<String, List<_ArrowInput>> _temp = {};
   int? _seededEnd;
   Set<String> _seededIds = const {};
+  bool _focusApplied = false;
+
+  /// Open the board on a specific participant once (task 6.4), then never
+  /// override the host's manual tab choice.
+  void _applyFocus(List<BoardParticipant> participants) {
+    if (_focusApplied) return;
+    _focusApplied = true;
+    final fid = widget.focusParticipantId;
+    if (fid == null) return;
+    final idx = participants.indexWhere((p) => p.id == fid);
+    if (idx >= 0) _activeIndex = idx;
+  }
 
   /// Rebuild the per-end input buffer from stored arrows whenever the end or
   /// the roster changes (so navigating to a past end shows what's there).
@@ -102,9 +123,9 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
             orElse: () => const SizedBox.shrink(),
           ),
           IconButton(
-            tooltip: 'Tambah pemanah',
+            tooltip: 'Tambah pemain',
             icon: const Icon(Icons.person_add_alt_1),
-            onPressed: async.hasValue ? _promptAddGuest : null,
+            onPressed: async.hasValue ? _promptAddPlayers : null,
           ),
         ],
       ),
@@ -115,24 +136,29 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
           final group = state.group;
           final participants = state.participants;
           if (participants.isEmpty) {
-            return _EmptyRoster(onAdd: _promptAddGuest);
+            return _EmptyRoster(onAdd: _promptAddPlayers);
           }
 
           _seedTemp(participants, group.arrowsPerEnd);
+          _applyFocus(participants);
           final active = participants[_activeIndex];
           final activeScores = _temp[active.id]!;
+          final savedEnds = {
+            for (var e = 1; e <= group.numEnds; e++)
+              if (boardRoundIsSaved(participants, e)) e,
+          };
+          final isCorrection = savedEnds.contains(_currentEnd);
 
           return Column(
             children: [
-              _EndSelector(
+              _EndStrip(
                 currentEnd: _currentEnd,
                 numEnds: group.numEnds,
-                onPrev: _currentEnd > 1
-                    ? () => setState(() => _currentEnd--)
-                    : null,
-                onNext: _currentEnd < group.numEnds
-                    ? () => setState(() => _currentEnd++)
-                    : null,
+                savedEnds: savedEnds,
+                onSelect: (e) => setState(() {
+                  _currentEnd = e;
+                  _activeArrowIndex = 0;
+                }),
               ),
               const Divider(height: 1),
               _ParticipantTabs(
@@ -151,6 +177,7 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      if (isCorrection) const _CorrectionBanner(),
                       Text(
                         '${active.labelOr('Saya')} — Rambahan $_currentEnd',
                         style: ManahTextStyles.h3.copyWith(fontSize: 16),
@@ -189,10 +216,12 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
                                 child: CircularProgressIndicator(
                                     strokeWidth: 2, color: Colors.white),
                               )
-                            : const Icon(Icons.save),
+                            : Icon(isCorrection ? Icons.edit : Icons.save),
                         label: Text(_isSaving
                             ? 'Menyimpan…'
-                            : 'Simpan Rambahan $_currentEnd'),
+                            : isCorrection
+                                ? 'Simpan Koreksi Rambahan $_currentEnd'
+                                : 'Simpan Rambahan $_currentEnd'),
                       ),
                     ],
                   ),
@@ -273,6 +302,12 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
       }
     }
 
+    // A correction re-saves an already-complete past round; the forward flow
+    // saves a fresh one. Capture this *before* the write so we know whether to
+    // auto-advance (task 6.2: stay put after a correction so the host can show
+    // the fixed number; only roll forward when following the whistle).
+    final wasCorrection = boardRoundIsSaved(participants, _currentEnd);
+
     setState(() => _isSaving = true);
 
     final arrowsByParticipantId = <String, List<ArrowScore>>{};
@@ -306,14 +341,17 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
             .value
             ?.pendingSyncCount ??
         0;
+    final noun = wasCorrection ? 'Koreksi Rambahan' : 'Rambahan';
     _snack(
       pending > 0
-          ? 'Rambahan $_currentEnd tersimpan (lokal) — akan tersinkron otomatis.'
-          : 'Rambahan $_currentEnd tersimpan & tersinkron.',
+          ? '$noun $_currentEnd tersimpan (lokal) — akan tersinkron otomatis.'
+          : '$noun $_currentEnd tersimpan & tersinkron.',
       pending > 0 ? ManahColors.brand : ManahColors.success,
     );
 
-    // Advance to the next round, ready for the next whistle.
+    // Only roll forward when following the whistle — never after a correction
+    // (stay on the fixed round so the host can show it's now right — task 6.2).
+    if (wasCorrection) return;
     final numEnds = ref
             .read(hostBoardControllerProvider(widget.groupId))
             .value
@@ -329,42 +367,21 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
     }
   }
 
-  // ─── Minimal guest add (Sprint 05) — full quick-add sheet is Sprint 06 ───
+  // ─── Quick-add roster (Sprint 06, task 6.1) — multi-name batch sheet ──────
 
-  Future<void> _promptAddGuest() async {
-    final controller = TextEditingController();
-    final name = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Tambah Pemanah'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-          decoration: const InputDecoration(
-            labelText: 'Nama pemanah',
-            hintText: 'mis. Andi',
-          ),
-          onSubmitted: (v) => Navigator.of(context).pop(v.trim()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Batal'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(controller.text.trim()),
-            child: const Text('Tambah'),
-          ),
-        ],
-      ),
-    );
-    controller.dispose();
-
-    if (name == null || name.isEmpty || !mounted) return;
+  Future<void> _promptAddPlayers() async {
+    final names = await showAddParticipantSheet(context);
+    if (names == null || names.isEmpty || !mounted) return;
     await ref
         .read(hostBoardControllerProvider(widget.groupId).notifier)
-        .addGuest(name);
+        .addGuests(names);
+    if (!mounted) return;
+    _snack(
+      names.length == 1
+          ? '${names.first} ditambahkan ke papan.'
+          : '${names.length} pemain ditambahkan ke papan.',
+      ManahColors.success,
+    );
   }
 
   void _snack(String message, Color color) {
@@ -375,38 +392,97 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
   }
 }
 
-class _EndSelector extends StatelessWidget {
-  const _EndSelector({
+/// A horizontally-scrollable strip of round chips (task 6.2). Tapping any chip
+/// jumps straight to that round — one tap to re-open a past round and fix a
+/// number in front of the archer. Saved rounds carry a ✓ so the host can see at
+/// a glance which rounds already exist and are safe to correct.
+class _EndStrip extends StatelessWidget {
+  const _EndStrip({
     required this.currentEnd,
     required this.numEnds,
-    required this.onPrev,
-    required this.onNext,
+    required this.savedEnds,
+    required this.onSelect,
   });
 
   final int currentEnd;
   final int numEnds;
-  final VoidCallback? onPrev;
-  final VoidCallback? onNext;
+  final Set<int> savedEnds;
+  final ValueChanged<int> onSelect;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SizedBox(
+      height: 56,
+      child: Row(
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(left: ManahSpacing.base, right: 4),
+            child: Icon(Icons.flag_outlined,
+                size: 18, color: ManahColors.mediumGrey),
+          ),
+          Expanded(
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(
+                  horizontal: ManahSpacing.sm, vertical: ManahSpacing.sm),
+              itemCount: numEnds,
+              separatorBuilder: (_, __) => const SizedBox(width: 6),
+              itemBuilder: (context, i) {
+                final end = i + 1;
+                final isActive = end == currentEnd;
+                final isSaved = savedEnds.contains(end);
+                return ChoiceChip(
+                  selected: isActive,
+                  selectedColor: ManahColors.brand,
+                  showCheckmark: false,
+                  onSelected: (_) => onSelect(end),
+                  avatar: isSaved
+                      ? Icon(Icons.check_circle,
+                          size: 16,
+                          color: isActive ? Colors.white : ManahColors.success)
+                      : null,
+                  label: Text(
+                    'R$end',
+                    style: ManahTextStyles.bodyM.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: isActive ? Colors.white : null,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Shown above the slots while viewing an already-saved round, so it is obvious
+/// the host is correcting history — not entering a new round (task 6.2).
+class _CorrectionBanner extends StatelessWidget {
+  const _CorrectionBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: ManahSpacing.sm),
       padding: const EdgeInsets.symmetric(
           horizontal: ManahSpacing.base, vertical: ManahSpacing.sm),
+      decoration: BoxDecoration(
+        color: ManahColors.amberDeep.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(ManahRadius.md),
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text('Rambahan (End)',
+          const Icon(Icons.edit_note, size: 20, color: ManahColors.amberDeep),
+          const SizedBox(width: ManahSpacing.sm),
+          Expanded(
+            child: Text(
+              'Mode koreksi — betulkan angka lalu simpan. Papan langsung benar.',
               style:
-                  ManahTextStyles.bodyM.copyWith(fontWeight: FontWeight.bold)),
-          Row(
-            children: [
-              IconButton(
-                  icon: const Icon(Icons.chevron_left), onPressed: onPrev),
-              Text('$currentEnd / $numEnds', style: ManahTextStyles.h3),
-              IconButton(
-                  icon: const Icon(Icons.chevron_right), onPressed: onNext),
-            ],
+                  ManahTextStyles.bodyS.copyWith(color: ManahColors.amberDeep),
+            ),
           ),
         ],
       ),

@@ -239,41 +239,65 @@ class GroupScoringLocalDataSource {
     ScoringGroupEntity group,
     String name,
   ) async {
-    final id = Ids.ulid();
-    final clientUuid = Ids.uuid();
+    final created = await createLocalGuests(group, [name]);
+    return created.single;
+  }
+
+  /// Create several guest participants at once (quick-add batch — Sprint 06).
+  /// All rows are written in one transaction so eleven names land together,
+  /// then minted on the server in a single sync (the group sync endpoint
+  /// resolves-or-creates each by `client_uuid`). Blank names are skipped.
+  Future<List<BoardParticipant>> createLocalGuests(
+    ScoringGroupEntity group,
+    List<String> names,
+  ) async {
+    final cleaned = [
+      for (final raw in names)
+        if (raw.trim().isNotEmpty) raw.trim(),
+    ];
+    if (cleaned.isEmpty) return const [];
+
+    final created = <BoardParticipant>[];
     await _db.transaction(() async {
-      await _db.into(_db.scoringSessionRows).insert(
-            _participantScoreCompanion(
-              group: group,
-              id: id,
-              clientUuid: clientUuid,
-              guestName: name,
-              bowClass: null,
-              status: ScoringSessionStatus.inProgress,
-              isSynced: false,
-              syncAction: 'create',
-            ),
-          );
-      await _db.into(_db.groupParticipantCacheRows).insertOnConflictUpdate(
-            GroupParticipantCacheRowsCompanion.insert(
-              id: id,
-              groupId: group.id,
-              guestName: Value(name),
-              isGuest: const Value(true),
-              displayName: Value(name),
-              cachedAt: DateTime.now(),
-            ),
-          );
+      for (final name in cleaned) {
+        final id = Ids.ulid();
+        final clientUuid = Ids.uuid();
+        await _db.into(_db.scoringSessionRows).insert(
+              _participantScoreCompanion(
+                group: group,
+                id: id,
+                clientUuid: clientUuid,
+                guestName: name,
+                bowClass: null,
+                status: ScoringSessionStatus.inProgress,
+                isSynced: false,
+                syncAction: 'create',
+              ),
+            );
+        await _db.into(_db.groupParticipantCacheRows).insertOnConflictUpdate(
+              GroupParticipantCacheRowsCompanion.insert(
+                id: id,
+                groupId: group.id,
+                guestName: Value(name),
+                isGuest: const Value(true),
+                displayName: Value(name),
+                cachedAt: DateTime.now(),
+              ),
+            );
+        created.add(
+          BoardParticipant(
+            id: id,
+            clientUuid: clientUuid,
+            guestName: name,
+            displayName: name,
+            status: ScoringSessionStatus.inProgress,
+            isSynced: false,
+            syncAction: 'create',
+          ),
+        );
+      }
     });
-    return BoardParticipant(
-      id: id,
-      clientUuid: clientUuid,
-      guestName: name,
-      displayName: name,
-      status: ScoringSessionStatus.inProgress,
-      isSynced: false,
-      syncAction: 'create',
-    );
+    return created;
   }
 
   /// Save one end's arrows for a participant, recompute cached aggregates, and

@@ -105,6 +105,16 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
   }
 
   @override
+  Future<List<BoardParticipant>> addGuests(
+    ScoringGroupEntity group,
+    List<String> names,
+  ) async {
+    await _local.createLocalGuests(group, names);
+    _backgroundSync(group);
+    return _local.getBoardParticipants(group.id);
+  }
+
+  @override
   Future<List<BoardParticipant>> saveEnd({
     required ScoringGroupEntity group,
     required int endNumber,
