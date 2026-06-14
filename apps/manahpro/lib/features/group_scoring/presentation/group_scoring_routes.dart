@@ -11,6 +11,7 @@ import 'screens/group_result_card_screen.dart';
 import 'screens/host_board_screen.dart';
 import 'screens/join_by_code_screen.dart';
 import 'screens/scan_qr_screen.dart';
+import 'screens/self_scoring_screen.dart';
 import 'screens/show_qr_screen.dart';
 
 /// Route paths for the Latihan Bersama (group scoring) feature. Declared
@@ -35,6 +36,10 @@ abstract final class GroupScoringRoutes {
 
   /// The session hub (Sprint 06) — roster, running scores, share & quick-add.
   static String detail(String groupId) => '/group-scoring/$groupId';
+
+  /// Self-scoring for a joined member (Sprint 10) — score my own row in the
+  /// group, offline-first, with past-round correction.
+  static String selfScoring(String groupId) => '/group-scoring/$groupId/me';
 
   /// The host board (Sprint 05) — end-by-end scoring for the whole roster.
   /// Optionally focus a single participant (Sprint 06, task 6.4: tap a roster
@@ -100,6 +105,11 @@ final List<RouteBase> groupScoringRoutes = [
       groupId: state.pathParameters['id']!,
       focusParticipantId: state.uri.queryParameters['participant'],
     ),
+  ),
+  GoRoute(
+    path: '/group-scoring/:id/me',
+    builder: (context, state) =>
+        SelfScoringScreen(groupId: state.pathParameters['id']!),
   ),
   GoRoute(
     path: '/group-scoring/:id/leaderboard',

@@ -86,6 +86,29 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
     return ScoringGroupEntity.fromJson(json);
   }
 
+  // ─── Self-join & self-scoring (Sprint 10) ───────────────────────────────
+
+  @override
+  Future<String> joinGroup(String groupId, {BowClass? bowClass}) async {
+    final body = <String, dynamic>{
+      if (bowClass != null) 'bow_class': bowClass.value,
+    };
+    final participant = await _remote.joinGroup(groupId, body);
+    final sessionId = participant['id'] as String;
+
+    // Refresh the group + roster into the cache so the joined member's own row
+    // is seeded locally and can be scored offline-first (loadBoard seeds it).
+    await getGroup(groupId);
+
+    return sessionId;
+  }
+
+  @override
+  Future<void> leaveGroup(String groupId, String sessionId) async {
+    await _remote.leaveGroup(groupId, sessionId);
+    await _local.removeLocalParticipant(groupId, sessionId);
+  }
+
   // ─── Host board (Sprint 05) ─────────────────────────────────────────────
 
   @override
@@ -119,6 +142,7 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
     required ScoringGroupEntity group,
     required int endNumber,
     required Map<String, List<ArrowScore>> arrowsByParticipantId,
+    bool sync = true,
   }) async {
     final current = await _local.getBoardParticipants(group.id);
     final byId = {for (final p in current) p.id: p};
@@ -134,7 +158,7 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
       );
     }
 
-    _backgroundSync(group);
+    if (sync) _backgroundSync(group);
     return _local.getBoardParticipants(group.id);
   }
 

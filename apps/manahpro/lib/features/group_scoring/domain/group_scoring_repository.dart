@@ -35,6 +35,18 @@ abstract interface class GroupScoringRepository {
   /// Preview a group by its join code before joining (online-only, no cache).
   Future<ScoringGroupEntity> lookup(String joinCode);
 
+  // ─── Self-join & self-scoring (Sprint 10) ───────────────────────────────
+
+  /// Self-join [groupId] as an owned `self` row (task 10.1). [bowClass] is
+  /// optional (K8). Online action: on success the group + roster is refreshed
+  /// into the local cache so the joined member can score their own row
+  /// offline-first. Returns the joined participant's session id.
+  Future<String> joinGroup(String groupId, {BowClass? bowClass});
+
+  /// Leave a group by removing one's own row (task 10.5). Deletes the row on the
+  /// server, then clears the local copy so it no longer shows on the board.
+  Future<void> leaveGroup(String groupId, String sessionId);
+
   // ─── Host board (Sprint 05) ─────────────────────────────────────────────
 
   /// Load the host board for [group]: seed local participant rows from the
@@ -56,11 +68,14 @@ abstract interface class GroupScoringRepository {
   /// Save one end's arrows for several participants at once ("Simpan Rambahan"),
   /// keyed by participant session id. Persists locally first (never fails on a
   /// dead network), kicks a best-effort background sync, returns the updated
-  /// board. [endNumber] is 1-based.
+  /// board. [endNumber] is 1-based. [sync] may be set false to persist
+  /// locally without kicking a push — used by self-scoring to save each arrow
+  /// crash-safe while only pushing once the end is complete (sparing the radio).
   Future<List<BoardParticipant>> saveEnd({
     required ScoringGroupEntity group,
     required int endNumber,
     required Map<String, List<ArrowScore>> arrowsByParticipantId,
+    bool sync = true,
   });
 
   /// Best-effort push of unsynced participant scores to the group sync endpoint.

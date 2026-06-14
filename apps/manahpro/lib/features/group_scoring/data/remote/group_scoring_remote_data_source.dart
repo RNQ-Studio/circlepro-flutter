@@ -37,6 +37,26 @@ class GroupScoringRemoteDataSource {
     return response.data['data'] as Map<String, dynamic>;
   }
 
+  /// Self-join a group as an owned `self` row (Sprint 10, task 10.1).
+  /// `POST /v1/scoring/groups/{group}/join`. Idempotent server-side (one owned
+  /// row per user), so a double-tap is safe. Returns the participant row.
+  Future<Map<String, dynamic>> joinGroup(
+    String groupId,
+    Map<String, dynamic> body,
+  ) async {
+    final response = await _dio.post(
+      'v1/scoring/groups/$groupId/join',
+      data: body,
+    );
+    return response.data['data'] as Map<String, dynamic>;
+  }
+
+  /// Leave a group by removing one's own participant row (Sprint 10, task 10.5).
+  /// `DELETE /v1/scoring/groups/{group}/participants/{session}`.
+  Future<void> leaveGroup(String groupId, String sessionId) async {
+    await _dio.delete('v1/scoring/groups/$groupId/participants/$sessionId');
+  }
+
   /// Idempotent batch sync of participant scores for the host board (Sprint 05).
   /// `POST /v1/scoring/groups/{group}/sync`. Each item is a pre-built payload
   /// (see [boardParticipantToSyncJson]); the server resolves-or-creates per row

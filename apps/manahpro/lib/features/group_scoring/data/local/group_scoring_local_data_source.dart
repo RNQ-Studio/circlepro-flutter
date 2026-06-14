@@ -371,6 +371,31 @@ class GroupScoringLocalDataSource {
     return all.where((p) => !p.isSynced).toList();
   }
 
+  /// Remove a participant's local row entirely — its score row + ends/arrows and
+  /// its roster cache entry (Sprint 10, task 10.5: leaving a session). Used after
+  /// the server delete succeeds so the row no longer lingers on the board.
+  Future<void> removeLocalParticipant(String groupId, String sessionId) async {
+    await _db.transaction(() async {
+      final ends = await (_db.select(_db.scoringEndRows)
+            ..where((t) => t.sessionId.equals(sessionId)))
+          .get();
+      for (final end in ends) {
+        await (_db.delete(_db.scoringArrowRows)
+              ..where((t) => t.endId.equals(end.id)))
+            .go();
+      }
+      await (_db.delete(_db.scoringEndRows)
+            ..where((t) => t.sessionId.equals(sessionId)))
+          .go();
+      await (_db.delete(_db.scoringSessionRows)
+            ..where((t) => t.id.equals(sessionId)))
+          .go();
+      await (_db.delete(_db.groupParticipantCacheRows)
+            ..where((t) => t.id.equals(sessionId) & t.groupId.equals(groupId)))
+          .go();
+    });
+  }
+
   /// Mark a participant row reconciled with the server after a successful sync.
   Future<void> markParticipantSynced(String id) async {
     await (_db.update(_db.scoringSessionRows)..where((t) => t.id.equals(id)))

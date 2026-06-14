@@ -120,10 +120,13 @@ class HostBoardController extends _$HostBoardController {
 
   /// Persist one round across the given participants (keyed by session id),
   /// offline-first. Never throws on a dead network — the save lands locally.
+  /// [sync] may be false to defer the background push (self-scoring saves each
+  /// arrow crash-safe and only pushes once the end is complete).
   Future<void> saveEnd(
     int endNumber,
-    Map<String, List<ArrowScore>> arrowsByParticipantId,
-  ) async {
+    Map<String, List<ArrowScore>> arrowsByParticipantId, {
+    bool sync = true,
+  }) async {
     final current = state.value;
     if (current == null) return;
     final repo = ref.read(groupScoringRepositoryProvider);
@@ -131,8 +134,21 @@ class HostBoardController extends _$HostBoardController {
       group: current.group,
       endNumber: endNumber,
       arrowsByParticipantId: arrowsByParticipantId,
+      sync: sync,
     );
     state = AsyncData(current.copyWith(participants: participants));
+  }
+
+  /// Leave the session by removing my own row (Sprint 10, task 10.5). Removes it
+  /// on the server and locally, then drops it from the board state.
+  Future<void> leave(String sessionId) async {
+    final current = state.value;
+    if (current == null) return;
+    final repo = ref.read(groupScoringRepositoryProvider);
+    await repo.leaveGroup(current.group.id, sessionId);
+    final participants = await repo.loadBoard(current.group);
+    state = AsyncData(current.copyWith(participants: participants));
+    ref.invalidate(groupsListProvider);
   }
 
   /// Manually retry syncing unsynced rows (e.g. when signal returns), then

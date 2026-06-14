@@ -1,3 +1,4 @@
+import 'package:features_shared/features_shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -31,6 +32,9 @@ class GroupDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(hostBoardControllerProvider(groupId));
+    final authState = ref.watch(authProvider);
+    final currentUserId =
+        authState is AuthAuthenticated ? authState.user.id : null;
 
     final group = async.value?.group;
     return Scaffold(
@@ -51,11 +55,30 @@ class GroupDetailScreen extends ConsumerWidget {
         data: (state) {
           final group = state.group;
           final participants = state.participants;
+          final isHost = currentUserId != null &&
+              currentUserId == group.hostUserId.toString();
+          // A joined (non-host) member gets a direct path back to their own
+          // scorecard (Sprint 10) — they score themselves, not the whole roster.
+          final selfRow = currentUserId == null
+              ? null
+              : participants
+                  .where((p) =>
+                      p.userId != null && p.userId.toString() == currentUserId)
+                  .firstOrNull;
           return ListView(
             padding: const EdgeInsets.all(ManahSpacing.base),
             children: [
               _FormatSummary(group: group),
               const SizedBox(height: ManahSpacing.lg),
+              if (!isHost && selfRow != null) ...[
+                FilledButton.icon(
+                  onPressed: () =>
+                      context.push(GroupScoringRoutes.selfScoring(group.id)),
+                  icon: const Icon(Icons.edit_note),
+                  label: const Text('Catat Skorku'),
+                ),
+                const SizedBox(height: ManahSpacing.lg),
+              ],
               if (participants.isEmpty)
                 _EmptyRosterCoaching(
                   onShare: () => shareGroupInvite(group),
