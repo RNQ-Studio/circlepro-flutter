@@ -120,6 +120,20 @@ Enum scoring_session_status {
   abandoned
 }
 
+// Latihan Bersama (group scoring) — Sprint 01
+Enum participation_status {
+  self        // gabung sendiri (self-join, Fase 1)
+  host_added  // ditambahkan host (quick-add tamu, Fase 0)
+  invited     // diundang
+}
+
+Enum claim_status {
+  pending
+  approved
+  rejected
+  cancelled
+}
+
 Enum sync_source {
   mobile
   web
@@ -553,9 +567,10 @@ Table scoring_session_groups {
   distance_m smallint [not null]
   environment archery_environment [not null, default: 'outdoor']
   target_face_cm smallint [note: 'mis. 122, 80, 40']
+  target_face_id char(26) [ref: > target_faces.id, note: 'master target-face opsional (format ronde grup)']
   num_ends smallint [not null]
   arrows_per_end smallint [not null, default: 6]
-  join_code varchar(12) [unique, not null, note: 'kode/QR untuk gabung sesi bersama']
+  join_code varchar(12) [unique, not null, note: 'kode/QR untuk gabung sesi bersama; digenerate anti-ambigu (tanpa O/0/I/1), Sprint 02']
   status scoring_session_status [not null, default: 'in_progress']
   started_at timestamptz [not null]
   completed_at timestamptz
@@ -574,17 +589,23 @@ Table scoring_session_groups {
 
 Table scoring_sessions {
   id char(26) [pk]
-  user_id char(26) [not null, ref: > users.id]
+  user_id char(26) [ref: > users.id, note: 'NULLABLE (Sprint 01): NULL = peserta TAMU (tanpa akun) di latihan bersama; sesi tamu dikecualikan dari statistik/PB']
+  guest_name varchar(100) [note: 'nama tampilan peserta tanpa akun (Latihan Bersama, Fase 0)']
+  added_by_user_id char(26) [ref: > users.id, note: 'pembuat baris peserta (host) — audit & otorisasi (Fase 0)']
   equipment_profile_id char(26) [ref: > equipment_profiles.id]
   organization_id char(26) [ref: > organizations.id, note: 'opsional: tag "latihan klub"']
   event_division_id char(26) [ref: > event_divisions.id, note: 'set bila sesi ini bagian dari event']
   scoring_session_group_id char(26) [ref: > scoring_session_groups.id, note: 'set bila sesi bagian dari scoring bersama (latihan grup/friendly)']
+  participation_status participation_status [note: 'cara peserta bergabung: self/host_added/invited (dipakai Fase 1/2)']
   title varchar(120)
-  bow_class bow_class [not null]
+  bow_class bow_class [note: 'NULLABLE (Sprint 02): tamu boleh ditambah hanya dengan nama (K8 — jangan blokir demi metadata); kelas busur diisi belakangan/saat klaim. Sesi solo tetap mengirim bow_class.']
   distance_category distance_category [not null]
-  distance_m smallint [not null]
+  distance_m smallint [not null, note: 'jarak per-peserta (tiap peserta = 1 sesi → boleh beda dari format grup, mis. Pak Budi 15m)']
   environment archery_environment [not null, default: 'outdoor']
-  target_face_cm smallint [note: 'mis. 122, 80, 40']
+  target_face_cm smallint [note: 'mis. 122, 80, 40 — target-face per-peserta']
+  target_face_id char(26) [ref: > target_faces.id, note: 'master target-face opsional']
+  target_butt smallint [note: 'nomor bantalan peserta (dipakai Fase 3)']
+  target_letter char(1) [note: 'posisi A/B/C/D di bantalan (dipakai Fase 3)']
   num_ends smallint [not null]
   arrows_per_end smallint [not null, default: 6]
   status scoring_session_status [not null, default: 'in_progress']
@@ -614,15 +635,17 @@ Table scoring_sessions {
     organization_id
     event_division_id
     scoring_session_group_id
+    (scoring_session_group_id, user_id) // roster latihan bersama (Sprint 01)
     status
   }
-  Note: 'Sesi scoring milik 1 user. Opsional tertaut event (event_division_id) atau scoring bersama (scoring_session_group_id). Inti North Star Metric.'
+  Note: 'Sesi scoring milik 1 user ATAU peserta TAMU (user_id NULL, Latihan Bersama). Opsional tertaut event (event_division_id) atau scoring bersama (scoring_session_group_id). Inti North Star Metric.'
 }
 
 Table scoring_ends {
   id char(26) [pk]
   scoring_session_id char(26) [not null, ref: > scoring_sessions.id]
   end_number smallint [not null]
+  is_sighter boolean [not null, default: false, note: 'babak percobaan/warmup — dikecualikan dari skor/PB/agregat (dipakai Fase 3)']
   end_total smallint [not null, default: 0]
   created_at timestamptz [not null]
   updated_at timestamptz [not null]
@@ -646,6 +669,28 @@ Table scoring_arrows {
 
   Indexes {
     (scoring_end_id, arrow_index) [unique]
+  }
+}
+
+// Antrian klaim host-approved (Latihan Bersama, Sprint 01; alur klaim Fase 2).
+// Seorang user ber-akun mengklaim slot peserta TAMU ("Ini Saya"); host
+// approve/reject. Saat approve → kepemilikan sesi ditransfer ke pengklaim.
+Table scoring_session_claims {
+  id char(26) [pk]
+  scoring_session_id char(26) [not null, ref: > scoring_sessions.id, note: 'slot tamu yang diklaim']
+  scoring_session_group_id char(26) [not null, ref: > scoring_session_groups.id, note: 'denormalisasi: inbox host per-grup tanpa join']
+  claimant_user_id char(26) [not null, ref: > users.id, note: 'user yang mengklaim']
+  status claim_status [not null, default: 'pending']
+  message text [note: 'pesan opsional dari pengklaim ke host']
+  resolved_by_user_id char(26) [ref: > users.id, note: 'host yang approve/reject']
+  resolved_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+
+  Indexes {
+    (scoring_session_id, claimant_user_id) [unique] // anti klaim-ganda
+    scoring_session_group_id
+    status
   }
 }
 

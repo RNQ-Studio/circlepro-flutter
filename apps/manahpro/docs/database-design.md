@@ -216,10 +216,13 @@ Hierarki granular: `scoring_sessions → scoring_ends → scoring_arrows`.
 | :--- | :--- |
 | `equipment_profiles` | Multi-busur per user (Recurve Latihan, Compound Lomba). `is_default` untuk quick-start. |
 | `scoring_session_groups` | **Scoring bersama** antar user (latihan grup/friendly). Host bikin sesi + `join_code`/QR; tiap peserta dapat baris `scoring_sessions` sendiri ber-`scoring_session_group_id` → statistik & PB pribadi tetap utuh, tapi berbagi **leaderboard sesi**. Lebih ringan dari event (tanpa registrasi/biaya/hasil resmi). `bow_class` tetap per-peserta; grup hanya menyepakati format ronde (jarak, jumlah end/panah). |
-| `scoring_sessions` | Inti aplikasi (**milik 1 user**). Punya **agregat ter-cache** (`total_score`, `x_count`, `avg_per_arrow`) untuk dashboard cepat **tanpa** agregasi ulang per panah. Punya field **sync offline** (`client_uuid`, `source`, `synced_at`) — lihat §8. Opsional menautkan ke event (`event_division_id`) atau scoring bersama (`scoring_session_group_id`). |
-| `scoring_ends` | Per-rambahan (end). `end_total` ter-cache. |
+| `scoring_sessions` | Inti aplikasi (**milik 1 user**, atau **peserta TAMU** dgn `user_id` NULL di Latihan Bersama — Sprint 01). Punya **agregat ter-cache** (`total_score`, `x_count`, `avg_per_arrow`) untuk dashboard cepat **tanpa** agregasi ulang per panah. Punya field **sync offline** (`client_uuid`, `source`, `synced_at`) — lihat §8. Opsional menautkan ke event (`event_division_id`) atau scoring bersama (`scoring_session_group_id`). Kolom Latihan Bersama: `guest_name`, `added_by_user_id`, `participation_status`, serta pipa Fase 3 `target_butt`/`target_letter`. |
+| `scoring_ends` | Per-rambahan (end). `end_total` ter-cache. `is_sighter` menandai babak percobaan/warmup yang dikecualikan dari skor/PB (pipa Fase 3, Sprint 01). |
 | `scoring_arrows` | Per-panah. `score_value` (0–10), `is_x` (inner-10), `is_miss`, dan `pos_x/pos_y` (koordinat target untuk _arrow pattern_ / fitur AI v2). |
+| `scoring_session_claims` | **Antrian klaim host-approved** (Latihan Bersama, Sprint 01; alur Fase 2). User ber-akun mengklaim slot peserta TAMU ("Ini Saya"); host approve/reject → kepemilikan sesi ditransfer ke pengklaim. Unik `(scoring_session_id, claimant_user_id)` mencegah klaim-ganda. |
 | `personal_bests` | PB per `(bow_class, distance_category, num_arrows)` agar format sebanding (mis. PB 72 panah). |
+
+> **Fondasi Latihan Bersama (Sprint 01).** Agar host bisa mencatat **pemain tanpa akun** (Pak Budi yang baru datang), `scoring_sessions.user_id` dibuat **NULLABLE**: `NULL` = peserta tamu. Konsekuensi yang dijaga ketat — karena seluruh query statistik/PB/dashboard memfilter `user_id`, sesi tamu **otomatis terkecuali** dari statistik & PB siapa pun (regresi nol untuk fitur existing). Peserta **bukan** tabel baru: tiap peserta tetap satu baris `scoring_sessions` (filosofi *binder*). "Mumpung ALTER", ditanam sekalian pipa fase berikutnya — jarak/target-face **per-peserta sudah disediakan oleh kolom `distance_m`/`target_face_cm` yang ada** (tiap peserta = satu sesi, jadi tak perlu kolom baru), ditambah `target_butt`/`target_letter` (bantalan, Fase 3) dan `scoring_ends.is_sighter` (warmup, Fase 3). Alur klaim tamu→user memakai tabel `scoring_session_claims` (Fase 2).
 
 ### Modul 2 — COMPETE (Events, Live Scoring, Certificates)
 
@@ -449,6 +452,7 @@ Index sudah didefinisikan di DBML. Yang paling kritikal:
 | `event_scorecards` | `idx_scorecard_standing` = `(event_round_id, total_score, tiebreak_key)` | Live standing per ronde dengan countback |
 | `scoring_sessions` | `(user_id, started_at)` | Timeline scoring user (dashboard) |
 | `scoring_sessions` | `(user_id, bow_class, distance_category)` | Analitik per busur/jarak |
+| `scoring_sessions` | `(scoring_session_group_id, user_id)` | Roster peserta Latihan Bersama (Sprint 01) |
 | `scoring_sessions` | `client_uuid` (unik) | Idempotent offline sync |
 | `events` | `(status, starts_at)` & `(province, city)` | Discovery event aktif per lokasi |
 | `products` | `(status, published_at)`, `(bow_class, condition)`, `(province, city)` | Browse marketplace |
