@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_text_styles.dart';
@@ -8,6 +9,7 @@ import '../../../scoring/domain/scoring_entities.dart';
 import '../../../scoring/utils/ulid.dart';
 import '../../domain/board_participant_entity.dart';
 import '../group_scoring_providers.dart';
+import '../group_scoring_routes.dart';
 import '../widgets/add_participant_sheet.dart';
 
 /// The **host board** (Sprint 05) — the hero flow: one screen, every
@@ -126,6 +128,14 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
             tooltip: 'Tambah pemain',
             icon: const Icon(Icons.person_add_alt_1),
             onPressed: async.hasValue ? _promptAddPlayers : null,
+          ),
+          IconButton(
+            tooltip: 'Papan peringkat',
+            icon: const Icon(Icons.leaderboard),
+            onPressed: async.hasValue
+                ? () =>
+                    context.push(GroupScoringRoutes.leaderboard(widget.groupId))
+                : null,
           ),
         ],
       ),

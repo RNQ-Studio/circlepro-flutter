@@ -4,7 +4,9 @@ import '../domain/group_entities.dart';
 import 'screens/create_group_screen.dart';
 import 'screens/group_created_screen.dart';
 import 'screens/group_detail_screen.dart';
+import 'screens/group_leaderboard_screen.dart';
 import 'screens/group_list_screen.dart';
+import 'screens/group_result_card_screen.dart';
 import 'screens/host_board_screen.dart';
 
 /// Route paths for the Latihan Bersama (group scoring) feature. Declared
@@ -25,6 +27,14 @@ abstract final class GroupScoringRoutes {
     final base = '/group-scoring/$groupId/board';
     return participantId == null ? base : '$base?participant=$participantId';
   }
+
+  /// The session leaderboard (Sprint 07) — fair ranking + drill-down + share.
+  static String leaderboard(String groupId) =>
+      '/group-scoring/$groupId/leaderboard';
+
+  /// The shareable, DNF-friendly result card preview (Sprint 07).
+  static String resultCard(String groupId) =>
+      '/group-scoring/$groupId/result-card';
 }
 
 /// GoRoutes for the group scoring feature, spread into the app router.
@@ -54,6 +64,16 @@ final List<RouteBase> groupScoringRoutes = [
       groupId: state.pathParameters['id']!,
       focusParticipantId: state.uri.queryParameters['participant'],
     ),
+  ),
+  GoRoute(
+    path: '/group-scoring/:id/leaderboard',
+    builder: (context, state) =>
+        GroupLeaderboardScreen(groupId: state.pathParameters['id']!),
+  ),
+  GoRoute(
+    path: '/group-scoring/:id/result-card',
+    builder: (context, state) =>
+        GroupResultCardScreen(groupId: state.pathParameters['id']!),
   ),
   // Keep the bare `/:id` (detail hub) **last** so the more specific
   // `/created` and `/board` segments match first.

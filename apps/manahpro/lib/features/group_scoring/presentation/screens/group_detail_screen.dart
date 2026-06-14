@@ -63,6 +63,8 @@ class GroupDetailScreen extends ConsumerWidget {
                   onAdd: () => _addPlayers(context, ref),
                   onOpenBoard: () =>
                       context.push(GroupScoringRoutes.board(group.id)),
+                  onOpenLeaderboard: () =>
+                      context.push(GroupScoringRoutes.leaderboard(group.id)),
                 ),
             ],
           );
@@ -281,6 +283,7 @@ class _RosterSection extends StatelessWidget {
     required this.onShare,
     required this.onAdd,
     required this.onOpenBoard,
+    required this.onOpenLeaderboard,
   });
 
   final ScoringGroupEntity group;
@@ -289,6 +292,7 @@ class _RosterSection extends StatelessWidget {
   final VoidCallback onShare;
   final VoidCallback onAdd;
   final VoidCallback onOpenBoard;
+  final VoidCallback onOpenLeaderboard;
 
   @override
   Widget build(BuildContext context) {
@@ -326,6 +330,12 @@ class _RosterSection extends StatelessWidget {
           onPressed: onShare,
           icon: const Icon(Icons.ios_share),
           label: const Text('Bagikan ajakan'),
+        ),
+        const SizedBox(height: ManahSpacing.sm),
+        OutlinedButton.icon(
+          onPressed: onOpenLeaderboard,
+          icon: const Icon(Icons.leaderboard),
+          label: const Text('Papan Peringkat & Kartu Hasil'),
         ),
         const SizedBox(height: ManahSpacing.sm),
         FilledButton.icon(
