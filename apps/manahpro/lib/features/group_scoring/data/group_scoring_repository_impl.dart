@@ -4,6 +4,7 @@ import '../../scoring/domain/scoring_entities.dart';
 import '../../scoring/domain/scoring_enums.dart';
 import '../domain/board_participant_entity.dart';
 import '../domain/group_entities.dart';
+import '../domain/group_live_leaderboard.dart';
 import '../domain/group_scoring_repository.dart';
 import 'board_participant_mapper.dart';
 import 'local/group_scoring_local_data_source.dart';
@@ -180,6 +181,17 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
       // for the next attempt; never surface a fatal error (K2 / task 5.5).
       log('GroupScoringRepository.syncBoard: deferred (will retry): $e');
     }
+  }
+
+  // ─── Live leaderboard polling (Sprint 11) ───────────────────────────────
+
+  @override
+  Future<LiveLeaderboardSnapshot> fetchLeaderboard(
+    String groupId, {
+    String? version,
+  }) async {
+    final body = await _remote.getLeaderboard(groupId, version: version);
+    return LiveLeaderboardSnapshot.fromEnvelope(body);
   }
 
   /// Fire-and-forget sync; swallow errors (the field has no signal half the

@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:features_shared/features_shared.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../shared/api/manah_api.dart';
 import '../../scoring/domain/scoring_entities.dart';
+import '../../scoring/domain/scoring_enums.dart';
 import '../../scoring/presentation/scoring_providers.dart';
 import '../data/group_scoring_repository_impl.dart';
 import '../data/local/group_scoring_local_data_source.dart';
@@ -11,6 +14,7 @@ import '../data/pending_join_store.dart';
 import '../data/remote/group_scoring_remote_data_source.dart';
 import '../domain/board_participant_entity.dart';
 import '../domain/group_entities.dart';
+import '../domain/group_live_leaderboard.dart';
 import '../domain/group_scoring_repository.dart';
 
 part 'group_scoring_providers.g.dart';
@@ -160,5 +164,229 @@ class HostBoardController extends _$HostBoardController {
     await repo.syncBoard(current.group);
     final participants = await repo.loadBoard(current.group);
     state = AsyncData(current.copyWith(participants: participants));
+  }
+}
+
+/// Immutable state of the live, server-polled leaderboard (Sprint 11). It holds
+/// the last fair board fetched from the backend (the multi-device truth) plus
+/// the polling cursor and freshness so the screen can show "diperbarui X dtk
+/// lalu" without over-promising a "live race" (task 11.4).
+class LiveLeaderboardState extends Equatable {
+  const LiveLeaderboardState({
+    this.entries = const [],
+    this.version,
+    this.groupStatus,
+    this.allCompleted = false,
+    this.isProvisional = false,
+    this.comparableEnds = 0,
+    this.targetEnds = 0,
+    this.updatedAt,
+    this.lastCheckedAt,
+    this.offline = false,
+  });
+
+  /// The server-computed ranked rows (already fair: total → X → 10, K4).
+  final List<LiveLeaderboardEntry> entries;
+
+  /// The polling cursor last seen; re-sent so an idle poll returns empty.
+  final String? version;
+
+  /// Group lifecycle — once it leaves in_progress the poll stops (task 11.2).
+  final ScoringSessionStatus? groupStatus;
+  final bool allCompleted;
+  final bool isProvisional;
+  final int comparableEnds;
+  final int targetEnds;
+
+  /// When the board last actually changed — drives the freshness indicator.
+  final DateTime? updatedAt;
+
+  /// When the server was last polled (changed or not).
+  final DateTime? lastCheckedAt;
+
+  /// The last poll failed; the screen shows the offline local board instead.
+  final bool offline;
+
+  /// Still live and worth polling.
+  bool get isLive => groupStatus == ScoringSessionStatus.inProgress;
+
+  /// The current frontier: the furthest round any racer has validated.
+  int get roundsShot =>
+      entries.fold(0, (m, e) => e.validatedEnds > m ? e.validatedEnds : m);
+
+  LiveLeaderboardState copyWith({
+    List<LiveLeaderboardEntry>? entries,
+    String? version,
+    ScoringSessionStatus? groupStatus,
+    bool? allCompleted,
+    bool? isProvisional,
+    int? comparableEnds,
+    int? targetEnds,
+    DateTime? updatedAt,
+    DateTime? lastCheckedAt,
+    bool? offline,
+  }) {
+    return LiveLeaderboardState(
+      entries: entries ?? this.entries,
+      version: version ?? this.version,
+      groupStatus: groupStatus ?? this.groupStatus,
+      allCompleted: allCompleted ?? this.allCompleted,
+      isProvisional: isProvisional ?? this.isProvisional,
+      comparableEnds: comparableEnds ?? this.comparableEnds,
+      targetEnds: targetEnds ?? this.targetEnds,
+      updatedAt: updatedAt ?? this.updatedAt,
+      lastCheckedAt: lastCheckedAt ?? this.lastCheckedAt,
+      offline: offline ?? this.offline,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        entries,
+        version,
+        groupStatus,
+        allCompleted,
+        isProvisional,
+        comparableEnds,
+        targetEnds,
+        updatedAt,
+        lastCheckedAt,
+        offline,
+      ];
+}
+
+/// Lifecycle-aware live leaderboard poller (Sprint 11, tasks 11.1/11.2).
+///
+/// It polls the server leaderboard every [pollInterval] **only while** the live
+/// screen is mounted (the provider auto-disposes on pop) and the session is
+/// `in_progress`; it stops the moment the group is finished/abandoned (even by
+/// another device) or the app is backgrounded (task 11.2). Each poll re-sends
+/// the last [version] so the server can short-circuit to an empty payload when
+/// nothing changed — no battery/bandwidth drain when idle (DoD). A failed poll
+/// is non-fatal: the screen falls back to the offline local board and the poll
+/// keeps retrying until signal returns.
+@riverpod
+class LiveLeaderboardController extends _$LiveLeaderboardController {
+  Timer? _timer;
+  bool _appPaused = false;
+
+  static const Duration pollInterval = Duration(seconds: 5);
+
+  @override
+  Future<LiveLeaderboardState> build(String groupId) async {
+    ref.onDispose(() {
+      _timer?.cancel();
+      _timer = null;
+    });
+
+    final repo = ref.read(groupScoringRepositoryProvider);
+    LiveLeaderboardState initial;
+    try {
+      final snapshot = await repo.fetchLeaderboard(groupId);
+      initial = _merge(const LiveLeaderboardState(), snapshot, DateTime.now());
+    } catch (_) {
+      // Offline at open: learn the lifecycle from cache so we still know whether
+      // to keep polling, and let the screen render the local board meanwhile.
+      final group = await repo.getGroup(groupId);
+      initial = LiveLeaderboardState(
+        groupStatus: group?.status,
+        offline: true,
+        lastCheckedAt: DateTime.now(),
+      );
+    }
+
+    _syncTimer(initial);
+    return initial;
+  }
+
+  /// Fold a fresh server snapshot into the running state. An `unchanged` reply
+  /// keeps the previous board (and its `updatedAt`) — only the freshness clock
+  /// moves, so an idle session never re-paints stale "updated now".
+  LiveLeaderboardState _merge(
+    LiveLeaderboardState previous,
+    LiveLeaderboardSnapshot snapshot,
+    DateTime now,
+  ) {
+    if (snapshot.unchanged) {
+      return previous.copyWith(
+        version: snapshot.version,
+        lastCheckedAt: now,
+        offline: false,
+      );
+    }
+    return LiveLeaderboardState(
+      entries: snapshot.entries,
+      version: snapshot.version,
+      groupStatus: snapshot.groupStatus ?? previous.groupStatus,
+      allCompleted: snapshot.allCompleted,
+      isProvisional: snapshot.isProvisional,
+      comparableEnds: snapshot.comparableEnds,
+      targetEnds: snapshot.targetEnds,
+      updatedAt: now,
+      lastCheckedAt: now,
+    );
+  }
+
+  /// Start the timer when live & foregrounded; cancel it otherwise.
+  void _syncTimer(LiveLeaderboardState state) {
+    if (state.isLive && !_appPaused) {
+      _timer ??= Timer.periodic(pollInterval, (_) => _poll());
+    } else {
+      _timer?.cancel();
+      _timer = null;
+    }
+  }
+
+  Future<void> _poll() async {
+    final current = state.value;
+    if (current == null) return;
+    if (!current.isLive) {
+      _syncTimer(current);
+      return;
+    }
+    final repo = ref.read(groupScoringRepositoryProvider);
+    try {
+      final snapshot =
+          await repo.fetchLeaderboard(groupId, version: current.version);
+      final next = _merge(current, snapshot, DateTime.now());
+      state = AsyncData(next);
+      _syncTimer(next);
+    } catch (_) {
+      // Flaky field signal — keep the last board, flag offline, retry next tick.
+      state = AsyncData(current.copyWith(
+        offline: true,
+        lastCheckedAt: DateTime.now(),
+      ));
+    }
+  }
+
+  /// Pull-to-refresh / manual retry: force a full fetch (no cursor) so the board
+  /// is guaranteed fresh, then resume the timer as appropriate.
+  Future<void> refreshNow() async {
+    final repo = ref.read(groupScoringRepositoryProvider);
+    final base = state.value ?? const LiveLeaderboardState();
+    try {
+      final snapshot = await repo.fetchLeaderboard(groupId);
+      final next = _merge(base, snapshot, DateTime.now());
+      state = AsyncData(next);
+      _syncTimer(next);
+    } catch (_) {
+      state = AsyncData(base.copyWith(
+        offline: true,
+        lastCheckedAt: DateTime.now(),
+      ));
+    }
+  }
+
+  /// Pause polling when the app is backgrounded, resume (and poll once) when it
+  /// returns — the screen wires this to an [AppLifecycleListener] (task 11.2).
+  void setAppActive(bool active) {
+    _appPaused = !active;
+    final current = state.value;
+    if (current == null) return;
+    _syncTimer(current);
+    if (active && current.isLive) {
+      unawaited(_poll());
+    }
   }
 }

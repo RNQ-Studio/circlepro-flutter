@@ -57,6 +57,22 @@ class GroupScoringRemoteDataSource {
     await _dio.delete('v1/scoring/groups/$groupId/participants/$sessionId');
   }
 
+  /// Live aggregate leaderboard for a group (Sprint 11, task 11.1).
+  /// `GET /v1/scoring/groups/{group}/leaderboard`. Passing the last-seen
+  /// [version] short-circuits to a cheap empty payload (`meta.unchanged = true`)
+  /// when nothing changed — the polling cursor that keeps the live screen frugal.
+  /// Returns the whole envelope so the caller can read both `data` and `meta`.
+  Future<Map<String, dynamic>> getLeaderboard(
+    String groupId, {
+    String? version,
+  }) async {
+    final response = await _dio.get(
+      'v1/scoring/groups/$groupId/leaderboard',
+      queryParameters: {if (version != null) 'version': version},
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
   /// Idempotent batch sync of participant scores for the host board (Sprint 05).
   /// `POST /v1/scoring/groups/{group}/sync`. Each item is a pre-built payload
   /// (see [boardParticipantToSyncJson]); the server resolves-or-creates per row

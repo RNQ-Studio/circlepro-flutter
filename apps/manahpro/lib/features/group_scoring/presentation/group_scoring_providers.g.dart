@@ -470,7 +470,7 @@ final class HostBoardControllerProvider
 }
 
 String _$hostBoardControllerHash() =>
-    r'ad031ec8fed314d25370f0f09077f7071ef2df18';
+    r'3c93ad6a98cd3a8d075936f4b142600398586fbc';
 
 /// Drives the host board (Sprint 05): loads the group + participants, adds
 /// guests, and saves each round offline-first (the repository persists locally
@@ -520,6 +520,167 @@ abstract class _$HostBoardController extends $AsyncNotifier<HostBoardState> {
     final element = ref.element as $ClassProviderElement<
         AnyNotifier<AsyncValue<HostBoardState>, HostBoardState>,
         AsyncValue<HostBoardState>,
+        Object?,
+        Object?>;
+    element.handleCreate(
+        ref,
+        () => build(
+              _$args,
+            ));
+  }
+}
+
+/// Lifecycle-aware live leaderboard poller (Sprint 11, tasks 11.1/11.2).
+///
+/// It polls the server leaderboard every [pollInterval] **only while** the live
+/// screen is mounted (the provider auto-disposes on pop) and the session is
+/// `in_progress`; it stops the moment the group is finished/abandoned (even by
+/// another device) or the app is backgrounded (task 11.2). Each poll re-sends
+/// the last [version] so the server can short-circuit to an empty payload when
+/// nothing changed — no battery/bandwidth drain when idle (DoD). A failed poll
+/// is non-fatal: the screen falls back to the offline local board and the poll
+/// keeps retrying until signal returns.
+
+@ProviderFor(LiveLeaderboardController)
+final liveLeaderboardControllerProvider = LiveLeaderboardControllerFamily._();
+
+/// Lifecycle-aware live leaderboard poller (Sprint 11, tasks 11.1/11.2).
+///
+/// It polls the server leaderboard every [pollInterval] **only while** the live
+/// screen is mounted (the provider auto-disposes on pop) and the session is
+/// `in_progress`; it stops the moment the group is finished/abandoned (even by
+/// another device) or the app is backgrounded (task 11.2). Each poll re-sends
+/// the last [version] so the server can short-circuit to an empty payload when
+/// nothing changed — no battery/bandwidth drain when idle (DoD). A failed poll
+/// is non-fatal: the screen falls back to the offline local board and the poll
+/// keeps retrying until signal returns.
+final class LiveLeaderboardControllerProvider extends $AsyncNotifierProvider<
+    LiveLeaderboardController, LiveLeaderboardState> {
+  /// Lifecycle-aware live leaderboard poller (Sprint 11, tasks 11.1/11.2).
+  ///
+  /// It polls the server leaderboard every [pollInterval] **only while** the live
+  /// screen is mounted (the provider auto-disposes on pop) and the session is
+  /// `in_progress`; it stops the moment the group is finished/abandoned (even by
+  /// another device) or the app is backgrounded (task 11.2). Each poll re-sends
+  /// the last [version] so the server can short-circuit to an empty payload when
+  /// nothing changed — no battery/bandwidth drain when idle (DoD). A failed poll
+  /// is non-fatal: the screen falls back to the offline local board and the poll
+  /// keeps retrying until signal returns.
+  LiveLeaderboardControllerProvider._(
+      {required LiveLeaderboardControllerFamily super.from,
+      required String super.argument})
+      : super(
+          retry: null,
+          name: r'liveLeaderboardControllerProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$liveLeaderboardControllerHash();
+
+  @override
+  String toString() {
+    return r'liveLeaderboardControllerProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  LiveLeaderboardController create() => LiveLeaderboardController();
+
+  @override
+  bool operator ==(Object other) {
+    return other is LiveLeaderboardControllerProvider &&
+        other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$liveLeaderboardControllerHash() =>
+    r'cc2b32e3ffe25b068f196d4d47ea241ae22a3496';
+
+/// Lifecycle-aware live leaderboard poller (Sprint 11, tasks 11.1/11.2).
+///
+/// It polls the server leaderboard every [pollInterval] **only while** the live
+/// screen is mounted (the provider auto-disposes on pop) and the session is
+/// `in_progress`; it stops the moment the group is finished/abandoned (even by
+/// another device) or the app is backgrounded (task 11.2). Each poll re-sends
+/// the last [version] so the server can short-circuit to an empty payload when
+/// nothing changed — no battery/bandwidth drain when idle (DoD). A failed poll
+/// is non-fatal: the screen falls back to the offline local board and the poll
+/// keeps retrying until signal returns.
+
+final class LiveLeaderboardControllerFamily extends $Family
+    with
+        $ClassFamilyOverride<
+            LiveLeaderboardController,
+            AsyncValue<LiveLeaderboardState>,
+            LiveLeaderboardState,
+            FutureOr<LiveLeaderboardState>,
+            String> {
+  LiveLeaderboardControllerFamily._()
+      : super(
+          retry: null,
+          name: r'liveLeaderboardControllerProvider',
+          dependencies: null,
+          $allTransitiveDependencies: null,
+          isAutoDispose: true,
+        );
+
+  /// Lifecycle-aware live leaderboard poller (Sprint 11, tasks 11.1/11.2).
+  ///
+  /// It polls the server leaderboard every [pollInterval] **only while** the live
+  /// screen is mounted (the provider auto-disposes on pop) and the session is
+  /// `in_progress`; it stops the moment the group is finished/abandoned (even by
+  /// another device) or the app is backgrounded (task 11.2). Each poll re-sends
+  /// the last [version] so the server can short-circuit to an empty payload when
+  /// nothing changed — no battery/bandwidth drain when idle (DoD). A failed poll
+  /// is non-fatal: the screen falls back to the offline local board and the poll
+  /// keeps retrying until signal returns.
+
+  LiveLeaderboardControllerProvider call(
+    String groupId,
+  ) =>
+      LiveLeaderboardControllerProvider._(argument: groupId, from: this);
+
+  @override
+  String toString() => r'liveLeaderboardControllerProvider';
+}
+
+/// Lifecycle-aware live leaderboard poller (Sprint 11, tasks 11.1/11.2).
+///
+/// It polls the server leaderboard every [pollInterval] **only while** the live
+/// screen is mounted (the provider auto-disposes on pop) and the session is
+/// `in_progress`; it stops the moment the group is finished/abandoned (even by
+/// another device) or the app is backgrounded (task 11.2). Each poll re-sends
+/// the last [version] so the server can short-circuit to an empty payload when
+/// nothing changed — no battery/bandwidth drain when idle (DoD). A failed poll
+/// is non-fatal: the screen falls back to the offline local board and the poll
+/// keeps retrying until signal returns.
+
+abstract class _$LiveLeaderboardController
+    extends $AsyncNotifier<LiveLeaderboardState> {
+  late final _$args = ref.$arg as String;
+  String get groupId => _$args;
+
+  FutureOr<LiveLeaderboardState> build(
+    String groupId,
+  );
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref
+        as $Ref<AsyncValue<LiveLeaderboardState>, LiveLeaderboardState>;
+    final element = ref.element as $ClassProviderElement<
+        AnyNotifier<AsyncValue<LiveLeaderboardState>, LiveLeaderboardState>,
+        AsyncValue<LiveLeaderboardState>,
         Object?,
         Object?>;
     element.handleCreate(

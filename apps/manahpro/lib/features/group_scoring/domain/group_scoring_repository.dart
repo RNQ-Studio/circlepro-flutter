@@ -2,6 +2,7 @@ import '../../scoring/domain/scoring_entities.dart';
 import '../../scoring/domain/scoring_enums.dart';
 import 'board_participant_entity.dart';
 import 'group_entities.dart';
+import 'group_live_leaderboard.dart';
 
 /// Contract for the Latihan Bersama (group scoring) repository — Phase 0.
 ///
@@ -81,4 +82,16 @@ abstract interface class GroupScoringRepository {
   /// Best-effort push of unsynced participant scores to the group sync endpoint.
   /// Forgives a dead/flaky connection (kept local for the next attempt).
   Future<void> syncBoard(ScoringGroupEntity group);
+
+  // ─── Live leaderboard polling (Sprint 11) ───────────────────────────────
+
+  /// Fetch the server-aggregated live leaderboard for [groupId] (task 11.1).
+  /// Passing the last-seen [version] lets the server reply "unchanged" with an
+  /// empty payload when nothing moved — the frugal polling cursor. Online-only:
+  /// this is the multi-device fair board, so a failure surfaces to the caller
+  /// (which falls back to the offline local board).
+  Future<LiveLeaderboardSnapshot> fetchLeaderboard(
+    String groupId, {
+    String? version,
+  });
 }

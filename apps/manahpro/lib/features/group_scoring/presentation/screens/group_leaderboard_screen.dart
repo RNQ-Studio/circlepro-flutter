@@ -6,31 +6,68 @@ import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_text_styles.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../../../scoring/domain/scoring_entities.dart';
+import '../../domain/board_participant_entity.dart';
 import '../../domain/group_entities.dart';
 import '../../domain/group_leaderboard.dart';
+import '../../domain/group_live_leaderboard.dart';
 import '../group_scoring_providers.dart';
 import '../group_scoring_routes.dart';
 
-/// Session leaderboard (Sprint 07) — the closing act of the walking skeleton.
+/// Session leaderboard — fair ranking + drill-down + share (Sprint 07), now
+/// **live across devices** (Sprint 11).
 ///
-/// It ranks the board *fairly* (task 7.1: total → X → 10, no time tiebreak —
-/// the whistle is honoured so the order is honest), labels the leader "memimpin
-/// sementara · N/M rambahan" while the session is still in flight, and lets the
-/// host tap any row to **drill into that archer's round-by-round detail** (task
-/// 7.3 — the quiet referee that ends "salah ketik" disputes).
+/// The visible board comes from the server's fair aggregate ([liveLeaderboard
+/// ControllerProvider]) so a score typed on another phone appears here within a
+/// few seconds (task 11.5). Polling is **frugal & lifecycle-aware**: it runs
+/// only while this screen is mounted and the session is `in_progress`, re-sends
+/// the last `version` so an idle poll costs an empty payload, and stops the
+/// moment the group is finished or the app is backgrounded (tasks 11.1/11.2).
 ///
-/// There is **no live polling** here (that is Phase 1, Sprint 11). It watches
-/// [hostBoardControllerProvider], so it refreshes the instant a round is saved,
-/// and offers **pull-to-refresh** to retry sync + reload from local storage
-/// (task 7.2). From here the host shares the DNF-friendly result card.
-class GroupLeaderboardScreen extends ConsumerWidget {
+/// We set honest expectations (task 11.4): the header says "papan diperbarui
+/// otomatis · diperbarui X dtk lalu" — never a "live race". When the network is
+/// down it falls back to the **offline local board** (Sprint 07) so the host
+/// recording end-by-end never loses their view. Tapping a row drills into that
+/// archer's round-by-round detail when this device holds it.
+class GroupLeaderboardScreen extends ConsumerStatefulWidget {
   const GroupLeaderboardScreen({super.key, required this.groupId});
 
   final String groupId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final async = ref.watch(hostBoardControllerProvider(groupId));
+  ConsumerState<GroupLeaderboardScreen> createState() =>
+      _GroupLeaderboardScreenState();
+}
+
+class _GroupLeaderboardScreenState
+    extends ConsumerState<GroupLeaderboardScreen> {
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pause the poll when the app leaves the foreground, resume on return — the
+    // field shouldn't drain a battery polling a screen no one is looking at.
+    _lifecycle = AppLifecycleListener(onStateChange: _onAppLifecycle);
+  }
+
+  void _onAppLifecycle(AppLifecycleState state) {
+    ref
+        .read(liveLeaderboardControllerProvider(widget.groupId).notifier)
+        .setAppActive(state == AppLifecycleState.resumed);
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final groupId = widget.groupId;
+    final localAsync = ref.watch(hostBoardControllerProvider(groupId));
+    // Keep the poller mounted (it auto-disposes when this screen pops).
+    final liveAsync = ref.watch(liveLeaderboardControllerProvider(groupId));
 
     return Scaffold(
       appBar: AppBar(
@@ -39,43 +76,59 @@ class GroupLeaderboardScreen extends ConsumerWidget {
           IconButton(
             tooltip: 'Bagikan kartu hasil',
             icon: const Icon(Icons.ios_share),
-            onPressed: async.hasValue
+            onPressed: localAsync.hasValue
                 ? () => context.push(GroupScoringRoutes.resultCard(groupId))
                 : null,
           ),
         ],
       ),
-      body: async.when(
+      body: localAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => _LeaderboardError(message: '$e'),
-        data: (state) {
-          final leaderboard = buildGroupLeaderboard(
-            participants: state.participants,
-            numEnds: state.group.numEnds,
-            arrowsPerEnd: state.group.arrowsPerEnd,
-          );
+        data: (local) {
+          final live = liveAsync.value;
+          // Prefer the server's fair multi-device board; fall back to the local
+          // board only when the server is unreachable and we have nothing yet.
+          final useLocal =
+              live == null || (live.offline && live.entries.isEmpty);
+          final board = useLocal
+              ? _RenderBoard.fromLocal(local)
+              : _RenderBoard.fromLive(live, local.group.numEnds);
+
+          final localById = {for (final p in local.participants) p.id: p};
+
           return RefreshIndicator(
-            onRefresh: () => ref
-                .read(hostBoardControllerProvider(groupId).notifier)
-                .syncNow(),
-            child: leaderboard.entries.isEmpty
+            onRefresh: () async {
+              // Pull-to-refresh retries both layers: push local rows, then force
+              // a fresh server board.
+              await ref
+                  .read(hostBoardControllerProvider(groupId).notifier)
+                  .syncNow();
+              await ref
+                  .read(liveLeaderboardControllerProvider(groupId).notifier)
+                  .refreshNow();
+            },
+            child: board.rows.isEmpty
                 ? const _EmptyLeaderboard()
                 : ListView(
                     padding: const EdgeInsets.all(ManahSpacing.base),
                     children: [
-                      _ProgressBanner(leaderboard: leaderboard),
+                      _FreshnessBar(board: board),
+                      const SizedBox(height: ManahSpacing.sm),
+                      _ProgressBanner(board: board),
                       const SizedBox(height: ManahSpacing.base),
-                      for (final entry in leaderboard.entries)
+                      for (final row in board.rows)
                         Padding(
                           padding:
                               const EdgeInsets.only(bottom: ManahSpacing.sm),
                           child: _LeaderboardRow(
-                            entry: entry,
-                            group: state.group,
+                            row: row,
+                            group: local.group,
                             onTap: () => _showDrillDown(
                               context,
-                              state.group,
-                              entry,
+                              local.group,
+                              row,
+                              localById[row.sessionId],
                             ),
                           ),
                         ),
@@ -97,29 +150,183 @@ class GroupLeaderboardScreen extends ConsumerWidget {
   void _showDrillDown(
     BuildContext context,
     ScoringGroupEntity group,
-    GroupLeaderboardEntry entry,
+    _BoardRow row,
+    BoardParticipant? local,
   ) {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
-      builder: (_) => _DrillDownSheet(group: group, entry: entry),
+      builder: (_) => local != null && local.ends.isNotEmpty
+          ? _DrillDownSheet(group: group, participant: local)
+          : _AggregateSheet(group: group, row: row),
     );
+  }
+}
+
+/// A render-ready leaderboard row, sourced from either the server's fair board
+/// (live, multi-device) or the offline local board — the screen renders both the
+/// same way so the view never depends on which layer answered.
+class _BoardRow {
+  const _BoardRow({
+    required this.rank,
+    required this.sessionId,
+    required this.name,
+    required this.isGuest,
+    required this.totalScore,
+    required this.xCount,
+    required this.tenCount,
+    required this.arrowsShot,
+    required this.endsShot,
+    required this.isComplete,
+    this.isProvisionalLeader = false,
+  });
+
+  final int rank;
+  final String sessionId;
+  final String name;
+  final bool isGuest;
+  final int totalScore;
+  final int xCount;
+  final int tenCount;
+  final int arrowsShot;
+  final int endsShot;
+  final bool isComplete;
+  final bool isProvisionalLeader;
+
+  bool get hasStarted => arrowsShot > 0;
+
+  factory _BoardRow.fromLive(LiveLeaderboardEntry e) => _BoardRow(
+        rank: e.rank,
+        sessionId: e.sessionId,
+        name: e.labelOr('Saya'),
+        isGuest: e.isGuest,
+        totalScore: e.totalScore,
+        xCount: e.xCount,
+        tenCount: e.tenCount,
+        arrowsShot: e.arrowsShot,
+        endsShot: e.validatedEnds,
+        isComplete: e.isComplete,
+        isProvisionalLeader: e.isProvisionalLeader,
+      );
+
+  factory _BoardRow.fromLocal(GroupLeaderboardEntry e) => _BoardRow(
+        rank: e.rank,
+        sessionId: e.participant.id,
+        name: e.participant.labelOr('Saya'),
+        isGuest: e.participant.isGuest,
+        totalScore: e.participant.totalScore,
+        xCount: e.participant.xCount,
+        tenCount: e.participant.tenCount,
+        arrowsShot: e.participant.arrowsShot,
+        endsShot: e.participant.endsShot,
+        isComplete: e.isComplete,
+      );
+}
+
+/// What the screen paints: ranked [rows] plus the whistle-aware progress and the
+/// freshness/offline flags. Built from the server live state or the local board.
+class _RenderBoard {
+  const _RenderBoard({
+    required this.rows,
+    required this.numEnds,
+    required this.roundsShot,
+    required this.allCompleted,
+    required this.offline,
+    this.updatedAt,
+  });
+
+  final List<_BoardRow> rows;
+  final int numEnds;
+  final int roundsShot;
+  final bool allCompleted;
+  final bool offline;
+  final DateTime? updatedAt;
+
+  bool get inProgress => !allCompleted;
+
+  String get leaderName => rows.isEmpty ? '—' : rows.first.name;
+
+  factory _RenderBoard.fromLive(LiveLeaderboardState live, int numEnds) {
+    return _RenderBoard(
+      rows: [for (final e in live.entries) _BoardRow.fromLive(e)],
+      numEnds: numEnds,
+      roundsShot: live.roundsShot,
+      allCompleted: live.allCompleted,
+      offline: live.offline,
+      updatedAt: live.updatedAt,
+    );
+  }
+
+  factory _RenderBoard.fromLocal(HostBoardState local) {
+    final lb = buildGroupLeaderboard(
+      participants: local.participants,
+      numEnds: local.group.numEnds,
+      arrowsPerEnd: local.group.arrowsPerEnd,
+    );
+    return _RenderBoard(
+      rows: [for (final e in lb.entries) _BoardRow.fromLocal(e)],
+      numEnds: lb.numEnds,
+      roundsShot: lb.roundsShot,
+      allCompleted: lb.isComplete,
+      offline: true,
+    );
+  }
+}
+
+/// Sets honest expectations (task 11.4): "papan diperbarui otomatis · diperbarui
+/// X dtk lalu" — deliberately not "live race". Falls back to an offline notice
+/// when we're showing the local board.
+class _FreshnessBar extends StatelessWidget {
+  const _FreshnessBar({required this.board});
+
+  final _RenderBoard board;
+
+  @override
+  Widget build(BuildContext context) {
+    final offline = board.offline;
+    final color = offline ? ManahColors.mediumGrey : ManahColors.brand;
+    final icon = offline ? Icons.cloud_off_outlined : Icons.autorenew;
+    final text = offline
+        ? 'Mode offline · menampilkan papan dari perangkat ini'
+        : board.updatedAt != null
+            ? 'Papan diperbarui otomatis · ${_ago(board.updatedAt!)}'
+            : 'Papan diperbarui otomatis';
+
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: color),
+        const SizedBox(width: ManahSpacing.xs),
+        Expanded(
+          child: Text(
+            text,
+            style: ManahTextStyles.bodyS.copyWith(color: color),
+          ),
+        ),
+      ],
+    );
+  }
+
+  static String _ago(DateTime t) {
+    final seconds = DateTime.now().difference(t).inSeconds;
+    if (seconds < 5) return 'baru saja';
+    if (seconds < 60) return '$seconds dtk lalu';
+    final minutes = seconds ~/ 60;
+    if (minutes < 60) return '$minutes mnt lalu';
+    return '${minutes ~/ 60} jam lalu';
   }
 }
 
 /// Whistle-aware progress banner (task 7.1) — "memimpin sementara · N/M
 /// rambahan" while in flight, or a calm "Sesi selesai" once everyone's done.
 class _ProgressBanner extends StatelessWidget {
-  const _ProgressBanner({required this.leaderboard});
+  const _ProgressBanner({required this.board});
 
-  final GroupLeaderboard leaderboard;
+  final _RenderBoard board;
 
   @override
   Widget build(BuildContext context) {
-    final inProgress = leaderboard.inProgress;
-    final leader = leaderboard.leader;
-    final leaderName = leader?.participant.labelOr('Saya') ?? '—';
+    final inProgress = board.inProgress;
     final color = inProgress ? ManahColors.amberDeep : ManahColors.success;
     return Container(
       padding: const EdgeInsets.all(ManahSpacing.base),
@@ -137,14 +344,14 @@ class _ProgressBanner extends StatelessWidget {
               children: [
                 Text(
                   inProgress
-                      ? '$leaderName memimpin sementara'
-                      : '$leaderName juara sesi',
+                      ? '${board.leaderName} memimpin sementara'
+                      : '${board.leaderName} juara sesi',
                   style: ManahTextStyles.bodyM
                       .copyWith(fontWeight: FontWeight.bold, color: color),
                 ),
                 Text(
                   inProgress
-                      ? '${leaderboard.roundsShot}/${leaderboard.numEnds} rambahan · papan masih berjalan'
+                      ? '${board.roundsShot}/${board.numEnds} rambahan · papan masih berjalan'
                       : 'Semua rambahan tuntas · urutan final',
                   style: ManahTextStyles.bodyS
                       .copyWith(color: ManahColors.mediumGrey),
@@ -160,33 +367,31 @@ class _ProgressBanner extends StatelessWidget {
 
 class _LeaderboardRow extends StatelessWidget {
   const _LeaderboardRow({
-    required this.entry,
+    required this.row,
     required this.group,
     required this.onTap,
   });
 
-  final GroupLeaderboardEntry entry;
+  final _BoardRow row;
   final ScoringGroupEntity group;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final p = entry.participant;
-    final name = p.labelOr('Saya');
-    final podium = entry.rank <= 3;
+    final podium = row.rank <= 3;
 
     // DNF-friendly score (task 7.4): never a shaming 0.
     final String scoreText;
     final String? statusText;
-    if (!entry.hasStarted) {
+    if (!row.hasStarted) {
       scoreText = '—';
       statusText = 'belum mulai';
-    } else if (!entry.isComplete) {
-      scoreText = '${p.totalScore}';
-      statusText = 'belum selesai · ${p.endsShot}/${group.numEnds}';
+    } else if (!row.isComplete) {
+      scoreText = '${row.totalScore}';
+      statusText = 'belum selesai · ${row.endsShot}/${group.numEnds}';
     } else {
-      scoreText = '${p.totalScore}';
+      scoreText = '${row.totalScore}';
       statusText = null;
     }
 
@@ -203,23 +408,25 @@ class _LeaderboardRow extends StatelessWidget {
       ),
       child: ListTile(
         onTap: onTap,
-        leading: _RankBadge(rank: entry.rank),
+        leading: _RankBadge(rank: row.rank),
         title: Row(
           children: [
             Flexible(
               child: Text(
-                name,
+                row.name,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
             const SizedBox(width: ManahSpacing.xs),
-            if (p.isGuest) _Tag(label: 'Tamu', color: ManahColors.mediumGrey),
+            if (row.isGuest) _Tag(label: 'Tamu', color: ManahColors.mediumGrey),
+            if (row.isProvisionalLeader)
+              _Tag(label: 'Memimpin', color: ManahColors.amberDeep),
           ],
         ),
         subtitle: Text(
           statusText ??
-              'X ${p.xCount} · 10 ${p.tenCount} · ${p.arrowsShot} panah',
+              'X ${row.xCount} · 10 ${row.tenCount} · ${row.arrowsShot} panah',
           style: ManahTextStyles.bodyS.copyWith(
             color: statusText != null
                 ? ManahColors.amberDeep
@@ -233,9 +440,8 @@ class _LeaderboardRow extends StatelessWidget {
             Text(
               scoreText,
               style: ManahTextStyles.h3.copyWith(
-                color: entry.hasStarted
-                    ? ManahColors.brand
-                    : ManahColors.mediumGrey,
+                color:
+                    row.hasStarted ? ManahColors.brand : ManahColors.mediumGrey,
               ),
             ),
             const Icon(Icons.chevron_right,
@@ -279,17 +485,20 @@ class _RankBadge extends StatelessWidget {
 }
 
 /// Round-by-round breakdown for one archer (task 7.3) — the transparency that
-/// settles "salah ketik" disputes on the spot.
+/// settles "salah ketik" disputes on the spot. Only available for rows this
+/// device recorded; a row scored on another phone shows the aggregate sheet.
 class _DrillDownSheet extends StatelessWidget {
-  const _DrillDownSheet({required this.group, required this.entry});
+  const _DrillDownSheet({required this.group, required this.participant});
 
   final ScoringGroupEntity group;
-  final GroupLeaderboardEntry entry;
+  final BoardParticipant participant;
 
   @override
   Widget build(BuildContext context) {
-    final p = entry.participant;
+    final p = participant;
     final name = p.labelOr('Saya');
+    final isComplete =
+        group.plannedArrows > 0 && p.arrowsShot >= group.plannedArrows;
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
@@ -300,12 +509,7 @@ class _DrillDownSheet extends StatelessWidget {
           children: [
             Row(
               children: [
-                Expanded(
-                  child: Text(
-                    name,
-                    style: ManahTextStyles.h3,
-                  ),
-                ),
+                Expanded(child: Text(name, style: ManahTextStyles.h3)),
                 Text(
                   'Total ${p.totalScore}',
                   style: ManahTextStyles.h3.copyWith(color: ManahColors.brand),
@@ -314,7 +518,7 @@ class _DrillDownSheet extends StatelessWidget {
             ),
             Text(
               'X ${p.xCount} · 10 ${p.tenCount} · ${p.arrowsShot} panah'
-              '${entry.isComplete ? '' : ' · belum selesai'}',
+              '${isComplete ? '' : ' · belum selesai'}',
               style:
                   ManahTextStyles.bodyS.copyWith(color: ManahColors.mediumGrey),
             ),
@@ -329,6 +533,69 @@ class _DrillDownSheet extends StatelessWidget {
                       arrows: p.arrowsForEnd(end),
                       arrowsPerEnd: group.arrowsPerEnd,
                     ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Aggregate-only sheet for a row whose per-arrow detail lives on another device
+/// (Sprint 11). We show the honest totals and say where the detail is, rather
+/// than pretend we have arrows we never recorded.
+class _AggregateSheet extends StatelessWidget {
+  const _AggregateSheet({required this.group, required this.row});
+
+  final ScoringGroupEntity group;
+  final _BoardRow row;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+            ManahSpacing.base, 0, ManahSpacing.base, ManahSpacing.base),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(child: Text(row.name, style: ManahTextStyles.h3)),
+                Text(
+                  row.hasStarted ? 'Total ${row.totalScore}' : '—',
+                  style: ManahTextStyles.h3.copyWith(color: ManahColors.brand),
+                ),
+              ],
+            ),
+            Text(
+              'X ${row.xCount} · 10 ${row.tenCount} · ${row.arrowsShot} panah'
+              '${row.isComplete ? '' : ' · ${row.endsShot}/${group.numEnds} rambahan'}',
+              style:
+                  ManahTextStyles.bodyS.copyWith(color: ManahColors.mediumGrey),
+            ),
+            const SizedBox(height: ManahSpacing.base),
+            Container(
+              padding: const EdgeInsets.all(ManahSpacing.base),
+              decoration: BoxDecoration(
+                color: ManahColors.mediumGrey.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(ManahRadius.md),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.devices_other,
+                      size: 18, color: ManahColors.mediumGrey),
+                  const SizedBox(width: ManahSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      'Rincian per-rambahan dicatat di perangkat pemanah ini.',
+                      style: ManahTextStyles.bodyS
+                          .copyWith(color: ManahColors.mediumGrey),
+                    ),
+                  ),
                 ],
               ),
             ),
