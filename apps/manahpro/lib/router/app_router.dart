@@ -10,6 +10,7 @@ import '../features/quotes/presentation/screens/quotes_screen.dart';
 
 import '../features/onboarding/presentation/manah_onboarding_screen.dart';
 import '../features/scoring/presentation/scoring_routes.dart';
+import '../features/group_scoring/presentation/group_scoring_routes.dart';
 import '../shared/routes/social_routes.dart';
 import '../features/events/presentation/events_routes.dart';
 import '../features/monetization/presentation/monetization_routes.dart';
@@ -52,6 +53,9 @@ final appRouter = GoRouter(
 
     // ManahPro — Scoring (Module 1 / TRACK)
     ...scoringRoutes,
+
+    // ManahPro — Latihan Bersama (group scoring) — Phase 0
+    ...groupScoringRoutes,
 
     // ManahPro — Phase 2: Identity & Social (profile, clubs, feed)
     ...socialRoutes,

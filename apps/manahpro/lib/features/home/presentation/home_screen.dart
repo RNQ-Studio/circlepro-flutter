@@ -8,6 +8,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import '../../../shared/routes/social_routes.dart';
 import '../../../theme/manah_colors.dart';
 import '../../scoring/presentation/scoring_routes.dart';
+import '../../group_scoring/presentation/group_scoring_routes.dart';
 import '../../events/presentation/events_routes.dart';
 import '../../gamification/presentation/gamification_providers.dart';
 import '../../stories/presentation/widgets/story_header_list_widget.dart';
@@ -76,6 +77,8 @@ class HomeScreen extends ConsumerWidget {
                     onMenuTap: (label) {
                       if (label == 'Scoring') {
                         context.push(ScoringRoutes.setup);
+                      } else if (label == 'Bersama') {
+                        context.push(GroupScoringRoutes.list);
                       } else if (label == 'Statistik') {
                         context.push(ScoringRoutes.dashboard);
                       } else if (label == 'Riwayat') {
@@ -310,6 +313,9 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
+// Intentionally retained: the "Mulai Latihan" quick card is hidden for now
+// (see the commented-out usage above) but kept for an upcoming home revamp.
+// ignore: unused_element
 class _QuickStartCard extends StatelessWidget {
   const _QuickStartCard();
 

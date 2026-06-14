@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:manahpro/features/monetization/data/monetization_repository.dart';
-import 'package:manahpro/features/monetization/domain/monetization_entities.dart';
 import 'package:manahpro/features/monetization/presentation/monetization_providers.dart';
 import 'package:manahpro/shared/api/manah_api.dart';
 

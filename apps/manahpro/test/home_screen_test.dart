@@ -91,10 +91,11 @@ void main() {
     expect(find.textContaining('3 Hari'), findsOneWidget);
   });
 
-  testWidgets('shows all 8 main menu items', (tester) async {
+  testWidgets('shows all 9 main menu items', (tester) async {
     await tester.pumpWidget(buildSubject());
     await tester.pumpAndSettle();
     expect(find.text('Scoring'), findsOneWidget);
+    expect(find.text('Bersama'), findsOneWidget);
     expect(find.text('Statistik'), findsOneWidget);
     expect(find.text('Riwayat'), findsOneWidget);
     expect(find.text('Klub'), findsOneWidget);

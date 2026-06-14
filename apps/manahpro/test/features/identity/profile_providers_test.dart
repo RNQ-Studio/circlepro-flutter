@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:manahpro/features/identity/data/profile_repository.dart';
-import 'package:manahpro/features/identity/domain/profile_entity.dart';
 import 'package:manahpro/features/identity/presentation/profile_providers.dart';
 import 'package:manahpro/shared/api/manah_api.dart';
 

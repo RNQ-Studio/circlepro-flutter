@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../gamification_providers.dart';
-import '../../domain/gamification_entities.dart';
 
 class AchievementDashboardWidget extends ConsumerWidget {
   const AchievementDashboardWidget({super.key});
@@ -55,7 +54,6 @@ class AchievementDashboardWidget extends ConsumerWidget {
         final currentXpInLevel = stats.xp % 500;
         final xpProgress = currentXpInLevel / 500.0;
         final nextLevelXp = (stats.level) * 500;
-        final currentLevelBaseXp = (stats.level - 1) * 500;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,

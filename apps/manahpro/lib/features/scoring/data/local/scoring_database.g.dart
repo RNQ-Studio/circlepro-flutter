@@ -183,6 +183,18 @@ class $ScoringSessionRowsTable extends ScoringSessionRows
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
       'updated_at', aliasedName, true,
       type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _scoringSessionGroupIdMeta =
+      const VerificationMeta('scoringSessionGroupId');
+  @override
+  late final GeneratedColumn<String> scoringSessionGroupId =
+      GeneratedColumn<String>('scoring_session_group_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _guestNameMeta =
+      const VerificationMeta('guestName');
+  @override
+  late final GeneratedColumn<String> guestName = GeneratedColumn<String>(
+      'guest_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -210,7 +222,9 @@ class $ScoringSessionRowsTable extends ScoringSessionRows
         source,
         isSynced,
         syncAction,
-        updatedAt
+        updatedAt,
+        scoringSessionGroupId,
+        guestName
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -365,6 +379,16 @@ class $ScoringSessionRowsTable extends ScoringSessionRows
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
+    if (data.containsKey('scoring_session_group_id')) {
+      context.handle(
+          _scoringSessionGroupIdMeta,
+          scoringSessionGroupId.isAcceptableOrUnknown(
+              data['scoring_session_group_id']!, _scoringSessionGroupIdMeta));
+    }
+    if (data.containsKey('guest_name')) {
+      context.handle(_guestNameMeta,
+          guestName.isAcceptableOrUnknown(data['guest_name']!, _guestNameMeta));
+    }
     return context;
   }
 
@@ -426,6 +450,11 @@ class $ScoringSessionRowsTable extends ScoringSessionRows
           .read(DriftSqlType.string, data['${effectivePrefix}sync_action']),
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at']),
+      scoringSessionGroupId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}scoring_session_group_id']),
+      guestName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}guest_name']),
     );
   }
 
@@ -465,6 +494,8 @@ class ScoringSessionRow extends DataClass
   /// Pending sync action: 'create' | 'update' | 'delete' | null.
   final String? syncAction;
   final DateTime? updatedAt;
+  final String? scoringSessionGroupId;
+  final String? guestName;
   const ScoringSessionRow(
       {required this.id,
       required this.clientUuid,
@@ -491,7 +522,9 @@ class ScoringSessionRow extends DataClass
       required this.source,
       required this.isSynced,
       this.syncAction,
-      this.updatedAt});
+      this.updatedAt,
+      this.scoringSessionGroupId,
+      this.guestName});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -536,6 +569,12 @@ class ScoringSessionRow extends DataClass
     }
     if (!nullToAbsent || updatedAt != null) {
       map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    if (!nullToAbsent || scoringSessionGroupId != null) {
+      map['scoring_session_group_id'] = Variable<String>(scoringSessionGroupId);
+    }
+    if (!nullToAbsent || guestName != null) {
+      map['guest_name'] = Variable<String>(guestName);
     }
     return map;
   }
@@ -582,6 +621,12 @@ class ScoringSessionRow extends DataClass
       updatedAt: updatedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(updatedAt),
+      scoringSessionGroupId: scoringSessionGroupId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(scoringSessionGroupId),
+      guestName: guestName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(guestName),
     );
   }
 
@@ -616,6 +661,9 @@ class ScoringSessionRow extends DataClass
       isSynced: serializer.fromJson<bool>(json['isSynced']),
       syncAction: serializer.fromJson<String?>(json['syncAction']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      scoringSessionGroupId:
+          serializer.fromJson<String?>(json['scoringSessionGroupId']),
+      guestName: serializer.fromJson<String?>(json['guestName']),
     );
   }
   @override
@@ -648,6 +696,9 @@ class ScoringSessionRow extends DataClass
       'isSynced': serializer.toJson<bool>(isSynced),
       'syncAction': serializer.toJson<String?>(syncAction),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'scoringSessionGroupId':
+          serializer.toJson<String?>(scoringSessionGroupId),
+      'guestName': serializer.toJson<String?>(guestName),
     };
   }
 
@@ -677,7 +728,9 @@ class ScoringSessionRow extends DataClass
           String? source,
           bool? isSynced,
           Value<String?> syncAction = const Value.absent(),
-          Value<DateTime?> updatedAt = const Value.absent()}) =>
+          Value<DateTime?> updatedAt = const Value.absent(),
+          Value<String?> scoringSessionGroupId = const Value.absent(),
+          Value<String?> guestName = const Value.absent()}) =>
       ScoringSessionRow(
         id: id ?? this.id,
         clientUuid: clientUuid ?? this.clientUuid,
@@ -709,6 +762,10 @@ class ScoringSessionRow extends DataClass
         isSynced: isSynced ?? this.isSynced,
         syncAction: syncAction.present ? syncAction.value : this.syncAction,
         updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+        scoringSessionGroupId: scoringSessionGroupId.present
+            ? scoringSessionGroupId.value
+            : this.scoringSessionGroupId,
+        guestName: guestName.present ? guestName.value : this.guestName,
       );
   ScoringSessionRow copyWithCompanion(ScoringSessionRowsCompanion data) {
     return ScoringSessionRow(
@@ -756,6 +813,10 @@ class ScoringSessionRow extends DataClass
       syncAction:
           data.syncAction.present ? data.syncAction.value : this.syncAction,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      scoringSessionGroupId: data.scoringSessionGroupId.present
+          ? data.scoringSessionGroupId.value
+          : this.scoringSessionGroupId,
+      guestName: data.guestName.present ? data.guestName.value : this.guestName,
     );
   }
 
@@ -787,7 +848,9 @@ class ScoringSessionRow extends DataClass
           ..write('source: $source, ')
           ..write('isSynced: $isSynced, ')
           ..write('syncAction: $syncAction, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('scoringSessionGroupId: $scoringSessionGroupId, ')
+          ..write('guestName: $guestName')
           ..write(')'))
         .toString();
   }
@@ -819,7 +882,9 @@ class ScoringSessionRow extends DataClass
         source,
         isSynced,
         syncAction,
-        updatedAt
+        updatedAt,
+        scoringSessionGroupId,
+        guestName
       ]);
   @override
   bool operator ==(Object other) =>
@@ -850,7 +915,9 @@ class ScoringSessionRow extends DataClass
           other.source == this.source &&
           other.isSynced == this.isSynced &&
           other.syncAction == this.syncAction &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.scoringSessionGroupId == this.scoringSessionGroupId &&
+          other.guestName == this.guestName);
 }
 
 class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
@@ -880,6 +947,8 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
   final Value<bool> isSynced;
   final Value<String?> syncAction;
   final Value<DateTime?> updatedAt;
+  final Value<String?> scoringSessionGroupId;
+  final Value<String?> guestName;
   final Value<int> rowid;
   const ScoringSessionRowsCompanion({
     this.id = const Value.absent(),
@@ -908,6 +977,8 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
     this.isSynced = const Value.absent(),
     this.syncAction = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.scoringSessionGroupId = const Value.absent(),
+    this.guestName = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ScoringSessionRowsCompanion.insert({
@@ -937,6 +1008,8 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
     this.isSynced = const Value.absent(),
     this.syncAction = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.scoringSessionGroupId = const Value.absent(),
+    this.guestName = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         clientUuid = Value(clientUuid),
@@ -973,6 +1046,8 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
     Expression<bool>? isSynced,
     Expression<String>? syncAction,
     Expression<DateTime>? updatedAt,
+    Expression<String>? scoringSessionGroupId,
+    Expression<String>? guestName,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1003,6 +1078,9 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
       if (isSynced != null) 'is_synced': isSynced,
       if (syncAction != null) 'sync_action': syncAction,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (scoringSessionGroupId != null)
+        'scoring_session_group_id': scoringSessionGroupId,
+      if (guestName != null) 'guest_name': guestName,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1034,6 +1112,8 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
       Value<bool>? isSynced,
       Value<String?>? syncAction,
       Value<DateTime?>? updatedAt,
+      Value<String?>? scoringSessionGroupId,
+      Value<String?>? guestName,
       Value<int>? rowid}) {
     return ScoringSessionRowsCompanion(
       id: id ?? this.id,
@@ -1062,6 +1142,9 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
       isSynced: isSynced ?? this.isSynced,
       syncAction: syncAction ?? this.syncAction,
       updatedAt: updatedAt ?? this.updatedAt,
+      scoringSessionGroupId:
+          scoringSessionGroupId ?? this.scoringSessionGroupId,
+      guestName: guestName ?? this.guestName,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1147,6 +1230,13 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (scoringSessionGroupId.present) {
+      map['scoring_session_group_id'] =
+          Variable<String>(scoringSessionGroupId.value);
+    }
+    if (guestName.present) {
+      map['guest_name'] = Variable<String>(guestName.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1182,6 +1272,8 @@ class ScoringSessionRowsCompanion extends UpdateCompanion<ScoringSessionRow> {
           ..write('isSynced: $isSynced, ')
           ..write('syncAction: $syncAction, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('scoringSessionGroupId: $scoringSessionGroupId, ')
+          ..write('guestName: $guestName, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2260,6 +2352,1551 @@ class TargetFaceRowsCompanion extends UpdateCompanion<TargetFaceRow> {
   }
 }
 
+class $GroupSessionRowsTable extends GroupSessionRows
+    with TableInfo<$GroupSessionRowsTable, GroupSessionRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $GroupSessionRowsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _joinCodeMeta =
+      const VerificationMeta('joinCode');
+  @override
+  late final GeneratedColumn<String> joinCode = GeneratedColumn<String>(
+      'join_code', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _titleMeta = const VerificationMeta('title');
+  @override
+  late final GeneratedColumn<String> title = GeneratedColumn<String>(
+      'title', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _hostUserIdMeta =
+      const VerificationMeta('hostUserId');
+  @override
+  late final GeneratedColumn<int> hostUserId = GeneratedColumn<int>(
+      'host_user_id', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _hostNameMeta =
+      const VerificationMeta('hostName');
+  @override
+  late final GeneratedColumn<String> hostName = GeneratedColumn<String>(
+      'host_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _distanceCategoryMeta =
+      const VerificationMeta('distanceCategory');
+  @override
+  late final GeneratedColumn<String> distanceCategory = GeneratedColumn<String>(
+      'distance_category', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _distanceMMeta =
+      const VerificationMeta('distanceM');
+  @override
+  late final GeneratedColumn<int> distanceM = GeneratedColumn<int>(
+      'distance_m', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _environmentMeta =
+      const VerificationMeta('environment');
+  @override
+  late final GeneratedColumn<String> environment = GeneratedColumn<String>(
+      'environment', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('outdoor'));
+  static const VerificationMeta _targetFaceCmMeta =
+      const VerificationMeta('targetFaceCm');
+  @override
+  late final GeneratedColumn<int> targetFaceCm = GeneratedColumn<int>(
+      'target_face_cm', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _targetFaceIdMeta =
+      const VerificationMeta('targetFaceId');
+  @override
+  late final GeneratedColumn<String> targetFaceId = GeneratedColumn<String>(
+      'target_face_id', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _numEndsMeta =
+      const VerificationMeta('numEnds');
+  @override
+  late final GeneratedColumn<int> numEnds = GeneratedColumn<int>(
+      'num_ends', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _arrowsPerEndMeta =
+      const VerificationMeta('arrowsPerEnd');
+  @override
+  late final GeneratedColumn<int> arrowsPerEnd = GeneratedColumn<int>(
+      'arrows_per_end', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+      'status', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('in_progress'));
+  static const VerificationMeta _participantCountMeta =
+      const VerificationMeta('participantCount');
+  @override
+  late final GeneratedColumn<int> participantCount = GeneratedColumn<int>(
+      'participant_count', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _startedAtMeta =
+      const VerificationMeta('startedAt');
+  @override
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+      'started_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _completedAtMeta =
+      const VerificationMeta('completedAt');
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+      'completed_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _cachedAtMeta =
+      const VerificationMeta('cachedAt');
+  @override
+  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
+      'cached_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        joinCode,
+        title,
+        hostUserId,
+        hostName,
+        distanceCategory,
+        distanceM,
+        environment,
+        targetFaceCm,
+        targetFaceId,
+        numEnds,
+        arrowsPerEnd,
+        status,
+        participantCount,
+        startedAt,
+        completedAt,
+        cachedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'group_session_rows';
+  @override
+  VerificationContext validateIntegrity(Insertable<GroupSessionRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('join_code')) {
+      context.handle(_joinCodeMeta,
+          joinCode.isAcceptableOrUnknown(data['join_code']!, _joinCodeMeta));
+    } else if (isInserting) {
+      context.missing(_joinCodeMeta);
+    }
+    if (data.containsKey('title')) {
+      context.handle(
+          _titleMeta, title.isAcceptableOrUnknown(data['title']!, _titleMeta));
+    }
+    if (data.containsKey('host_user_id')) {
+      context.handle(
+          _hostUserIdMeta,
+          hostUserId.isAcceptableOrUnknown(
+              data['host_user_id']!, _hostUserIdMeta));
+    } else if (isInserting) {
+      context.missing(_hostUserIdMeta);
+    }
+    if (data.containsKey('host_name')) {
+      context.handle(_hostNameMeta,
+          hostName.isAcceptableOrUnknown(data['host_name']!, _hostNameMeta));
+    }
+    if (data.containsKey('distance_category')) {
+      context.handle(
+          _distanceCategoryMeta,
+          distanceCategory.isAcceptableOrUnknown(
+              data['distance_category']!, _distanceCategoryMeta));
+    } else if (isInserting) {
+      context.missing(_distanceCategoryMeta);
+    }
+    if (data.containsKey('distance_m')) {
+      context.handle(_distanceMMeta,
+          distanceM.isAcceptableOrUnknown(data['distance_m']!, _distanceMMeta));
+    } else if (isInserting) {
+      context.missing(_distanceMMeta);
+    }
+    if (data.containsKey('environment')) {
+      context.handle(
+          _environmentMeta,
+          environment.isAcceptableOrUnknown(
+              data['environment']!, _environmentMeta));
+    }
+    if (data.containsKey('target_face_cm')) {
+      context.handle(
+          _targetFaceCmMeta,
+          targetFaceCm.isAcceptableOrUnknown(
+              data['target_face_cm']!, _targetFaceCmMeta));
+    }
+    if (data.containsKey('target_face_id')) {
+      context.handle(
+          _targetFaceIdMeta,
+          targetFaceId.isAcceptableOrUnknown(
+              data['target_face_id']!, _targetFaceIdMeta));
+    }
+    if (data.containsKey('num_ends')) {
+      context.handle(_numEndsMeta,
+          numEnds.isAcceptableOrUnknown(data['num_ends']!, _numEndsMeta));
+    } else if (isInserting) {
+      context.missing(_numEndsMeta);
+    }
+    if (data.containsKey('arrows_per_end')) {
+      context.handle(
+          _arrowsPerEndMeta,
+          arrowsPerEnd.isAcceptableOrUnknown(
+              data['arrows_per_end']!, _arrowsPerEndMeta));
+    } else if (isInserting) {
+      context.missing(_arrowsPerEndMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(_statusMeta,
+          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+    }
+    if (data.containsKey('participant_count')) {
+      context.handle(
+          _participantCountMeta,
+          participantCount.isAcceptableOrUnknown(
+              data['participant_count']!, _participantCountMeta));
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(_startedAtMeta,
+          startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta));
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('completed_at')) {
+      context.handle(
+          _completedAtMeta,
+          completedAt.isAcceptableOrUnknown(
+              data['completed_at']!, _completedAtMeta));
+    }
+    if (data.containsKey('cached_at')) {
+      context.handle(_cachedAtMeta,
+          cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta));
+    } else if (isInserting) {
+      context.missing(_cachedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  GroupSessionRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return GroupSessionRow(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      joinCode: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}join_code'])!,
+      title: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}title']),
+      hostUserId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}host_user_id'])!,
+      hostName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}host_name']),
+      distanceCategory: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}distance_category'])!,
+      distanceM: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}distance_m'])!,
+      environment: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}environment'])!,
+      targetFaceCm: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}target_face_cm']),
+      targetFaceId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}target_face_id']),
+      numEnds: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}num_ends'])!,
+      arrowsPerEnd: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}arrows_per_end'])!,
+      status: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
+      participantCount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}participant_count'])!,
+      startedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}started_at'])!,
+      completedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}completed_at']),
+      cachedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}cached_at'])!,
+    );
+  }
+
+  @override
+  $GroupSessionRowsTable createAlias(String alias) {
+    return $GroupSessionRowsTable(attachedDatabase, alias);
+  }
+}
+
+class GroupSessionRow extends DataClass implements Insertable<GroupSessionRow> {
+  final String id;
+  final String joinCode;
+  final String? title;
+  final int hostUserId;
+  final String? hostName;
+  final String distanceCategory;
+  final int distanceM;
+  final String environment;
+  final int? targetFaceCm;
+  final String? targetFaceId;
+  final int numEnds;
+  final int arrowsPerEnd;
+  final String status;
+  final int participantCount;
+  final DateTime startedAt;
+  final DateTime? completedAt;
+  final DateTime cachedAt;
+  const GroupSessionRow(
+      {required this.id,
+      required this.joinCode,
+      this.title,
+      required this.hostUserId,
+      this.hostName,
+      required this.distanceCategory,
+      required this.distanceM,
+      required this.environment,
+      this.targetFaceCm,
+      this.targetFaceId,
+      required this.numEnds,
+      required this.arrowsPerEnd,
+      required this.status,
+      required this.participantCount,
+      required this.startedAt,
+      this.completedAt,
+      required this.cachedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['join_code'] = Variable<String>(joinCode);
+    if (!nullToAbsent || title != null) {
+      map['title'] = Variable<String>(title);
+    }
+    map['host_user_id'] = Variable<int>(hostUserId);
+    if (!nullToAbsent || hostName != null) {
+      map['host_name'] = Variable<String>(hostName);
+    }
+    map['distance_category'] = Variable<String>(distanceCategory);
+    map['distance_m'] = Variable<int>(distanceM);
+    map['environment'] = Variable<String>(environment);
+    if (!nullToAbsent || targetFaceCm != null) {
+      map['target_face_cm'] = Variable<int>(targetFaceCm);
+    }
+    if (!nullToAbsent || targetFaceId != null) {
+      map['target_face_id'] = Variable<String>(targetFaceId);
+    }
+    map['num_ends'] = Variable<int>(numEnds);
+    map['arrows_per_end'] = Variable<int>(arrowsPerEnd);
+    map['status'] = Variable<String>(status);
+    map['participant_count'] = Variable<int>(participantCount);
+    map['started_at'] = Variable<DateTime>(startedAt);
+    if (!nullToAbsent || completedAt != null) {
+      map['completed_at'] = Variable<DateTime>(completedAt);
+    }
+    map['cached_at'] = Variable<DateTime>(cachedAt);
+    return map;
+  }
+
+  GroupSessionRowsCompanion toCompanion(bool nullToAbsent) {
+    return GroupSessionRowsCompanion(
+      id: Value(id),
+      joinCode: Value(joinCode),
+      title:
+          title == null && nullToAbsent ? const Value.absent() : Value(title),
+      hostUserId: Value(hostUserId),
+      hostName: hostName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(hostName),
+      distanceCategory: Value(distanceCategory),
+      distanceM: Value(distanceM),
+      environment: Value(environment),
+      targetFaceCm: targetFaceCm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetFaceCm),
+      targetFaceId: targetFaceId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetFaceId),
+      numEnds: Value(numEnds),
+      arrowsPerEnd: Value(arrowsPerEnd),
+      status: Value(status),
+      participantCount: Value(participantCount),
+      startedAt: Value(startedAt),
+      completedAt: completedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(completedAt),
+      cachedAt: Value(cachedAt),
+    );
+  }
+
+  factory GroupSessionRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return GroupSessionRow(
+      id: serializer.fromJson<String>(json['id']),
+      joinCode: serializer.fromJson<String>(json['joinCode']),
+      title: serializer.fromJson<String?>(json['title']),
+      hostUserId: serializer.fromJson<int>(json['hostUserId']),
+      hostName: serializer.fromJson<String?>(json['hostName']),
+      distanceCategory: serializer.fromJson<String>(json['distanceCategory']),
+      distanceM: serializer.fromJson<int>(json['distanceM']),
+      environment: serializer.fromJson<String>(json['environment']),
+      targetFaceCm: serializer.fromJson<int?>(json['targetFaceCm']),
+      targetFaceId: serializer.fromJson<String?>(json['targetFaceId']),
+      numEnds: serializer.fromJson<int>(json['numEnds']),
+      arrowsPerEnd: serializer.fromJson<int>(json['arrowsPerEnd']),
+      status: serializer.fromJson<String>(json['status']),
+      participantCount: serializer.fromJson<int>(json['participantCount']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      completedAt: serializer.fromJson<DateTime?>(json['completedAt']),
+      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'joinCode': serializer.toJson<String>(joinCode),
+      'title': serializer.toJson<String?>(title),
+      'hostUserId': serializer.toJson<int>(hostUserId),
+      'hostName': serializer.toJson<String?>(hostName),
+      'distanceCategory': serializer.toJson<String>(distanceCategory),
+      'distanceM': serializer.toJson<int>(distanceM),
+      'environment': serializer.toJson<String>(environment),
+      'targetFaceCm': serializer.toJson<int?>(targetFaceCm),
+      'targetFaceId': serializer.toJson<String?>(targetFaceId),
+      'numEnds': serializer.toJson<int>(numEnds),
+      'arrowsPerEnd': serializer.toJson<int>(arrowsPerEnd),
+      'status': serializer.toJson<String>(status),
+      'participantCount': serializer.toJson<int>(participantCount),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'completedAt': serializer.toJson<DateTime?>(completedAt),
+      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+    };
+  }
+
+  GroupSessionRow copyWith(
+          {String? id,
+          String? joinCode,
+          Value<String?> title = const Value.absent(),
+          int? hostUserId,
+          Value<String?> hostName = const Value.absent(),
+          String? distanceCategory,
+          int? distanceM,
+          String? environment,
+          Value<int?> targetFaceCm = const Value.absent(),
+          Value<String?> targetFaceId = const Value.absent(),
+          int? numEnds,
+          int? arrowsPerEnd,
+          String? status,
+          int? participantCount,
+          DateTime? startedAt,
+          Value<DateTime?> completedAt = const Value.absent(),
+          DateTime? cachedAt}) =>
+      GroupSessionRow(
+        id: id ?? this.id,
+        joinCode: joinCode ?? this.joinCode,
+        title: title.present ? title.value : this.title,
+        hostUserId: hostUserId ?? this.hostUserId,
+        hostName: hostName.present ? hostName.value : this.hostName,
+        distanceCategory: distanceCategory ?? this.distanceCategory,
+        distanceM: distanceM ?? this.distanceM,
+        environment: environment ?? this.environment,
+        targetFaceCm:
+            targetFaceCm.present ? targetFaceCm.value : this.targetFaceCm,
+        targetFaceId:
+            targetFaceId.present ? targetFaceId.value : this.targetFaceId,
+        numEnds: numEnds ?? this.numEnds,
+        arrowsPerEnd: arrowsPerEnd ?? this.arrowsPerEnd,
+        status: status ?? this.status,
+        participantCount: participantCount ?? this.participantCount,
+        startedAt: startedAt ?? this.startedAt,
+        completedAt: completedAt.present ? completedAt.value : this.completedAt,
+        cachedAt: cachedAt ?? this.cachedAt,
+      );
+  GroupSessionRow copyWithCompanion(GroupSessionRowsCompanion data) {
+    return GroupSessionRow(
+      id: data.id.present ? data.id.value : this.id,
+      joinCode: data.joinCode.present ? data.joinCode.value : this.joinCode,
+      title: data.title.present ? data.title.value : this.title,
+      hostUserId:
+          data.hostUserId.present ? data.hostUserId.value : this.hostUserId,
+      hostName: data.hostName.present ? data.hostName.value : this.hostName,
+      distanceCategory: data.distanceCategory.present
+          ? data.distanceCategory.value
+          : this.distanceCategory,
+      distanceM: data.distanceM.present ? data.distanceM.value : this.distanceM,
+      environment:
+          data.environment.present ? data.environment.value : this.environment,
+      targetFaceCm: data.targetFaceCm.present
+          ? data.targetFaceCm.value
+          : this.targetFaceCm,
+      targetFaceId: data.targetFaceId.present
+          ? data.targetFaceId.value
+          : this.targetFaceId,
+      numEnds: data.numEnds.present ? data.numEnds.value : this.numEnds,
+      arrowsPerEnd: data.arrowsPerEnd.present
+          ? data.arrowsPerEnd.value
+          : this.arrowsPerEnd,
+      status: data.status.present ? data.status.value : this.status,
+      participantCount: data.participantCount.present
+          ? data.participantCount.value
+          : this.participantCount,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      completedAt:
+          data.completedAt.present ? data.completedAt.value : this.completedAt,
+      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GroupSessionRow(')
+          ..write('id: $id, ')
+          ..write('joinCode: $joinCode, ')
+          ..write('title: $title, ')
+          ..write('hostUserId: $hostUserId, ')
+          ..write('hostName: $hostName, ')
+          ..write('distanceCategory: $distanceCategory, ')
+          ..write('distanceM: $distanceM, ')
+          ..write('environment: $environment, ')
+          ..write('targetFaceCm: $targetFaceCm, ')
+          ..write('targetFaceId: $targetFaceId, ')
+          ..write('numEnds: $numEnds, ')
+          ..write('arrowsPerEnd: $arrowsPerEnd, ')
+          ..write('status: $status, ')
+          ..write('participantCount: $participantCount, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('cachedAt: $cachedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      joinCode,
+      title,
+      hostUserId,
+      hostName,
+      distanceCategory,
+      distanceM,
+      environment,
+      targetFaceCm,
+      targetFaceId,
+      numEnds,
+      arrowsPerEnd,
+      status,
+      participantCount,
+      startedAt,
+      completedAt,
+      cachedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is GroupSessionRow &&
+          other.id == this.id &&
+          other.joinCode == this.joinCode &&
+          other.title == this.title &&
+          other.hostUserId == this.hostUserId &&
+          other.hostName == this.hostName &&
+          other.distanceCategory == this.distanceCategory &&
+          other.distanceM == this.distanceM &&
+          other.environment == this.environment &&
+          other.targetFaceCm == this.targetFaceCm &&
+          other.targetFaceId == this.targetFaceId &&
+          other.numEnds == this.numEnds &&
+          other.arrowsPerEnd == this.arrowsPerEnd &&
+          other.status == this.status &&
+          other.participantCount == this.participantCount &&
+          other.startedAt == this.startedAt &&
+          other.completedAt == this.completedAt &&
+          other.cachedAt == this.cachedAt);
+}
+
+class GroupSessionRowsCompanion extends UpdateCompanion<GroupSessionRow> {
+  final Value<String> id;
+  final Value<String> joinCode;
+  final Value<String?> title;
+  final Value<int> hostUserId;
+  final Value<String?> hostName;
+  final Value<String> distanceCategory;
+  final Value<int> distanceM;
+  final Value<String> environment;
+  final Value<int?> targetFaceCm;
+  final Value<String?> targetFaceId;
+  final Value<int> numEnds;
+  final Value<int> arrowsPerEnd;
+  final Value<String> status;
+  final Value<int> participantCount;
+  final Value<DateTime> startedAt;
+  final Value<DateTime?> completedAt;
+  final Value<DateTime> cachedAt;
+  final Value<int> rowid;
+  const GroupSessionRowsCompanion({
+    this.id = const Value.absent(),
+    this.joinCode = const Value.absent(),
+    this.title = const Value.absent(),
+    this.hostUserId = const Value.absent(),
+    this.hostName = const Value.absent(),
+    this.distanceCategory = const Value.absent(),
+    this.distanceM = const Value.absent(),
+    this.environment = const Value.absent(),
+    this.targetFaceCm = const Value.absent(),
+    this.targetFaceId = const Value.absent(),
+    this.numEnds = const Value.absent(),
+    this.arrowsPerEnd = const Value.absent(),
+    this.status = const Value.absent(),
+    this.participantCount = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.completedAt = const Value.absent(),
+    this.cachedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  GroupSessionRowsCompanion.insert({
+    required String id,
+    required String joinCode,
+    this.title = const Value.absent(),
+    required int hostUserId,
+    this.hostName = const Value.absent(),
+    required String distanceCategory,
+    required int distanceM,
+    this.environment = const Value.absent(),
+    this.targetFaceCm = const Value.absent(),
+    this.targetFaceId = const Value.absent(),
+    required int numEnds,
+    required int arrowsPerEnd,
+    this.status = const Value.absent(),
+    this.participantCount = const Value.absent(),
+    required DateTime startedAt,
+    this.completedAt = const Value.absent(),
+    required DateTime cachedAt,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        joinCode = Value(joinCode),
+        hostUserId = Value(hostUserId),
+        distanceCategory = Value(distanceCategory),
+        distanceM = Value(distanceM),
+        numEnds = Value(numEnds),
+        arrowsPerEnd = Value(arrowsPerEnd),
+        startedAt = Value(startedAt),
+        cachedAt = Value(cachedAt);
+  static Insertable<GroupSessionRow> custom({
+    Expression<String>? id,
+    Expression<String>? joinCode,
+    Expression<String>? title,
+    Expression<int>? hostUserId,
+    Expression<String>? hostName,
+    Expression<String>? distanceCategory,
+    Expression<int>? distanceM,
+    Expression<String>? environment,
+    Expression<int>? targetFaceCm,
+    Expression<String>? targetFaceId,
+    Expression<int>? numEnds,
+    Expression<int>? arrowsPerEnd,
+    Expression<String>? status,
+    Expression<int>? participantCount,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? completedAt,
+    Expression<DateTime>? cachedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (joinCode != null) 'join_code': joinCode,
+      if (title != null) 'title': title,
+      if (hostUserId != null) 'host_user_id': hostUserId,
+      if (hostName != null) 'host_name': hostName,
+      if (distanceCategory != null) 'distance_category': distanceCategory,
+      if (distanceM != null) 'distance_m': distanceM,
+      if (environment != null) 'environment': environment,
+      if (targetFaceCm != null) 'target_face_cm': targetFaceCm,
+      if (targetFaceId != null) 'target_face_id': targetFaceId,
+      if (numEnds != null) 'num_ends': numEnds,
+      if (arrowsPerEnd != null) 'arrows_per_end': arrowsPerEnd,
+      if (status != null) 'status': status,
+      if (participantCount != null) 'participant_count': participantCount,
+      if (startedAt != null) 'started_at': startedAt,
+      if (completedAt != null) 'completed_at': completedAt,
+      if (cachedAt != null) 'cached_at': cachedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  GroupSessionRowsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? joinCode,
+      Value<String?>? title,
+      Value<int>? hostUserId,
+      Value<String?>? hostName,
+      Value<String>? distanceCategory,
+      Value<int>? distanceM,
+      Value<String>? environment,
+      Value<int?>? targetFaceCm,
+      Value<String?>? targetFaceId,
+      Value<int>? numEnds,
+      Value<int>? arrowsPerEnd,
+      Value<String>? status,
+      Value<int>? participantCount,
+      Value<DateTime>? startedAt,
+      Value<DateTime?>? completedAt,
+      Value<DateTime>? cachedAt,
+      Value<int>? rowid}) {
+    return GroupSessionRowsCompanion(
+      id: id ?? this.id,
+      joinCode: joinCode ?? this.joinCode,
+      title: title ?? this.title,
+      hostUserId: hostUserId ?? this.hostUserId,
+      hostName: hostName ?? this.hostName,
+      distanceCategory: distanceCategory ?? this.distanceCategory,
+      distanceM: distanceM ?? this.distanceM,
+      environment: environment ?? this.environment,
+      targetFaceCm: targetFaceCm ?? this.targetFaceCm,
+      targetFaceId: targetFaceId ?? this.targetFaceId,
+      numEnds: numEnds ?? this.numEnds,
+      arrowsPerEnd: arrowsPerEnd ?? this.arrowsPerEnd,
+      status: status ?? this.status,
+      participantCount: participantCount ?? this.participantCount,
+      startedAt: startedAt ?? this.startedAt,
+      completedAt: completedAt ?? this.completedAt,
+      cachedAt: cachedAt ?? this.cachedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (joinCode.present) {
+      map['join_code'] = Variable<String>(joinCode.value);
+    }
+    if (title.present) {
+      map['title'] = Variable<String>(title.value);
+    }
+    if (hostUserId.present) {
+      map['host_user_id'] = Variable<int>(hostUserId.value);
+    }
+    if (hostName.present) {
+      map['host_name'] = Variable<String>(hostName.value);
+    }
+    if (distanceCategory.present) {
+      map['distance_category'] = Variable<String>(distanceCategory.value);
+    }
+    if (distanceM.present) {
+      map['distance_m'] = Variable<int>(distanceM.value);
+    }
+    if (environment.present) {
+      map['environment'] = Variable<String>(environment.value);
+    }
+    if (targetFaceCm.present) {
+      map['target_face_cm'] = Variable<int>(targetFaceCm.value);
+    }
+    if (targetFaceId.present) {
+      map['target_face_id'] = Variable<String>(targetFaceId.value);
+    }
+    if (numEnds.present) {
+      map['num_ends'] = Variable<int>(numEnds.value);
+    }
+    if (arrowsPerEnd.present) {
+      map['arrows_per_end'] = Variable<int>(arrowsPerEnd.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (participantCount.present) {
+      map['participant_count'] = Variable<int>(participantCount.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (completedAt.present) {
+      map['completed_at'] = Variable<DateTime>(completedAt.value);
+    }
+    if (cachedAt.present) {
+      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GroupSessionRowsCompanion(')
+          ..write('id: $id, ')
+          ..write('joinCode: $joinCode, ')
+          ..write('title: $title, ')
+          ..write('hostUserId: $hostUserId, ')
+          ..write('hostName: $hostName, ')
+          ..write('distanceCategory: $distanceCategory, ')
+          ..write('distanceM: $distanceM, ')
+          ..write('environment: $environment, ')
+          ..write('targetFaceCm: $targetFaceCm, ')
+          ..write('targetFaceId: $targetFaceId, ')
+          ..write('numEnds: $numEnds, ')
+          ..write('arrowsPerEnd: $arrowsPerEnd, ')
+          ..write('status: $status, ')
+          ..write('participantCount: $participantCount, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('completedAt: $completedAt, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $GroupParticipantCacheRowsTable extends GroupParticipantCacheRows
+    with TableInfo<$GroupParticipantCacheRowsTable, GroupParticipantCacheRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $GroupParticipantCacheRowsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+      'id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _groupIdMeta =
+      const VerificationMeta('groupId');
+  @override
+  late final GeneratedColumn<String> groupId = GeneratedColumn<String>(
+      'group_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<int> userId = GeneratedColumn<int>(
+      'user_id', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _displayNameMeta =
+      const VerificationMeta('displayName');
+  @override
+  late final GeneratedColumn<String> displayName = GeneratedColumn<String>(
+      'display_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _guestNameMeta =
+      const VerificationMeta('guestName');
+  @override
+  late final GeneratedColumn<String> guestName = GeneratedColumn<String>(
+      'guest_name', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _isGuestMeta =
+      const VerificationMeta('isGuest');
+  @override
+  late final GeneratedColumn<bool> isGuest = GeneratedColumn<bool>(
+      'is_guest', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_guest" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _bowClassMeta =
+      const VerificationMeta('bowClass');
+  @override
+  late final GeneratedColumn<String> bowClass = GeneratedColumn<String>(
+      'bow_class', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _distanceMMeta =
+      const VerificationMeta('distanceM');
+  @override
+  late final GeneratedColumn<int> distanceM = GeneratedColumn<int>(
+      'distance_m', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _totalScoreMeta =
+      const VerificationMeta('totalScore');
+  @override
+  late final GeneratedColumn<int> totalScore = GeneratedColumn<int>(
+      'total_score', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _maxPossibleScoreMeta =
+      const VerificationMeta('maxPossibleScore');
+  @override
+  late final GeneratedColumn<int> maxPossibleScore = GeneratedColumn<int>(
+      'max_possible_score', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _arrowsShotMeta =
+      const VerificationMeta('arrowsShot');
+  @override
+  late final GeneratedColumn<int> arrowsShot = GeneratedColumn<int>(
+      'arrows_shot', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _xCountMeta = const VerificationMeta('xCount');
+  @override
+  late final GeneratedColumn<int> xCount = GeneratedColumn<int>(
+      'x_count', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _tenCountMeta =
+      const VerificationMeta('tenCount');
+  @override
+  late final GeneratedColumn<int> tenCount = GeneratedColumn<int>(
+      'ten_count', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+      'status', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _cachedAtMeta =
+      const VerificationMeta('cachedAt');
+  @override
+  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
+      'cached_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        groupId,
+        userId,
+        displayName,
+        guestName,
+        isGuest,
+        bowClass,
+        distanceM,
+        totalScore,
+        maxPossibleScore,
+        arrowsShot,
+        xCount,
+        tenCount,
+        status,
+        cachedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'group_participant_cache_rows';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<GroupParticipantCacheRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('group_id')) {
+      context.handle(_groupIdMeta,
+          groupId.isAcceptableOrUnknown(data['group_id']!, _groupIdMeta));
+    } else if (isInserting) {
+      context.missing(_groupIdMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(_userIdMeta,
+          userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta));
+    }
+    if (data.containsKey('display_name')) {
+      context.handle(
+          _displayNameMeta,
+          displayName.isAcceptableOrUnknown(
+              data['display_name']!, _displayNameMeta));
+    }
+    if (data.containsKey('guest_name')) {
+      context.handle(_guestNameMeta,
+          guestName.isAcceptableOrUnknown(data['guest_name']!, _guestNameMeta));
+    }
+    if (data.containsKey('is_guest')) {
+      context.handle(_isGuestMeta,
+          isGuest.isAcceptableOrUnknown(data['is_guest']!, _isGuestMeta));
+    }
+    if (data.containsKey('bow_class')) {
+      context.handle(_bowClassMeta,
+          bowClass.isAcceptableOrUnknown(data['bow_class']!, _bowClassMeta));
+    }
+    if (data.containsKey('distance_m')) {
+      context.handle(_distanceMMeta,
+          distanceM.isAcceptableOrUnknown(data['distance_m']!, _distanceMMeta));
+    }
+    if (data.containsKey('total_score')) {
+      context.handle(
+          _totalScoreMeta,
+          totalScore.isAcceptableOrUnknown(
+              data['total_score']!, _totalScoreMeta));
+    }
+    if (data.containsKey('max_possible_score')) {
+      context.handle(
+          _maxPossibleScoreMeta,
+          maxPossibleScore.isAcceptableOrUnknown(
+              data['max_possible_score']!, _maxPossibleScoreMeta));
+    }
+    if (data.containsKey('arrows_shot')) {
+      context.handle(
+          _arrowsShotMeta,
+          arrowsShot.isAcceptableOrUnknown(
+              data['arrows_shot']!, _arrowsShotMeta));
+    }
+    if (data.containsKey('x_count')) {
+      context.handle(_xCountMeta,
+          xCount.isAcceptableOrUnknown(data['x_count']!, _xCountMeta));
+    }
+    if (data.containsKey('ten_count')) {
+      context.handle(_tenCountMeta,
+          tenCount.isAcceptableOrUnknown(data['ten_count']!, _tenCountMeta));
+    }
+    if (data.containsKey('status')) {
+      context.handle(_statusMeta,
+          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+    }
+    if (data.containsKey('cached_at')) {
+      context.handle(_cachedAtMeta,
+          cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta));
+    } else if (isInserting) {
+      context.missing(_cachedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  GroupParticipantCacheRow map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return GroupParticipantCacheRow(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}id'])!,
+      groupId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}group_id'])!,
+      userId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}user_id']),
+      displayName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}display_name']),
+      guestName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}guest_name']),
+      isGuest: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_guest'])!,
+      bowClass: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}bow_class']),
+      distanceM: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}distance_m']),
+      totalScore: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}total_score'])!,
+      maxPossibleScore: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}max_possible_score']),
+      arrowsShot: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}arrows_shot'])!,
+      xCount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}x_count'])!,
+      tenCount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}ten_count'])!,
+      status: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}status']),
+      cachedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}cached_at'])!,
+    );
+  }
+
+  @override
+  $GroupParticipantCacheRowsTable createAlias(String alias) {
+    return $GroupParticipantCacheRowsTable(attachedDatabase, alias);
+  }
+}
+
+class GroupParticipantCacheRow extends DataClass
+    implements Insertable<GroupParticipantCacheRow> {
+  final String id;
+  final String groupId;
+  final int? userId;
+  final String? displayName;
+  final String? guestName;
+  final bool isGuest;
+  final String? bowClass;
+  final int? distanceM;
+  final int totalScore;
+  final int? maxPossibleScore;
+  final int arrowsShot;
+  final int xCount;
+  final int tenCount;
+  final String? status;
+  final DateTime cachedAt;
+  const GroupParticipantCacheRow(
+      {required this.id,
+      required this.groupId,
+      this.userId,
+      this.displayName,
+      this.guestName,
+      required this.isGuest,
+      this.bowClass,
+      this.distanceM,
+      required this.totalScore,
+      this.maxPossibleScore,
+      required this.arrowsShot,
+      required this.xCount,
+      required this.tenCount,
+      this.status,
+      required this.cachedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['group_id'] = Variable<String>(groupId);
+    if (!nullToAbsent || userId != null) {
+      map['user_id'] = Variable<int>(userId);
+    }
+    if (!nullToAbsent || displayName != null) {
+      map['display_name'] = Variable<String>(displayName);
+    }
+    if (!nullToAbsent || guestName != null) {
+      map['guest_name'] = Variable<String>(guestName);
+    }
+    map['is_guest'] = Variable<bool>(isGuest);
+    if (!nullToAbsent || bowClass != null) {
+      map['bow_class'] = Variable<String>(bowClass);
+    }
+    if (!nullToAbsent || distanceM != null) {
+      map['distance_m'] = Variable<int>(distanceM);
+    }
+    map['total_score'] = Variable<int>(totalScore);
+    if (!nullToAbsent || maxPossibleScore != null) {
+      map['max_possible_score'] = Variable<int>(maxPossibleScore);
+    }
+    map['arrows_shot'] = Variable<int>(arrowsShot);
+    map['x_count'] = Variable<int>(xCount);
+    map['ten_count'] = Variable<int>(tenCount);
+    if (!nullToAbsent || status != null) {
+      map['status'] = Variable<String>(status);
+    }
+    map['cached_at'] = Variable<DateTime>(cachedAt);
+    return map;
+  }
+
+  GroupParticipantCacheRowsCompanion toCompanion(bool nullToAbsent) {
+    return GroupParticipantCacheRowsCompanion(
+      id: Value(id),
+      groupId: Value(groupId),
+      userId:
+          userId == null && nullToAbsent ? const Value.absent() : Value(userId),
+      displayName: displayName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(displayName),
+      guestName: guestName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(guestName),
+      isGuest: Value(isGuest),
+      bowClass: bowClass == null && nullToAbsent
+          ? const Value.absent()
+          : Value(bowClass),
+      distanceM: distanceM == null && nullToAbsent
+          ? const Value.absent()
+          : Value(distanceM),
+      totalScore: Value(totalScore),
+      maxPossibleScore: maxPossibleScore == null && nullToAbsent
+          ? const Value.absent()
+          : Value(maxPossibleScore),
+      arrowsShot: Value(arrowsShot),
+      xCount: Value(xCount),
+      tenCount: Value(tenCount),
+      status:
+          status == null && nullToAbsent ? const Value.absent() : Value(status),
+      cachedAt: Value(cachedAt),
+    );
+  }
+
+  factory GroupParticipantCacheRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return GroupParticipantCacheRow(
+      id: serializer.fromJson<String>(json['id']),
+      groupId: serializer.fromJson<String>(json['groupId']),
+      userId: serializer.fromJson<int?>(json['userId']),
+      displayName: serializer.fromJson<String?>(json['displayName']),
+      guestName: serializer.fromJson<String?>(json['guestName']),
+      isGuest: serializer.fromJson<bool>(json['isGuest']),
+      bowClass: serializer.fromJson<String?>(json['bowClass']),
+      distanceM: serializer.fromJson<int?>(json['distanceM']),
+      totalScore: serializer.fromJson<int>(json['totalScore']),
+      maxPossibleScore: serializer.fromJson<int?>(json['maxPossibleScore']),
+      arrowsShot: serializer.fromJson<int>(json['arrowsShot']),
+      xCount: serializer.fromJson<int>(json['xCount']),
+      tenCount: serializer.fromJson<int>(json['tenCount']),
+      status: serializer.fromJson<String?>(json['status']),
+      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'groupId': serializer.toJson<String>(groupId),
+      'userId': serializer.toJson<int?>(userId),
+      'displayName': serializer.toJson<String?>(displayName),
+      'guestName': serializer.toJson<String?>(guestName),
+      'isGuest': serializer.toJson<bool>(isGuest),
+      'bowClass': serializer.toJson<String?>(bowClass),
+      'distanceM': serializer.toJson<int?>(distanceM),
+      'totalScore': serializer.toJson<int>(totalScore),
+      'maxPossibleScore': serializer.toJson<int?>(maxPossibleScore),
+      'arrowsShot': serializer.toJson<int>(arrowsShot),
+      'xCount': serializer.toJson<int>(xCount),
+      'tenCount': serializer.toJson<int>(tenCount),
+      'status': serializer.toJson<String?>(status),
+      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+    };
+  }
+
+  GroupParticipantCacheRow copyWith(
+          {String? id,
+          String? groupId,
+          Value<int?> userId = const Value.absent(),
+          Value<String?> displayName = const Value.absent(),
+          Value<String?> guestName = const Value.absent(),
+          bool? isGuest,
+          Value<String?> bowClass = const Value.absent(),
+          Value<int?> distanceM = const Value.absent(),
+          int? totalScore,
+          Value<int?> maxPossibleScore = const Value.absent(),
+          int? arrowsShot,
+          int? xCount,
+          int? tenCount,
+          Value<String?> status = const Value.absent(),
+          DateTime? cachedAt}) =>
+      GroupParticipantCacheRow(
+        id: id ?? this.id,
+        groupId: groupId ?? this.groupId,
+        userId: userId.present ? userId.value : this.userId,
+        displayName: displayName.present ? displayName.value : this.displayName,
+        guestName: guestName.present ? guestName.value : this.guestName,
+        isGuest: isGuest ?? this.isGuest,
+        bowClass: bowClass.present ? bowClass.value : this.bowClass,
+        distanceM: distanceM.present ? distanceM.value : this.distanceM,
+        totalScore: totalScore ?? this.totalScore,
+        maxPossibleScore: maxPossibleScore.present
+            ? maxPossibleScore.value
+            : this.maxPossibleScore,
+        arrowsShot: arrowsShot ?? this.arrowsShot,
+        xCount: xCount ?? this.xCount,
+        tenCount: tenCount ?? this.tenCount,
+        status: status.present ? status.value : this.status,
+        cachedAt: cachedAt ?? this.cachedAt,
+      );
+  GroupParticipantCacheRow copyWithCompanion(
+      GroupParticipantCacheRowsCompanion data) {
+    return GroupParticipantCacheRow(
+      id: data.id.present ? data.id.value : this.id,
+      groupId: data.groupId.present ? data.groupId.value : this.groupId,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      displayName:
+          data.displayName.present ? data.displayName.value : this.displayName,
+      guestName: data.guestName.present ? data.guestName.value : this.guestName,
+      isGuest: data.isGuest.present ? data.isGuest.value : this.isGuest,
+      bowClass: data.bowClass.present ? data.bowClass.value : this.bowClass,
+      distanceM: data.distanceM.present ? data.distanceM.value : this.distanceM,
+      totalScore:
+          data.totalScore.present ? data.totalScore.value : this.totalScore,
+      maxPossibleScore: data.maxPossibleScore.present
+          ? data.maxPossibleScore.value
+          : this.maxPossibleScore,
+      arrowsShot:
+          data.arrowsShot.present ? data.arrowsShot.value : this.arrowsShot,
+      xCount: data.xCount.present ? data.xCount.value : this.xCount,
+      tenCount: data.tenCount.present ? data.tenCount.value : this.tenCount,
+      status: data.status.present ? data.status.value : this.status,
+      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GroupParticipantCacheRow(')
+          ..write('id: $id, ')
+          ..write('groupId: $groupId, ')
+          ..write('userId: $userId, ')
+          ..write('displayName: $displayName, ')
+          ..write('guestName: $guestName, ')
+          ..write('isGuest: $isGuest, ')
+          ..write('bowClass: $bowClass, ')
+          ..write('distanceM: $distanceM, ')
+          ..write('totalScore: $totalScore, ')
+          ..write('maxPossibleScore: $maxPossibleScore, ')
+          ..write('arrowsShot: $arrowsShot, ')
+          ..write('xCount: $xCount, ')
+          ..write('tenCount: $tenCount, ')
+          ..write('status: $status, ')
+          ..write('cachedAt: $cachedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      groupId,
+      userId,
+      displayName,
+      guestName,
+      isGuest,
+      bowClass,
+      distanceM,
+      totalScore,
+      maxPossibleScore,
+      arrowsShot,
+      xCount,
+      tenCount,
+      status,
+      cachedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is GroupParticipantCacheRow &&
+          other.id == this.id &&
+          other.groupId == this.groupId &&
+          other.userId == this.userId &&
+          other.displayName == this.displayName &&
+          other.guestName == this.guestName &&
+          other.isGuest == this.isGuest &&
+          other.bowClass == this.bowClass &&
+          other.distanceM == this.distanceM &&
+          other.totalScore == this.totalScore &&
+          other.maxPossibleScore == this.maxPossibleScore &&
+          other.arrowsShot == this.arrowsShot &&
+          other.xCount == this.xCount &&
+          other.tenCount == this.tenCount &&
+          other.status == this.status &&
+          other.cachedAt == this.cachedAt);
+}
+
+class GroupParticipantCacheRowsCompanion
+    extends UpdateCompanion<GroupParticipantCacheRow> {
+  final Value<String> id;
+  final Value<String> groupId;
+  final Value<int?> userId;
+  final Value<String?> displayName;
+  final Value<String?> guestName;
+  final Value<bool> isGuest;
+  final Value<String?> bowClass;
+  final Value<int?> distanceM;
+  final Value<int> totalScore;
+  final Value<int?> maxPossibleScore;
+  final Value<int> arrowsShot;
+  final Value<int> xCount;
+  final Value<int> tenCount;
+  final Value<String?> status;
+  final Value<DateTime> cachedAt;
+  final Value<int> rowid;
+  const GroupParticipantCacheRowsCompanion({
+    this.id = const Value.absent(),
+    this.groupId = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.displayName = const Value.absent(),
+    this.guestName = const Value.absent(),
+    this.isGuest = const Value.absent(),
+    this.bowClass = const Value.absent(),
+    this.distanceM = const Value.absent(),
+    this.totalScore = const Value.absent(),
+    this.maxPossibleScore = const Value.absent(),
+    this.arrowsShot = const Value.absent(),
+    this.xCount = const Value.absent(),
+    this.tenCount = const Value.absent(),
+    this.status = const Value.absent(),
+    this.cachedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  GroupParticipantCacheRowsCompanion.insert({
+    required String id,
+    required String groupId,
+    this.userId = const Value.absent(),
+    this.displayName = const Value.absent(),
+    this.guestName = const Value.absent(),
+    this.isGuest = const Value.absent(),
+    this.bowClass = const Value.absent(),
+    this.distanceM = const Value.absent(),
+    this.totalScore = const Value.absent(),
+    this.maxPossibleScore = const Value.absent(),
+    this.arrowsShot = const Value.absent(),
+    this.xCount = const Value.absent(),
+    this.tenCount = const Value.absent(),
+    this.status = const Value.absent(),
+    required DateTime cachedAt,
+    this.rowid = const Value.absent(),
+  })  : id = Value(id),
+        groupId = Value(groupId),
+        cachedAt = Value(cachedAt);
+  static Insertable<GroupParticipantCacheRow> custom({
+    Expression<String>? id,
+    Expression<String>? groupId,
+    Expression<int>? userId,
+    Expression<String>? displayName,
+    Expression<String>? guestName,
+    Expression<bool>? isGuest,
+    Expression<String>? bowClass,
+    Expression<int>? distanceM,
+    Expression<int>? totalScore,
+    Expression<int>? maxPossibleScore,
+    Expression<int>? arrowsShot,
+    Expression<int>? xCount,
+    Expression<int>? tenCount,
+    Expression<String>? status,
+    Expression<DateTime>? cachedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (groupId != null) 'group_id': groupId,
+      if (userId != null) 'user_id': userId,
+      if (displayName != null) 'display_name': displayName,
+      if (guestName != null) 'guest_name': guestName,
+      if (isGuest != null) 'is_guest': isGuest,
+      if (bowClass != null) 'bow_class': bowClass,
+      if (distanceM != null) 'distance_m': distanceM,
+      if (totalScore != null) 'total_score': totalScore,
+      if (maxPossibleScore != null) 'max_possible_score': maxPossibleScore,
+      if (arrowsShot != null) 'arrows_shot': arrowsShot,
+      if (xCount != null) 'x_count': xCount,
+      if (tenCount != null) 'ten_count': tenCount,
+      if (status != null) 'status': status,
+      if (cachedAt != null) 'cached_at': cachedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  GroupParticipantCacheRowsCompanion copyWith(
+      {Value<String>? id,
+      Value<String>? groupId,
+      Value<int?>? userId,
+      Value<String?>? displayName,
+      Value<String?>? guestName,
+      Value<bool>? isGuest,
+      Value<String?>? bowClass,
+      Value<int?>? distanceM,
+      Value<int>? totalScore,
+      Value<int?>? maxPossibleScore,
+      Value<int>? arrowsShot,
+      Value<int>? xCount,
+      Value<int>? tenCount,
+      Value<String?>? status,
+      Value<DateTime>? cachedAt,
+      Value<int>? rowid}) {
+    return GroupParticipantCacheRowsCompanion(
+      id: id ?? this.id,
+      groupId: groupId ?? this.groupId,
+      userId: userId ?? this.userId,
+      displayName: displayName ?? this.displayName,
+      guestName: guestName ?? this.guestName,
+      isGuest: isGuest ?? this.isGuest,
+      bowClass: bowClass ?? this.bowClass,
+      distanceM: distanceM ?? this.distanceM,
+      totalScore: totalScore ?? this.totalScore,
+      maxPossibleScore: maxPossibleScore ?? this.maxPossibleScore,
+      arrowsShot: arrowsShot ?? this.arrowsShot,
+      xCount: xCount ?? this.xCount,
+      tenCount: tenCount ?? this.tenCount,
+      status: status ?? this.status,
+      cachedAt: cachedAt ?? this.cachedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (groupId.present) {
+      map['group_id'] = Variable<String>(groupId.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<int>(userId.value);
+    }
+    if (displayName.present) {
+      map['display_name'] = Variable<String>(displayName.value);
+    }
+    if (guestName.present) {
+      map['guest_name'] = Variable<String>(guestName.value);
+    }
+    if (isGuest.present) {
+      map['is_guest'] = Variable<bool>(isGuest.value);
+    }
+    if (bowClass.present) {
+      map['bow_class'] = Variable<String>(bowClass.value);
+    }
+    if (distanceM.present) {
+      map['distance_m'] = Variable<int>(distanceM.value);
+    }
+    if (totalScore.present) {
+      map['total_score'] = Variable<int>(totalScore.value);
+    }
+    if (maxPossibleScore.present) {
+      map['max_possible_score'] = Variable<int>(maxPossibleScore.value);
+    }
+    if (arrowsShot.present) {
+      map['arrows_shot'] = Variable<int>(arrowsShot.value);
+    }
+    if (xCount.present) {
+      map['x_count'] = Variable<int>(xCount.value);
+    }
+    if (tenCount.present) {
+      map['ten_count'] = Variable<int>(tenCount.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (cachedAt.present) {
+      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('GroupParticipantCacheRowsCompanion(')
+          ..write('id: $id, ')
+          ..write('groupId: $groupId, ')
+          ..write('userId: $userId, ')
+          ..write('displayName: $displayName, ')
+          ..write('guestName: $guestName, ')
+          ..write('isGuest: $isGuest, ')
+          ..write('bowClass: $bowClass, ')
+          ..write('distanceM: $distanceM, ')
+          ..write('totalScore: $totalScore, ')
+          ..write('maxPossibleScore: $maxPossibleScore, ')
+          ..write('arrowsShot: $arrowsShot, ')
+          ..write('xCount: $xCount, ')
+          ..write('tenCount: $tenCount, ')
+          ..write('status: $status, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$ScoringDatabase extends GeneratedDatabase {
   _$ScoringDatabase(QueryExecutor e) : super(e);
   $ScoringDatabaseManager get managers => $ScoringDatabaseManager(this);
@@ -2269,12 +3906,22 @@ abstract class _$ScoringDatabase extends GeneratedDatabase {
   late final $ScoringArrowRowsTable scoringArrowRows =
       $ScoringArrowRowsTable(this);
   late final $TargetFaceRowsTable targetFaceRows = $TargetFaceRowsTable(this);
+  late final $GroupSessionRowsTable groupSessionRows =
+      $GroupSessionRowsTable(this);
+  late final $GroupParticipantCacheRowsTable groupParticipantCacheRows =
+      $GroupParticipantCacheRowsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities =>
-      [scoringSessionRows, scoringEndRows, scoringArrowRows, targetFaceRows];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+        scoringSessionRows,
+        scoringEndRows,
+        scoringArrowRows,
+        targetFaceRows,
+        groupSessionRows,
+        groupParticipantCacheRows
+      ];
 }
 
 typedef $$ScoringSessionRowsTableCreateCompanionBuilder
@@ -2305,6 +3952,8 @@ typedef $$ScoringSessionRowsTableCreateCompanionBuilder
   Value<bool> isSynced,
   Value<String?> syncAction,
   Value<DateTime?> updatedAt,
+  Value<String?> scoringSessionGroupId,
+  Value<String?> guestName,
   Value<int> rowid,
 });
 typedef $$ScoringSessionRowsTableUpdateCompanionBuilder
@@ -2335,6 +3984,8 @@ typedef $$ScoringSessionRowsTableUpdateCompanionBuilder
   Value<bool> isSynced,
   Value<String?> syncAction,
   Value<DateTime?> updatedAt,
+  Value<String?> scoringSessionGroupId,
+  Value<String?> guestName,
   Value<int> rowid,
 });
 
@@ -2427,6 +4078,13 @@ class $$ScoringSessionRowsTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get scoringSessionGroupId => $composableBuilder(
+      column: $table.scoringSessionGroupId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get guestName => $composableBuilder(
+      column: $table.guestName, builder: (column) => ColumnFilters(column));
 }
 
 class $$ScoringSessionRowsTableOrderingComposer
@@ -2521,6 +4179,13 @@ class $$ScoringSessionRowsTableOrderingComposer
 
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get scoringSessionGroupId => $composableBuilder(
+      column: $table.scoringSessionGroupId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get guestName => $composableBuilder(
+      column: $table.guestName, builder: (column) => ColumnOrderings(column));
 }
 
 class $$ScoringSessionRowsTableAnnotationComposer
@@ -2609,6 +4274,12 @@ class $$ScoringSessionRowsTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get scoringSessionGroupId => $composableBuilder(
+      column: $table.scoringSessionGroupId, builder: (column) => column);
+
+  GeneratedColumn<String> get guestName =>
+      $composableBuilder(column: $table.guestName, builder: (column) => column);
 }
 
 class $$ScoringSessionRowsTableTableManager extends RootTableManager<
@@ -2666,6 +4337,8 @@ class $$ScoringSessionRowsTableTableManager extends RootTableManager<
             Value<bool> isSynced = const Value.absent(),
             Value<String?> syncAction = const Value.absent(),
             Value<DateTime?> updatedAt = const Value.absent(),
+            Value<String?> scoringSessionGroupId = const Value.absent(),
+            Value<String?> guestName = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               ScoringSessionRowsCompanion(
@@ -2695,6 +4368,8 @@ class $$ScoringSessionRowsTableTableManager extends RootTableManager<
             isSynced: isSynced,
             syncAction: syncAction,
             updatedAt: updatedAt,
+            scoringSessionGroupId: scoringSessionGroupId,
+            guestName: guestName,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -2724,6 +4399,8 @@ class $$ScoringSessionRowsTableTableManager extends RootTableManager<
             Value<bool> isSynced = const Value.absent(),
             Value<String?> syncAction = const Value.absent(),
             Value<DateTime?> updatedAt = const Value.absent(),
+            Value<String?> scoringSessionGroupId = const Value.absent(),
+            Value<String?> guestName = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               ScoringSessionRowsCompanion.insert(
@@ -2753,6 +4430,8 @@ class $$ScoringSessionRowsTableTableManager extends RootTableManager<
             isSynced: isSynced,
             syncAction: syncAction,
             updatedAt: updatedAt,
+            scoringSessionGroupId: scoringSessionGroupId,
+            guestName: guestName,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
@@ -3353,6 +5032,699 @@ typedef $$TargetFaceRowsTableProcessedTableManager = ProcessedTableManager<
     ),
     TargetFaceRow,
     PrefetchHooks Function()>;
+typedef $$GroupSessionRowsTableCreateCompanionBuilder
+    = GroupSessionRowsCompanion Function({
+  required String id,
+  required String joinCode,
+  Value<String?> title,
+  required int hostUserId,
+  Value<String?> hostName,
+  required String distanceCategory,
+  required int distanceM,
+  Value<String> environment,
+  Value<int?> targetFaceCm,
+  Value<String?> targetFaceId,
+  required int numEnds,
+  required int arrowsPerEnd,
+  Value<String> status,
+  Value<int> participantCount,
+  required DateTime startedAt,
+  Value<DateTime?> completedAt,
+  required DateTime cachedAt,
+  Value<int> rowid,
+});
+typedef $$GroupSessionRowsTableUpdateCompanionBuilder
+    = GroupSessionRowsCompanion Function({
+  Value<String> id,
+  Value<String> joinCode,
+  Value<String?> title,
+  Value<int> hostUserId,
+  Value<String?> hostName,
+  Value<String> distanceCategory,
+  Value<int> distanceM,
+  Value<String> environment,
+  Value<int?> targetFaceCm,
+  Value<String?> targetFaceId,
+  Value<int> numEnds,
+  Value<int> arrowsPerEnd,
+  Value<String> status,
+  Value<int> participantCount,
+  Value<DateTime> startedAt,
+  Value<DateTime?> completedAt,
+  Value<DateTime> cachedAt,
+  Value<int> rowid,
+});
+
+class $$GroupSessionRowsTableFilterComposer
+    extends Composer<_$ScoringDatabase, $GroupSessionRowsTable> {
+  $$GroupSessionRowsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get joinCode => $composableBuilder(
+      column: $table.joinCode, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get hostUserId => $composableBuilder(
+      column: $table.hostUserId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get hostName => $composableBuilder(
+      column: $table.hostName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get distanceCategory => $composableBuilder(
+      column: $table.distanceCategory,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get distanceM => $composableBuilder(
+      column: $table.distanceM, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get environment => $composableBuilder(
+      column: $table.environment, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get targetFaceCm => $composableBuilder(
+      column: $table.targetFaceCm, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get targetFaceId => $composableBuilder(
+      column: $table.targetFaceId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get numEnds => $composableBuilder(
+      column: $table.numEnds, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get arrowsPerEnd => $composableBuilder(
+      column: $table.arrowsPerEnd, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get participantCount => $composableBuilder(
+      column: $table.participantCount,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+      column: $table.startedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get completedAt => $composableBuilder(
+      column: $table.completedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
+      column: $table.cachedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$GroupSessionRowsTableOrderingComposer
+    extends Composer<_$ScoringDatabase, $GroupSessionRowsTable> {
+  $$GroupSessionRowsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get joinCode => $composableBuilder(
+      column: $table.joinCode, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get title => $composableBuilder(
+      column: $table.title, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get hostUserId => $composableBuilder(
+      column: $table.hostUserId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get hostName => $composableBuilder(
+      column: $table.hostName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get distanceCategory => $composableBuilder(
+      column: $table.distanceCategory,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get distanceM => $composableBuilder(
+      column: $table.distanceM, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get environment => $composableBuilder(
+      column: $table.environment, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get targetFaceCm => $composableBuilder(
+      column: $table.targetFaceCm,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get targetFaceId => $composableBuilder(
+      column: $table.targetFaceId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get numEnds => $composableBuilder(
+      column: $table.numEnds, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get arrowsPerEnd => $composableBuilder(
+      column: $table.arrowsPerEnd,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get participantCount => $composableBuilder(
+      column: $table.participantCount,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+      column: $table.startedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get completedAt => $composableBuilder(
+      column: $table.completedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
+      column: $table.cachedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$GroupSessionRowsTableAnnotationComposer
+    extends Composer<_$ScoringDatabase, $GroupSessionRowsTable> {
+  $$GroupSessionRowsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get joinCode =>
+      $composableBuilder(column: $table.joinCode, builder: (column) => column);
+
+  GeneratedColumn<String> get title =>
+      $composableBuilder(column: $table.title, builder: (column) => column);
+
+  GeneratedColumn<int> get hostUserId => $composableBuilder(
+      column: $table.hostUserId, builder: (column) => column);
+
+  GeneratedColumn<String> get hostName =>
+      $composableBuilder(column: $table.hostName, builder: (column) => column);
+
+  GeneratedColumn<String> get distanceCategory => $composableBuilder(
+      column: $table.distanceCategory, builder: (column) => column);
+
+  GeneratedColumn<int> get distanceM =>
+      $composableBuilder(column: $table.distanceM, builder: (column) => column);
+
+  GeneratedColumn<String> get environment => $composableBuilder(
+      column: $table.environment, builder: (column) => column);
+
+  GeneratedColumn<int> get targetFaceCm => $composableBuilder(
+      column: $table.targetFaceCm, builder: (column) => column);
+
+  GeneratedColumn<String> get targetFaceId => $composableBuilder(
+      column: $table.targetFaceId, builder: (column) => column);
+
+  GeneratedColumn<int> get numEnds =>
+      $composableBuilder(column: $table.numEnds, builder: (column) => column);
+
+  GeneratedColumn<int> get arrowsPerEnd => $composableBuilder(
+      column: $table.arrowsPerEnd, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<int> get participantCount => $composableBuilder(
+      column: $table.participantCount, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get completedAt => $composableBuilder(
+      column: $table.completedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get cachedAt =>
+      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+}
+
+class $$GroupSessionRowsTableTableManager extends RootTableManager<
+    _$ScoringDatabase,
+    $GroupSessionRowsTable,
+    GroupSessionRow,
+    $$GroupSessionRowsTableFilterComposer,
+    $$GroupSessionRowsTableOrderingComposer,
+    $$GroupSessionRowsTableAnnotationComposer,
+    $$GroupSessionRowsTableCreateCompanionBuilder,
+    $$GroupSessionRowsTableUpdateCompanionBuilder,
+    (
+      GroupSessionRow,
+      BaseReferences<_$ScoringDatabase, $GroupSessionRowsTable, GroupSessionRow>
+    ),
+    GroupSessionRow,
+    PrefetchHooks Function()> {
+  $$GroupSessionRowsTableTableManager(
+      _$ScoringDatabase db, $GroupSessionRowsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$GroupSessionRowsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GroupSessionRowsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GroupSessionRowsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> joinCode = const Value.absent(),
+            Value<String?> title = const Value.absent(),
+            Value<int> hostUserId = const Value.absent(),
+            Value<String?> hostName = const Value.absent(),
+            Value<String> distanceCategory = const Value.absent(),
+            Value<int> distanceM = const Value.absent(),
+            Value<String> environment = const Value.absent(),
+            Value<int?> targetFaceCm = const Value.absent(),
+            Value<String?> targetFaceId = const Value.absent(),
+            Value<int> numEnds = const Value.absent(),
+            Value<int> arrowsPerEnd = const Value.absent(),
+            Value<String> status = const Value.absent(),
+            Value<int> participantCount = const Value.absent(),
+            Value<DateTime> startedAt = const Value.absent(),
+            Value<DateTime?> completedAt = const Value.absent(),
+            Value<DateTime> cachedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              GroupSessionRowsCompanion(
+            id: id,
+            joinCode: joinCode,
+            title: title,
+            hostUserId: hostUserId,
+            hostName: hostName,
+            distanceCategory: distanceCategory,
+            distanceM: distanceM,
+            environment: environment,
+            targetFaceCm: targetFaceCm,
+            targetFaceId: targetFaceId,
+            numEnds: numEnds,
+            arrowsPerEnd: arrowsPerEnd,
+            status: status,
+            participantCount: participantCount,
+            startedAt: startedAt,
+            completedAt: completedAt,
+            cachedAt: cachedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String joinCode,
+            Value<String?> title = const Value.absent(),
+            required int hostUserId,
+            Value<String?> hostName = const Value.absent(),
+            required String distanceCategory,
+            required int distanceM,
+            Value<String> environment = const Value.absent(),
+            Value<int?> targetFaceCm = const Value.absent(),
+            Value<String?> targetFaceId = const Value.absent(),
+            required int numEnds,
+            required int arrowsPerEnd,
+            Value<String> status = const Value.absent(),
+            Value<int> participantCount = const Value.absent(),
+            required DateTime startedAt,
+            Value<DateTime?> completedAt = const Value.absent(),
+            required DateTime cachedAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              GroupSessionRowsCompanion.insert(
+            id: id,
+            joinCode: joinCode,
+            title: title,
+            hostUserId: hostUserId,
+            hostName: hostName,
+            distanceCategory: distanceCategory,
+            distanceM: distanceM,
+            environment: environment,
+            targetFaceCm: targetFaceCm,
+            targetFaceId: targetFaceId,
+            numEnds: numEnds,
+            arrowsPerEnd: arrowsPerEnd,
+            status: status,
+            participantCount: participantCount,
+            startedAt: startedAt,
+            completedAt: completedAt,
+            cachedAt: cachedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$GroupSessionRowsTableProcessedTableManager = ProcessedTableManager<
+    _$ScoringDatabase,
+    $GroupSessionRowsTable,
+    GroupSessionRow,
+    $$GroupSessionRowsTableFilterComposer,
+    $$GroupSessionRowsTableOrderingComposer,
+    $$GroupSessionRowsTableAnnotationComposer,
+    $$GroupSessionRowsTableCreateCompanionBuilder,
+    $$GroupSessionRowsTableUpdateCompanionBuilder,
+    (
+      GroupSessionRow,
+      BaseReferences<_$ScoringDatabase, $GroupSessionRowsTable, GroupSessionRow>
+    ),
+    GroupSessionRow,
+    PrefetchHooks Function()>;
+typedef $$GroupParticipantCacheRowsTableCreateCompanionBuilder
+    = GroupParticipantCacheRowsCompanion Function({
+  required String id,
+  required String groupId,
+  Value<int?> userId,
+  Value<String?> displayName,
+  Value<String?> guestName,
+  Value<bool> isGuest,
+  Value<String?> bowClass,
+  Value<int?> distanceM,
+  Value<int> totalScore,
+  Value<int?> maxPossibleScore,
+  Value<int> arrowsShot,
+  Value<int> xCount,
+  Value<int> tenCount,
+  Value<String?> status,
+  required DateTime cachedAt,
+  Value<int> rowid,
+});
+typedef $$GroupParticipantCacheRowsTableUpdateCompanionBuilder
+    = GroupParticipantCacheRowsCompanion Function({
+  Value<String> id,
+  Value<String> groupId,
+  Value<int?> userId,
+  Value<String?> displayName,
+  Value<String?> guestName,
+  Value<bool> isGuest,
+  Value<String?> bowClass,
+  Value<int?> distanceM,
+  Value<int> totalScore,
+  Value<int?> maxPossibleScore,
+  Value<int> arrowsShot,
+  Value<int> xCount,
+  Value<int> tenCount,
+  Value<String?> status,
+  Value<DateTime> cachedAt,
+  Value<int> rowid,
+});
+
+class $$GroupParticipantCacheRowsTableFilterComposer
+    extends Composer<_$ScoringDatabase, $GroupParticipantCacheRowsTable> {
+  $$GroupParticipantCacheRowsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get groupId => $composableBuilder(
+      column: $table.groupId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get userId => $composableBuilder(
+      column: $table.userId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get displayName => $composableBuilder(
+      column: $table.displayName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get guestName => $composableBuilder(
+      column: $table.guestName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isGuest => $composableBuilder(
+      column: $table.isGuest, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get bowClass => $composableBuilder(
+      column: $table.bowClass, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get distanceM => $composableBuilder(
+      column: $table.distanceM, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get totalScore => $composableBuilder(
+      column: $table.totalScore, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get maxPossibleScore => $composableBuilder(
+      column: $table.maxPossibleScore,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get arrowsShot => $composableBuilder(
+      column: $table.arrowsShot, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get xCount => $composableBuilder(
+      column: $table.xCount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get tenCount => $composableBuilder(
+      column: $table.tenCount, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
+      column: $table.cachedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$GroupParticipantCacheRowsTableOrderingComposer
+    extends Composer<_$ScoringDatabase, $GroupParticipantCacheRowsTable> {
+  $$GroupParticipantCacheRowsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get groupId => $composableBuilder(
+      column: $table.groupId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get userId => $composableBuilder(
+      column: $table.userId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get displayName => $composableBuilder(
+      column: $table.displayName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get guestName => $composableBuilder(
+      column: $table.guestName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isGuest => $composableBuilder(
+      column: $table.isGuest, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get bowClass => $composableBuilder(
+      column: $table.bowClass, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get distanceM => $composableBuilder(
+      column: $table.distanceM, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get totalScore => $composableBuilder(
+      column: $table.totalScore, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get maxPossibleScore => $composableBuilder(
+      column: $table.maxPossibleScore,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get arrowsShot => $composableBuilder(
+      column: $table.arrowsShot, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get xCount => $composableBuilder(
+      column: $table.xCount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get tenCount => $composableBuilder(
+      column: $table.tenCount, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
+      column: $table.cachedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$GroupParticipantCacheRowsTableAnnotationComposer
+    extends Composer<_$ScoringDatabase, $GroupParticipantCacheRowsTable> {
+  $$GroupParticipantCacheRowsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get groupId =>
+      $composableBuilder(column: $table.groupId, builder: (column) => column);
+
+  GeneratedColumn<int> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get displayName => $composableBuilder(
+      column: $table.displayName, builder: (column) => column);
+
+  GeneratedColumn<String> get guestName =>
+      $composableBuilder(column: $table.guestName, builder: (column) => column);
+
+  GeneratedColumn<bool> get isGuest =>
+      $composableBuilder(column: $table.isGuest, builder: (column) => column);
+
+  GeneratedColumn<String> get bowClass =>
+      $composableBuilder(column: $table.bowClass, builder: (column) => column);
+
+  GeneratedColumn<int> get distanceM =>
+      $composableBuilder(column: $table.distanceM, builder: (column) => column);
+
+  GeneratedColumn<int> get totalScore => $composableBuilder(
+      column: $table.totalScore, builder: (column) => column);
+
+  GeneratedColumn<int> get maxPossibleScore => $composableBuilder(
+      column: $table.maxPossibleScore, builder: (column) => column);
+
+  GeneratedColumn<int> get arrowsShot => $composableBuilder(
+      column: $table.arrowsShot, builder: (column) => column);
+
+  GeneratedColumn<int> get xCount =>
+      $composableBuilder(column: $table.xCount, builder: (column) => column);
+
+  GeneratedColumn<int> get tenCount =>
+      $composableBuilder(column: $table.tenCount, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get cachedAt =>
+      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+}
+
+class $$GroupParticipantCacheRowsTableTableManager extends RootTableManager<
+    _$ScoringDatabase,
+    $GroupParticipantCacheRowsTable,
+    GroupParticipantCacheRow,
+    $$GroupParticipantCacheRowsTableFilterComposer,
+    $$GroupParticipantCacheRowsTableOrderingComposer,
+    $$GroupParticipantCacheRowsTableAnnotationComposer,
+    $$GroupParticipantCacheRowsTableCreateCompanionBuilder,
+    $$GroupParticipantCacheRowsTableUpdateCompanionBuilder,
+    (
+      GroupParticipantCacheRow,
+      BaseReferences<_$ScoringDatabase, $GroupParticipantCacheRowsTable,
+          GroupParticipantCacheRow>
+    ),
+    GroupParticipantCacheRow,
+    PrefetchHooks Function()> {
+  $$GroupParticipantCacheRowsTableTableManager(
+      _$ScoringDatabase db, $GroupParticipantCacheRowsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$GroupParticipantCacheRowsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$GroupParticipantCacheRowsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$GroupParticipantCacheRowsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> id = const Value.absent(),
+            Value<String> groupId = const Value.absent(),
+            Value<int?> userId = const Value.absent(),
+            Value<String?> displayName = const Value.absent(),
+            Value<String?> guestName = const Value.absent(),
+            Value<bool> isGuest = const Value.absent(),
+            Value<String?> bowClass = const Value.absent(),
+            Value<int?> distanceM = const Value.absent(),
+            Value<int> totalScore = const Value.absent(),
+            Value<int?> maxPossibleScore = const Value.absent(),
+            Value<int> arrowsShot = const Value.absent(),
+            Value<int> xCount = const Value.absent(),
+            Value<int> tenCount = const Value.absent(),
+            Value<String?> status = const Value.absent(),
+            Value<DateTime> cachedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              GroupParticipantCacheRowsCompanion(
+            id: id,
+            groupId: groupId,
+            userId: userId,
+            displayName: displayName,
+            guestName: guestName,
+            isGuest: isGuest,
+            bowClass: bowClass,
+            distanceM: distanceM,
+            totalScore: totalScore,
+            maxPossibleScore: maxPossibleScore,
+            arrowsShot: arrowsShot,
+            xCount: xCount,
+            tenCount: tenCount,
+            status: status,
+            cachedAt: cachedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String id,
+            required String groupId,
+            Value<int?> userId = const Value.absent(),
+            Value<String?> displayName = const Value.absent(),
+            Value<String?> guestName = const Value.absent(),
+            Value<bool> isGuest = const Value.absent(),
+            Value<String?> bowClass = const Value.absent(),
+            Value<int?> distanceM = const Value.absent(),
+            Value<int> totalScore = const Value.absent(),
+            Value<int?> maxPossibleScore = const Value.absent(),
+            Value<int> arrowsShot = const Value.absent(),
+            Value<int> xCount = const Value.absent(),
+            Value<int> tenCount = const Value.absent(),
+            Value<String?> status = const Value.absent(),
+            required DateTime cachedAt,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              GroupParticipantCacheRowsCompanion.insert(
+            id: id,
+            groupId: groupId,
+            userId: userId,
+            displayName: displayName,
+            guestName: guestName,
+            isGuest: isGuest,
+            bowClass: bowClass,
+            distanceM: distanceM,
+            totalScore: totalScore,
+            maxPossibleScore: maxPossibleScore,
+            arrowsShot: arrowsShot,
+            xCount: xCount,
+            tenCount: tenCount,
+            status: status,
+            cachedAt: cachedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$GroupParticipantCacheRowsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$ScoringDatabase,
+        $GroupParticipantCacheRowsTable,
+        GroupParticipantCacheRow,
+        $$GroupParticipantCacheRowsTableFilterComposer,
+        $$GroupParticipantCacheRowsTableOrderingComposer,
+        $$GroupParticipantCacheRowsTableAnnotationComposer,
+        $$GroupParticipantCacheRowsTableCreateCompanionBuilder,
+        $$GroupParticipantCacheRowsTableUpdateCompanionBuilder,
+        (
+          GroupParticipantCacheRow,
+          BaseReferences<_$ScoringDatabase, $GroupParticipantCacheRowsTable,
+              GroupParticipantCacheRow>
+        ),
+        GroupParticipantCacheRow,
+        PrefetchHooks Function()>;
 
 class $ScoringDatabaseManager {
   final _$ScoringDatabase _db;
@@ -3365,4 +5737,9 @@ class $ScoringDatabaseManager {
       $$ScoringArrowRowsTableTableManager(_db, _db.scoringArrowRows);
   $$TargetFaceRowsTableTableManager get targetFaceRows =>
       $$TargetFaceRowsTableTableManager(_db, _db.targetFaceRows);
+  $$GroupSessionRowsTableTableManager get groupSessionRows =>
+      $$GroupSessionRowsTableTableManager(_db, _db.groupSessionRows);
+  $$GroupParticipantCacheRowsTableTableManager get groupParticipantCacheRows =>
+      $$GroupParticipantCacheRowsTableTableManager(
+          _db, _db.groupParticipantCacheRows);
 }

@@ -25,7 +25,8 @@ class ScoringSessionRows extends Table {
   IntColumn get xCount => integer().withDefault(const Constant(0))();
   IntColumn get tenCount => integer().withDefault(const Constant(0))();
   IntColumn get missCount => integer().withDefault(const Constant(0))();
-  BoolColumn get isPersonalBest => boolean().withDefault(const Constant(false))();
+  BoolColumn get isPersonalBest =>
+      boolean().withDefault(const Constant(false))();
   TextColumn get notes => text().nullable()();
   DateTimeColumn get startedAt => dateTime()();
   DateTimeColumn get completedAt => dateTime().nullable()();
@@ -35,6 +36,69 @@ class ScoringSessionRows extends Table {
   /// Pending sync action: 'create' | 'update' | 'delete' | null.
   TextColumn get syncAction => text().nullable()();
   DateTimeColumn get updatedAt => dateTime().nullable()();
+
+  // ─── Latihan Bersama (group scoring) labels — Sprint 04, task 4.2 ──────
+  // A session row that belongs to a group carries the binder id; a row scored
+  // for a player without an account carries the guest display name. Reusing
+  // this same table (instead of a separate DB) keeps "local join" trivial:
+  // the host's own owned row stays a normal scoring session that still feeds
+  // PB/stats, while guest rows are filtered out by [guestName]/null user.
+  // These columns are introduced now (foundation); the host board that writes
+  // them lands in Sprint 05. See arsitektur-dan-keputusan.md §2/§3.2 (K2).
+  TextColumn get scoringSessionGroupId => text().nullable()();
+  TextColumn get guestName => text().nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Cached metadata of a group (Latihan Bersama) — Sprint 04, task 4.5.
+///
+/// The server stays the source of truth; this cache only lets the group list &
+/// detail render offline (read-only). It is refreshed after every successful
+/// create/list/detail fetch.
+class GroupSessionRows extends Table {
+  TextColumn get id => text()(); // group ULID
+  TextColumn get joinCode => text()();
+  TextColumn get title => text().nullable()();
+  IntColumn get hostUserId => integer()();
+  TextColumn get hostName => text().nullable()();
+  TextColumn get distanceCategory => text()();
+  IntColumn get distanceM => integer()();
+  TextColumn get environment => text().withDefault(const Constant('outdoor'))();
+  IntColumn get targetFaceCm => integer().nullable()();
+  TextColumn get targetFaceId => text().nullable()();
+  IntColumn get numEnds => integer()();
+  IntColumn get arrowsPerEnd => integer()();
+  TextColumn get status => text().withDefault(const Constant('in_progress'))();
+  IntColumn get participantCount => integer().withDefault(const Constant(0))();
+  DateTimeColumn get startedAt => dateTime()();
+  DateTimeColumn get completedAt => dateTime().nullable()();
+  DateTimeColumn get cachedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Cached roster summary of a group — Sprint 04, task 4.5. One row per
+/// participant (an owned or guest `scoring_sessions` row on the server),
+/// holding just enough to render the detail roster offline.
+class GroupParticipantCacheRows extends Table {
+  TextColumn get id => text()(); // participant scoring_session ULID
+  TextColumn get groupId => text()();
+  IntColumn get userId => integer().nullable()();
+  TextColumn get displayName => text().nullable()();
+  TextColumn get guestName => text().nullable()();
+  BoolColumn get isGuest => boolean().withDefault(const Constant(false))();
+  TextColumn get bowClass => text().nullable()();
+  IntColumn get distanceM => integer().nullable()();
+  IntColumn get totalScore => integer().withDefault(const Constant(0))();
+  IntColumn get maxPossibleScore => integer().nullable()();
+  IntColumn get arrowsShot => integer().withDefault(const Constant(0))();
+  IntColumn get xCount => integer().withDefault(const Constant(0))();
+  IntColumn get tenCount => integer().withDefault(const Constant(0))();
+  TextColumn get status => text().nullable()();
+  DateTimeColumn get cachedAt => dateTime()();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -78,12 +142,26 @@ class TargetFaceRows extends Table {
 
 /// Dedicated offline database for ManahPro scoring (separate from the shared
 /// `core` AppDatabase so the domain stays app-level).
-@DriftDatabase(tables: [ScoringSessionRows, ScoringEndRows, ScoringArrowRows, TargetFaceRows])
+///
+/// Shared by both `features/scoring/` (individual TRACK) and
+/// `features/group_scoring/` (Latihan Bersama). Reusing one DB — instead of a
+/// second one — is the deliberate Sprint 04 decision (task 4.2): it keeps local
+/// joins between a group and the host's own owned session trivial. The group
+/// metadata/roster tables are read-only caches; the server stays authoritative.
+@DriftDatabase(tables: [
+  ScoringSessionRows,
+  ScoringEndRows,
+  ScoringArrowRows,
+  TargetFaceRows,
+  GroupSessionRows,
+  GroupParticipantCacheRows,
+])
 class ScoringDatabase extends _$ScoringDatabase {
   ScoringDatabase([QueryExecutor? executor]) : super(executor ?? _open());
 
   @override
-  int get schemaVersion => 8; // Bump version to trigger upgrade and reset tables
+  int get schemaVersion =>
+      9; // Bump version to trigger upgrade and reset tables
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -94,6 +172,8 @@ class ScoringDatabase extends _$ScoringDatabase {
           await m.drop(scoringEndRows);
           await m.drop(scoringSessionRows);
           await m.drop(targetFaceRows);
+          await m.drop(groupSessionRows);
+          await m.drop(groupParticipantCacheRows);
           await m.createAll();
         },
       );

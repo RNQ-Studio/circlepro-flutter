@@ -18,6 +18,10 @@ const _menuItems = [
     icon: Icons.track_changes_rounded,
   ),
   _MenuItem(
+    label: 'Bersama',
+    icon: Icons.group_add_rounded,
+  ),
+  _MenuItem(
     label: 'Statistik',
     icon: Icons.analytics_rounded,
   ),
