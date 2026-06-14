@@ -34,7 +34,12 @@ android {
 
     defaultConfig {
         // TODO: Replace with your project's application ID before publishing.
-        applicationId = "id.rnq.manahpro"
+        // TEMPORARY (side-by-side testing): applicationId is set to
+        // "id.rnq.circlepro" so this build installs alongside the existing
+        // "id.rnq.manahpro" app for face-to-face comparison. Revert to
+        // "id.rnq.manahpro" when done. `namespace` above intentionally stays
+        // "id.rnq.manahpro" (build-time package / Firebase appId binding).
+        applicationId = "id.rnq.circlepro"
         minSdk = 24
         targetSdk = 36
         versionCode = flutter.versionCode
