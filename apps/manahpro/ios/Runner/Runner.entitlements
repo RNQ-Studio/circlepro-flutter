@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	  iOS Universal Links for Latihan Bersama invite links (Sprint 09).
+	  https://circlepro.web.id/j/<code> & /group-scoring/join open the app
+	  directly once the apple-app-site-association file (served by the backend at
+	  /.well-known/apple-app-site-association) verifies.
+
+	  ⚠️ MANUAL STEP REQUIRED: this file must be linked to the Runner target in
+	  Xcode (Signing & Capabilities → + Associated Domains → applinks:circlepro.web.id),
+	  which sets CODE_SIGN_ENTITLEMENTS in the project, and the Associated Domains
+	  capability must be enabled for the App ID in the Apple Developer portal.
+	  Until then, iOS uses the manahpro:// custom-scheme fallback (already wired
+	  in Info.plist), which works without entitlements.
+	-->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:circlepro.web.id</string>
+	</array>
+</dict>
+</plist>

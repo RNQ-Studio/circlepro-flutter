@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../../domain/group_entities.dart';
+import '../group_invite_share.dart';
 import '../group_scoring_providers.dart';
 import '../group_scoring_routes.dart';
 
@@ -130,12 +130,20 @@ class GroupCreatedScreen extends ConsumerWidget {
                 const SizedBox(width: ManahSpacing.md),
                 Expanded(
                   child: FilledButton.icon(
-                    onPressed: () => _share(g),
+                    onPressed: () => shareGroupInvite(g),
                     icon: const Icon(Icons.share),
-                    label: const Text('Bagikan'),
+                    label: const Text('Bagikan Tautan'),
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: ManahSpacing.sm),
+            // QR for the coffee-table poster — everyone scans in parallel
+            // (Sprint 09, task 9.3).
+            OutlinedButton.icon(
+              onPressed: () => context.push(GroupScoringRoutes.qr(g.id)),
+              icon: const Icon(Icons.qr_code_2),
+              label: const Text('Tampilkan QR'),
             ),
             const SizedBox(height: ManahSpacing.lg),
 
@@ -193,16 +201,6 @@ class GroupCreatedScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _share(ScoringGroupEntity g) async {
-    final title = g.title?.isNotEmpty == true ? g.title! : 'Latihan Bersama';
-    await SharePlus.instance.share(
-      ShareParams(
-        text: 'Yuk ikut "$title" di ManahPro! 🎯\n'
-            'Masukkan kode gabung: ${g.joinCode}\n'
-            '(tautan undangan langsung menyusul)',
-      ),
-    );
-  }
 }
 
 class _SummaryRow extends StatelessWidget {

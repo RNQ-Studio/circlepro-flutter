@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_text_styles.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../../domain/board_participant_entity.dart';
 import '../../domain/group_entities.dart';
+import '../group_invite_share.dart';
 import '../group_scoring_providers.dart';
 import '../group_scoring_routes.dart';
 import '../widgets/add_participant_sheet.dart';
@@ -32,9 +32,18 @@ class GroupDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(hostBoardControllerProvider(groupId));
 
+    final group = async.value?.group;
     return Scaffold(
       appBar: AppBar(
-        title: Text(async.value?.group.titleOrDefault ?? 'Sesi Latihan'),
+        title: Text(group?.titleOrDefault ?? 'Sesi Latihan'),
+        actions: [
+          if (group != null)
+            IconButton(
+              tooltip: 'QR Undangan',
+              onPressed: () => context.push(GroupScoringRoutes.qr(group.id)),
+              icon: const Icon(Icons.qr_code_2),
+            ),
+        ],
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -49,7 +58,7 @@ class GroupDetailScreen extends ConsumerWidget {
               const SizedBox(height: ManahSpacing.lg),
               if (participants.isEmpty)
                 _EmptyRosterCoaching(
-                  onShare: () => _share(group),
+                  onShare: () => shareGroupInvite(group),
                   onAdd: () => _addPlayers(context, ref),
                 )
               else
@@ -59,7 +68,7 @@ class GroupDetailScreen extends ConsumerWidget {
                   onTapParticipant: (p) => context.push(
                     GroupScoringRoutes.board(group.id, participantId: p.id),
                   ),
-                  onShare: () => _share(group),
+                  onShare: () => shareGroupInvite(group),
                   onAdd: () => _addPlayers(context, ref),
                   onOpenBoard: () =>
                       context.push(GroupScoringRoutes.board(group.id)),
@@ -92,17 +101,9 @@ class GroupDetailScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _share(ScoringGroupEntity group) async {
-    // Phase-0 placeholder copy; the full invite deep link / QR is Phase 1
-    // (Sprint 09). Today we still hand the host a one-tap WhatsApp-able ajakan.
-    await SharePlus.instance.share(
-      ShareParams(
-        text: 'Yuk ikut "${group.titleOrDefault}" di ManahPro! 🎯\n'
-            'Masukkan kode gabung: ${group.joinCode}\n'
-            '(tautan undangan langsung menyusul)',
-      ),
-    );
-  }
+  // Share is link-first now (Sprint 09): an HTTPS invite that opens the preview
+  // straight from WhatsApp, with the typed code as a fallback (see
+  // [shareGroupInvite]).
 }
 
 /// Small extension so detail/board share one default title.

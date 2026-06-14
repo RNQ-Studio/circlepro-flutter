@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:features_shared/features_shared.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../../shared/api/manah_api.dart';
@@ -6,6 +7,7 @@ import '../../scoring/domain/scoring_entities.dart';
 import '../../scoring/presentation/scoring_providers.dart';
 import '../data/group_scoring_repository_impl.dart';
 import '../data/local/group_scoring_local_data_source.dart';
+import '../data/pending_join_store.dart';
 import '../data/remote/group_scoring_remote_data_source.dart';
 import '../domain/board_participant_entity.dart';
 import '../domain/group_entities.dart';
@@ -42,6 +44,21 @@ Future<List<ScoringGroupEntity>> groupsList(Ref ref) {
 @riverpod
 Future<ScoringGroupEntity?> groupDetail(Ref ref, String groupId) {
   return ref.watch(groupScoringRepositoryProvider).getGroup(groupId);
+}
+
+/// Preview a group by its join code before joining (online-only lookup, full
+/// round format — Sprint 09, tasks 9.2/9.6). Every entry point (deep link, QR,
+/// typed code) funnels through this so the join preview is identical.
+@riverpod
+Future<ScoringGroupEntity> joinPreview(Ref ref, String joinCode) {
+  return ref.watch(groupScoringRepositoryProvider).lookup(joinCode);
+}
+
+/// Persists a pending join code across an unauthenticated gap so a deferred deep
+/// link resumes after register/login (Sprint 09, task 9.4).
+@Riverpod(keepAlive: true)
+PendingJoinStore pendingJoinStore(Ref ref) {
+  return PendingJoinStore(ref.watch(storageServiceProvider));
 }
 
 /// Immutable state of the host board: the group (round format) plus its

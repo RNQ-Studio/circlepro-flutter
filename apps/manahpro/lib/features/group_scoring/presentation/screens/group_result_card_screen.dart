@@ -9,6 +9,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../../../theme/manah_tokens.dart';
 import '../../domain/group_leaderboard.dart';
+import '../../domain/join_link.dart';
 import '../group_scoring_providers.dart';
 import '../widgets/group_result_card.dart';
 
@@ -71,11 +72,13 @@ class _GroupResultCardScreenState extends ConsumerState<GroupResultCardScreen> {
         await SharePlus.instance.share(
           ShareParams(
             files: [XFile(file.path, mimeType: 'image/png')],
-            // Phase-0 invite text. The deep-link slot below becomes a real
-            // tap-to-join/claim URL in Phase 1/2 (Sprint 09/14).
+            // Link-first invite (Sprint 09): the HTTPS link opens the preview
+            // from WhatsApp; the typed code rides along as a fallback. Sprint 14
+            // upgrades this into a tap-to-claim URL.
             text: 'Hasil "$title" di ManahPro 🎯\n'
-                'Ikut latihan bareng — kode gabung: $joinCode\n'
-                '(tautan undangan langsung menyusul)',
+                'Ikut latihan bareng — ketuk tautan:\n'
+                '${JoinLink.buildShareUrl(joinCode)}\n\n'
+                'Atau masukkan kode gabung: $joinCode',
           ),
         );
       });

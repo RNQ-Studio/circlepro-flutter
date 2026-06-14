@@ -157,11 +157,20 @@ class HomeScreen extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Logo ManahPro (kecilkan sedikit ke 32, pojok kiri)
+          // Logo ManahPro (kecilkan sedikit ke 32, pojok kiri). Degrade
+          // gracefully if the asset can't load (e.g. corrupt bundle / test
+          // harness) instead of throwing and breaking layout.
           Image.asset(
             'assets/images/logo_border_white.png',
             height: 32,
             fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) => const SizedBox(
+              height: 32,
+              child: Text(
+                'ManahPro',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+            ),
           ),
           // Ikon pengaturan dan logout (hanya tampil jika terautentikasi)
           if (isAuthenticated)

@@ -20,7 +20,16 @@ class GroupListScreen extends ConsumerWidget {
     final async = ref.watch(groupsListProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Latihan Bersama')),
+      appBar: AppBar(
+        title: const Text('Latihan Bersama'),
+        actions: [
+          IconButton(
+            tooltip: 'Gabung dengan kode',
+            onPressed: () => context.push(GroupScoringRoutes.joinByCode),
+            icon: const Icon(Icons.login),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(GroupScoringRoutes.create),
         icon: const Icon(Icons.add),

@@ -4,6 +4,7 @@ import 'package:core/core.dart';
 import 'package:features_shared/features_shared.dart';
 
 import 'router/app_router.dart';
+import 'shared/deep_link/deep_link_coordinator.dart';
 import 'theme/manah_theme.dart';
 
 class App extends StatelessWidget {
@@ -38,7 +39,16 @@ class _AppRouterState extends ConsumerState<_AppRouter> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(authProvider.notifier).checkCurrentUser();
     });
-    ref.listenManual(authProvider, (_, __) => appRouter.refresh());
+    // Start capturing Latihan Bersama invite deep links (Sprint 09).
+    ref.read(deepLinkCoordinatorProvider);
+    ref.listenManual<AuthState>(authProvider, (previous, next) {
+      appRouter.refresh();
+      // Resume a pending / deferred invite once the user is authenticated
+      // (task 9.4): the stashed code becomes a navigation to the preview.
+      if (next is AuthAuthenticated) {
+        ref.read(deepLinkCoordinatorProvider.notifier).consumePending();
+      }
+    });
   }
 
   @override

@@ -12,7 +12,24 @@
 				<string>com.googleusercontent.apps.925566560744-3fckatiquhdgduco3g21ivmi5f19jo7l</string>
 			</array>
 		</dict>
+		<!-- Sprint 09: custom scheme fallback for group-scoring join deep links
+		     (manahpro://join?code=<code>). Universal Links over HTTPS are the
+		     primary path; see the Associated Domains entitlement. -->
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>id.rnq.manahpro.deeplink</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>manahpro</string>
+			</array>
+		</dict>
 	</array>
+	<!-- We capture links via the app_links plugin to auth-gate & defer them, so
+	     Flutter's automatic navigator deep-linking is turned off. -->
+	<key>FlutterDeepLinkingEnabled</key>
+	<false/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
@@ -80,6 +97,6 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Aplikasi memerlukan akses galeri foto untuk mengubah foto profil (avatar) Anda.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Aplikasi memerlukan akses kamera untuk mengambil foto profil (avatar) Anda.</string>
+	<string>Aplikasi memerlukan akses kamera untuk mengambil foto profil (avatar) dan memindai QR undangan Latihan Bersama.</string>
 </dict>
 </plist>

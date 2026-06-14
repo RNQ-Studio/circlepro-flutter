@@ -4,16 +4,32 @@ import '../domain/group_entities.dart';
 import 'screens/create_group_screen.dart';
 import 'screens/group_created_screen.dart';
 import 'screens/group_detail_screen.dart';
+import 'screens/group_join_preview_screen.dart';
 import 'screens/group_leaderboard_screen.dart';
 import 'screens/group_list_screen.dart';
 import 'screens/group_result_card_screen.dart';
 import 'screens/host_board_screen.dart';
+import 'screens/join_by_code_screen.dart';
+import 'screens/scan_qr_screen.dart';
+import 'screens/show_qr_screen.dart';
 
 /// Route paths for the Latihan Bersama (group scoring) feature. Declared
 /// app-level (not in core's shared AppRoutes, which the `variant` flavor uses).
 abstract final class GroupScoringRoutes {
   static const String list = '/group-scoring';
   static const String create = '/group-scoring/create';
+
+  /// Typed-code fallback entry (Sprint 09, task 9.5).
+  static const String joinByCode = '/group-scoring/join-by-code';
+
+  /// QR scanner entry (Sprint 09, task 9.3).
+  static const String scan = '/group-scoring/scan';
+
+  /// The rich join preview every entry point funnels to (Sprint 09, task 9.2).
+  static String joinPreview(String code) => '/group-scoring/preview/$code';
+
+  /// Full-screen QR poster for a group (Sprint 09, task 9.3).
+  static String qr(String groupId) => '/group-scoring/$groupId/qr';
 
   static String created(String groupId) => '/group-scoring/$groupId/created';
 
@@ -46,6 +62,26 @@ final List<RouteBase> groupScoringRoutes = [
   GoRoute(
     path: GroupScoringRoutes.create,
     builder: (context, state) => const CreateGroupScreen(),
+  ),
+  // Join entry points (Sprint 09) — single-segment paths must precede the bare
+  // `/:id` below so they are not swallowed as a group id.
+  GoRoute(
+    path: GroupScoringRoutes.joinByCode,
+    builder: (context, state) => const JoinByCodeScreen(),
+  ),
+  GoRoute(
+    path: GroupScoringRoutes.scan,
+    builder: (context, state) => const ScanQrScreen(),
+  ),
+  GoRoute(
+    path: '/group-scoring/preview/:code',
+    builder: (context, state) =>
+        GroupJoinPreviewScreen(code: state.pathParameters['code']!),
+  ),
+  GoRoute(
+    path: '/group-scoring/:id/qr',
+    builder: (context, state) =>
+        ShowQrScreen(groupId: state.pathParameters['id']!),
   ),
   GoRoute(
     path: '/group-scoring/:id/created',

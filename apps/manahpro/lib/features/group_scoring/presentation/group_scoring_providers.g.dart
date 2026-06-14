@@ -271,6 +271,153 @@ final class GroupDetailFamily extends $Family
   String toString() => r'groupDetailProvider';
 }
 
+/// Preview a group by its join code before joining (online-only lookup, full
+/// round format — Sprint 09, tasks 9.2/9.6). Every entry point (deep link, QR,
+/// typed code) funnels through this so the join preview is identical.
+
+@ProviderFor(joinPreview)
+final joinPreviewProvider = JoinPreviewFamily._();
+
+/// Preview a group by its join code before joining (online-only lookup, full
+/// round format — Sprint 09, tasks 9.2/9.6). Every entry point (deep link, QR,
+/// typed code) funnels through this so the join preview is identical.
+
+final class JoinPreviewProvider extends $FunctionalProvider<
+        AsyncValue<ScoringGroupEntity>,
+        ScoringGroupEntity,
+        FutureOr<ScoringGroupEntity>>
+    with
+        $FutureModifier<ScoringGroupEntity>,
+        $FutureProvider<ScoringGroupEntity> {
+  /// Preview a group by its join code before joining (online-only lookup, full
+  /// round format — Sprint 09, tasks 9.2/9.6). Every entry point (deep link, QR,
+  /// typed code) funnels through this so the join preview is identical.
+  JoinPreviewProvider._(
+      {required JoinPreviewFamily super.from, required String super.argument})
+      : super(
+          retry: null,
+          name: r'joinPreviewProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$joinPreviewHash();
+
+  @override
+  String toString() {
+    return r'joinPreviewProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<ScoringGroupEntity> $createElement(
+          $ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<ScoringGroupEntity> create(Ref ref) {
+    final argument = this.argument as String;
+    return joinPreview(
+      ref,
+      argument,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is JoinPreviewProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$joinPreviewHash() => r'12bbea9f7d822f1aa355678d4e708b0bcfd56170';
+
+/// Preview a group by its join code before joining (online-only lookup, full
+/// round format — Sprint 09, tasks 9.2/9.6). Every entry point (deep link, QR,
+/// typed code) funnels through this so the join preview is identical.
+
+final class JoinPreviewFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<ScoringGroupEntity>, String> {
+  JoinPreviewFamily._()
+      : super(
+          retry: null,
+          name: r'joinPreviewProvider',
+          dependencies: null,
+          $allTransitiveDependencies: null,
+          isAutoDispose: true,
+        );
+
+  /// Preview a group by its join code before joining (online-only lookup, full
+  /// round format — Sprint 09, tasks 9.2/9.6). Every entry point (deep link, QR,
+  /// typed code) funnels through this so the join preview is identical.
+
+  JoinPreviewProvider call(
+    String joinCode,
+  ) =>
+      JoinPreviewProvider._(argument: joinCode, from: this);
+
+  @override
+  String toString() => r'joinPreviewProvider';
+}
+
+/// Persists a pending join code across an unauthenticated gap so a deferred deep
+/// link resumes after register/login (Sprint 09, task 9.4).
+
+@ProviderFor(pendingJoinStore)
+final pendingJoinStoreProvider = PendingJoinStoreProvider._();
+
+/// Persists a pending join code across an unauthenticated gap so a deferred deep
+/// link resumes after register/login (Sprint 09, task 9.4).
+
+final class PendingJoinStoreProvider extends $FunctionalProvider<
+    PendingJoinStore,
+    PendingJoinStore,
+    PendingJoinStore> with $Provider<PendingJoinStore> {
+  /// Persists a pending join code across an unauthenticated gap so a deferred deep
+  /// link resumes after register/login (Sprint 09, task 9.4).
+  PendingJoinStoreProvider._()
+      : super(
+          from: null,
+          argument: null,
+          retry: null,
+          name: r'pendingJoinStoreProvider',
+          isAutoDispose: false,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$pendingJoinStoreHash();
+
+  @$internal
+  @override
+  $ProviderElement<PendingJoinStore> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  PendingJoinStore create(Ref ref) {
+    return pendingJoinStore(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PendingJoinStore value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PendingJoinStore>(value),
+    );
+  }
+}
+
+String _$pendingJoinStoreHash() => r'abbeb5a314cb9e6759b42e3c0d7908cf1ecf24e9';
+
 /// Drives the host board (Sprint 05): loads the group + participants, adds
 /// guests, and saves each round offline-first (the repository persists locally
 /// then syncs in the background). The screen only ever talks to this notifier.
@@ -323,7 +470,7 @@ final class HostBoardControllerProvider
 }
 
 String _$hostBoardControllerHash() =>
-    r'a88810f8462b9df46a83cebc9c73fb119bd3e11d';
+    r'ad031ec8fed314d25370f0f09077f7071ef2df18';
 
 /// Drives the host board (Sprint 05): loads the group + participants, adds
 /// guests, and saves each round offline-first (the repository persists locally
