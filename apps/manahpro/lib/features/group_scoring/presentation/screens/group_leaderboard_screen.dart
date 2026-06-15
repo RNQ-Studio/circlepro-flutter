@@ -6,10 +6,12 @@ import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_text_styles.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../../../scoring/domain/scoring_entities.dart';
+import '../../../scoring/domain/scoring_enums.dart';
 import '../../domain/board_participant_entity.dart';
 import '../../domain/group_entities.dart';
 import '../../domain/group_leaderboard.dart';
 import '../../domain/group_live_leaderboard.dart';
+import '../../domain/group_social_board.dart';
 import '../group_scoring_providers.dart';
 import '../group_scoring_routes.dart';
 
@@ -41,6 +43,10 @@ class GroupLeaderboardScreen extends ConsumerStatefulWidget {
 class _GroupLeaderboardScreenState
     extends ConsumerState<GroupLeaderboardScreen> {
   late final AppLifecycleListener _lifecycle;
+
+  /// Active bow-class chip filter (null = "Semua"). Local view state only — it
+  /// never changes the fair ordering, just what the screen paints (task 12.2).
+  BowClass? _classFilter;
 
   @override
   void initState() {
@@ -97,6 +103,16 @@ class _GroupLeaderboardScreenState
 
           final localById = {for (final p in local.participants) p.id: p};
 
+          // ★ "tertinggi di kelasmu" is computed over the *whole* board (before
+          // any chip filter) and only for classes with ≥2 archers — so the mark
+          // stays meaningful even while looking at a single-class view (12.3).
+          final classLeaders =
+              classLeaderSessionIds(board.rows.map((r) => r.social));
+          final availableClasses =
+              bowClassesOnBoard(board.rows.map((r) => r.social));
+          final visibleRows =
+              filterRowsByClass(board.rows, _classFilter, (r) => r.bowClass);
+
           return RefreshIndicator(
             onRefresh: () async {
               // Pull-to-refresh retries both layers: push local rows, then force
@@ -116,19 +132,33 @@ class _GroupLeaderboardScreenState
                       _FreshnessBar(board: board),
                       const SizedBox(height: ManahSpacing.sm),
                       _ProgressBanner(board: board),
+                      if (availableClasses.length >= 2) ...[
+                        const SizedBox(height: ManahSpacing.sm),
+                        _ClassFilterChips(
+                          classes: availableClasses,
+                          selected: _classFilter,
+                          onSelected: (c) => setState(() => _classFilter = c),
+                        ),
+                      ],
                       const SizedBox(height: ManahSpacing.base),
-                      for (final row in board.rows)
+                      for (final row in visibleRows)
                         Padding(
+                          key: ValueKey(row.sessionId),
                           padding:
                               const EdgeInsets.only(bottom: ManahSpacing.sm),
-                          child: _LeaderboardRow(
-                            row: row,
-                            group: local.group,
-                            onTap: () => _showDrillDown(
-                              context,
-                              local.group,
-                              row,
-                              localById[row.sessionId],
+                          child: _AnimatedRankSlot(
+                            rank: row.rank,
+                            child: _LeaderboardRow(
+                              row: row,
+                              group: local.group,
+                              isClassLeader:
+                                  classLeaders.contains(row.sessionId),
+                              onTap: () => _showDrillDown(
+                                context,
+                                local.group,
+                                row,
+                                localById[row.sessionId],
+                              ),
                             ),
                           ),
                         ),
@@ -179,6 +209,7 @@ class _BoardRow {
     required this.arrowsShot,
     required this.endsShot,
     required this.isComplete,
+    this.bowClass,
     this.isProvisionalLeader = false,
   });
 
@@ -186,6 +217,7 @@ class _BoardRow {
   final String sessionId;
   final String name;
   final bool isGuest;
+  final BowClass? bowClass;
   final int totalScore;
   final int xCount;
   final int tenCount;
@@ -196,11 +228,16 @@ class _BoardRow {
 
   bool get hasStarted => arrowsShot > 0;
 
+  /// Adapts this row to the shape the pure social-board helpers reason about.
+  SocialBoardRow get social =>
+      (sessionId: sessionId, bowClass: bowClass, started: hasStarted);
+
   factory _BoardRow.fromLive(LiveLeaderboardEntry e) => _BoardRow(
         rank: e.rank,
         sessionId: e.sessionId,
         name: e.labelOr('Saya'),
         isGuest: e.isGuest,
+        bowClass: e.bowClass,
         totalScore: e.totalScore,
         xCount: e.xCount,
         tenCount: e.tenCount,
@@ -215,6 +252,7 @@ class _BoardRow {
         sessionId: e.participant.id,
         name: e.participant.labelOr('Saya'),
         isGuest: e.participant.isGuest,
+        bowClass: e.participant.bowClass,
         totalScore: e.participant.totalScore,
         xCount: e.participant.xCount,
         tenCount: e.participant.tenCount,
@@ -369,11 +407,16 @@ class _LeaderboardRow extends StatelessWidget {
   const _LeaderboardRow({
     required this.row,
     required this.group,
+    required this.isClassLeader,
     required this.onTap,
   });
 
   final _BoardRow row;
   final ScoringGroupEntity group;
+
+  /// ★ "tertinggi di kelasmu" — only set when this row's class has ≥2 archers
+  /// (task 12.3); otherwise we never crown a "juara dari 1".
+  final bool isClassLeader;
   final VoidCallback onTap;
 
   @override
@@ -409,16 +452,25 @@ class _LeaderboardRow extends StatelessWidget {
       child: ListTile(
         onTap: onTap,
         leading: _RankBadge(rank: row.rank),
-        title: Row(
+        // Wrap (not Row) so the class badge + ★ + Tamu/Memimpin tags fold to a
+        // second line on narrow phones instead of overflowing (12.1).
+        title: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: ManahSpacing.xs,
+          runSpacing: 2,
           children: [
-            Flexible(
-              child: Text(
-                row.name,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
+            Text(
+              row.name,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(width: ManahSpacing.xs),
+            if (isClassLeader)
+              const Tooltip(
+                message: 'Tertinggi di kelasnya',
+                child: Text('★', style: TextStyle(color: ManahColors.amber)),
+              ),
+            if (row.bowClass != null)
+              _Tag(label: row.bowClass!.label, color: ManahColors.brand),
             if (row.isGuest) _Tag(label: 'Tamu', color: ManahColors.mediumGrey),
             if (row.isProvisionalLeader)
               _Tag(label: 'Memimpin', color: ManahColors.amberDeep),
@@ -704,6 +756,79 @@ class _Tag extends StatelessWidget {
         label,
         style:
             TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+}
+
+/// Bow-class chip filter (task 12.2). One **single** board for everyone — the
+/// chips only narrow the *view*, never the ranking. Built from a facet list
+/// ([classes]) so Fase 3 can drop distance/bantalan chips in beside these
+/// without touching row rendering.
+class _ClassFilterChips extends StatelessWidget {
+  const _ClassFilterChips({
+    required this.classes,
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final List<BowClass> classes;
+  final BowClass? selected;
+  final ValueChanged<BowClass?> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 40,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          _chip(label: 'Semua', isSelected: selected == null, value: null),
+          for (final c in classes)
+            _chip(label: c.label, isSelected: selected == c, value: c),
+        ],
+      ),
+    );
+  }
+
+  Widget _chip({
+    required String label,
+    required bool isSelected,
+    required BowClass? value,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(right: ManahSpacing.xs),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: isSelected,
+        // Re-tapping the active class clears back to "Semua".
+        onSelected: (_) => onSelected(isSelected ? null : value),
+      ),
+    );
+  }
+}
+
+/// Settles a row into its slot with a gentle slide+fade whenever its [rank]
+/// changes (task 12.5). The ordering is already fair (Sprint 03), so the motion
+/// is honest — it just shows the change rather than snapping. Keyed by rank so a
+/// new rank restarts the tween; otherwise it's a no-cost static row (60fps).
+class _AnimatedRankSlot extends StatelessWidget {
+  const _AnimatedRankSlot({required this.rank, required this.child});
+
+  final int rank;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return TweenAnimationBuilder<double>(
+      key: ValueKey(rank),
+      tween: Tween(begin: 0, end: 1),
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOut,
+      child: child,
+      builder: (context, t, child) => Transform.translate(
+        offset: Offset(0, (1 - t) * 6),
+        child: Opacity(opacity: 0.4 + 0.6 * t, child: child),
       ),
     );
   }
