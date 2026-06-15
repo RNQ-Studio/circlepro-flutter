@@ -72,11 +72,13 @@ class _GroupResultCardScreenState extends ConsumerState<GroupResultCardScreen> {
         await SharePlus.instance.share(
           ShareParams(
             files: [XFile(file.path, mimeType: 'image/png')],
-            // Link-first invite (Sprint 09): the HTTPS link opens the preview
-            // from WhatsApp; the typed code rides along as a fallback. Sprint 14
-            // upgrades this into a tap-to-claim URL.
+            // Link-first invite (Sprint 09), now a tap-to-claim URL (Sprint 14):
+            // the HTTPS link opens the join preview from WhatsApp, where guest
+            // slots are highlighted with "Ini Saya" so a name on the card lands
+            // its owner straight on a claim. The typed code rides along as a
+            // fallback.
             text: 'Hasil "$title" di ManahPro 🎯\n'
-                'Ikut latihan bareng — ketuk tautan:\n'
+                'Namamu ada di kartu? Ketuk tautan & klaim skormu:\n'
                 '${JoinLink.buildShareUrl(joinCode)}\n\n'
                 'Atau masukkan kode gabung: $joinCode',
           ),

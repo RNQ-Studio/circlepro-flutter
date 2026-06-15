@@ -73,6 +73,67 @@ class GroupScoringRemoteDataSource {
     return response.data as Map<String, dynamic>;
   }
 
+  // ─── Claim ("Ini Saya") — Sprint 14, Phase 2 ────────────────────────────
+
+  /// Guest slots a code-holder may claim (task 14.1).
+  /// `GET /v1/scoring/groups/{group}/claimable-slots`. Returns the `data.slots`
+  /// list, each annotated with the caller's own claim status for the badge.
+  Future<List<Map<String, dynamic>>> getClaimableSlots(String groupId) async {
+    final response =
+        await _dio.get('v1/scoring/groups/$groupId/claimable-slots');
+    final data = response.data['data'] as Map<String, dynamic>? ?? const {};
+    final slots = data['slots'] as List<dynamic>? ?? const [];
+    return slots.map((e) => e as Map<String, dynamic>).toList();
+  }
+
+  /// Submit a claim over a guest slot ("Ini Saya" — task 14.2).
+  /// `POST /v1/scoring/groups/{group}/participants/{session}/claim`. Idempotent
+  /// server-side (revives a cancelled/rejected claim). Returns the claim row.
+  Future<Map<String, dynamic>> submitClaim(
+    String groupId,
+    String sessionId, {
+    String? message,
+  }) async {
+    final response = await _dio.post(
+      'v1/scoring/groups/$groupId/participants/$sessionId/claim',
+      data: {if (message != null && message.isNotEmpty) 'message': message},
+    );
+    return response.data['data'] as Map<String, dynamic>;
+  }
+
+  /// Host inbox of claims to review (task 14.3).
+  /// `GET /v1/scoring/groups/{group}/claims`. Optional `?status=` filter.
+  Future<List<Map<String, dynamic>>> getHostClaims(
+    String groupId, {
+    String? status,
+  }) async {
+    final response = await _dio.get(
+      'v1/scoring/groups/$groupId/claims',
+      queryParameters: {if (status != null) 'status': status},
+    );
+    final data = response.data['data'] as List<dynamic>? ?? const [];
+    return data.map((e) => e as Map<String, dynamic>).toList();
+  }
+
+  /// Approve or reject a claim, host-only (task 14.3).
+  /// `PATCH /v1/scoring/claims/{claim}` with `{action: approve|reject}`.
+  Future<Map<String, dynamic>> resolveClaim(
+    String claimId,
+    String action,
+  ) async {
+    final response = await _dio.patch(
+      'v1/scoring/claims/$claimId',
+      data: {'action': action},
+    );
+    return response.data['data'] as Map<String, dynamic>;
+  }
+
+  /// Cancel one's own pending claim (claimant-only).
+  /// `DELETE /v1/scoring/claims/{claim}`.
+  Future<void> cancelClaim(String claimId) async {
+    await _dio.delete('v1/scoring/claims/$claimId');
+  }
+
   /// Idempotent batch sync of participant scores for the host board (Sprint 05).
   /// `POST /v1/scoring/groups/{group}/sync`. Each item is a pre-built payload
   /// (see [boardParticipantToSyncJson]); the server resolves-or-creates per row

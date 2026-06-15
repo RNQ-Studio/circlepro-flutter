@@ -1,6 +1,7 @@
 import '../../scoring/domain/scoring_entities.dart';
 import '../../scoring/domain/scoring_enums.dart';
 import 'board_participant_entity.dart';
+import 'group_claim.dart';
 import 'group_entities.dart';
 import 'group_live_leaderboard.dart';
 
@@ -94,4 +95,27 @@ abstract interface class GroupScoringRepository {
     String groupId, {
     String? version,
   });
+
+  // ─── Claim ("Ini Saya") — Sprint 14, Phase 2 ────────────────────────────
+
+  /// Guest slots of [groupId] a code-holder may claim (task 14.1). Online-only:
+  /// the deep-link landing needs the live truth. Each slot carries this user's
+  /// own claim status so the UI can paint the "Menunggu persetujuan host" badge.
+  Future<List<ClaimableSlot>> claimableSlots(String groupId);
+
+  /// Submit a claim over a guest slot ("Ini Saya" — task 14.2). [message] is an
+  /// optional note to the host. Idempotent server-side (revives a prior
+  /// cancelled/rejected claim).
+  Future<void> submitClaim(String groupId, String sessionId, {String? message});
+
+  /// The host inbox of claims to review for [groupId] (task 14.3), optionally
+  /// filtered by [status]. Online-only.
+  Future<List<HostClaim>> hostClaims(String groupId, {ClaimStatus? status});
+
+  /// Approve or reject a claim, host-only (task 14.3). [approve] true approves
+  /// (transfers ownership), false rejects.
+  Future<void> resolveClaim(String claimId, {required bool approve});
+
+  /// Cancel one's own pending claim (claimant-only).
+  Future<void> cancelClaim(String claimId);
 }

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../shared/routes/social_routes.dart';
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
+import '../../../group_scoring/presentation/claim_notification_routing.dart';
 import '../../domain/notification_entity.dart';
 import '../notifications_providers.dart';
 
@@ -62,9 +63,16 @@ class _NotificationTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ListTile(
-      onTap: notification.isRead
-          ? null
-          : () => ref.read(notificationsProvider.notifier).markRead(notification.id),
+      onTap: () {
+        if (!notification.isRead) {
+          ref.read(notificationsProvider.notifier).markRead(notification.id);
+        }
+        // Claim notifications deep-link to the right screen (task 14.4); other
+        // types keep the plain mark-read behaviour.
+        final route = groupClaimNotificationRoute(
+            notification.type, notification.data);
+        if (route != null) context.push(route);
+      },
       leading: CircleAvatar(
         backgroundColor: notification.isRead ? Theme.of(context).dividerColor.withValues(alpha: 0.2) : ManahColors.brandSurface,
         child: Icon(

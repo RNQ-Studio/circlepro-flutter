@@ -37,10 +37,19 @@ class GroupDetailScreen extends ConsumerWidget {
         authState is AuthAuthenticated ? authState.user.id : null;
 
     final group = async.value?.group;
+    final isHostAppBar = group != null &&
+        currentUserId != null &&
+        currentUserId == group.hostUserId.toString();
     return Scaffold(
       appBar: AppBar(
         title: Text(group?.titleOrDefault ?? 'Sesi Latihan'),
         actions: [
+          if (isHostAppBar)
+            IconButton(
+              tooltip: 'Klaim Masuk',
+              onPressed: () => context.push(GroupScoringRoutes.claims(group.id)),
+              icon: const Icon(Icons.how_to_reg),
+            ),
           if (group != null)
             IconButton(
               tooltip: 'QR Undangan',

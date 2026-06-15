@@ -6,10 +6,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
+import '../../../scoring/domain/scoring_enums.dart';
 import '../../domain/group_entities.dart';
 import '../group_invite_share.dart';
 import '../group_scoring_providers.dart';
 import '../group_scoring_routes.dart';
+import '../widgets/claim_slots_section.dart';
 import '../widgets/join_bow_class_sheet.dart';
 
 /// Rich join preview (Sprint 09, task 9.2) — the single destination every entry
@@ -134,8 +136,19 @@ class _PreviewBody extends ConsumerWidget {
               icon: const Icon(Icons.login),
               label: const Text('Gabung Sesi'),
             )
-          else
-            _SelfJoinButton(group: group),
+          else ...[
+            // Self-join only makes sense while the session is live; a finished
+            // session is closed to joins (Sprint 10 gate). Claiming a past slot
+            // still works either way (Sprint 14).
+            if (group.status == ScoringSessionStatus.inProgress) ...[
+              _SelfJoinButton(group: group),
+              const SizedBox(height: ManahSpacing.lg),
+            ],
+            // The claim landing (task 14.1): guest slots highlighted, each with
+            // a big "Ini Saya" — this is where Pak Budi lands from the card.
+            ClaimSlotsSection(groupId: group.id),
+            const SizedBox(height: ManahSpacing.lg),
+          ],
           const SizedBox(height: ManahSpacing.sm),
           OutlinedButton.icon(
             onPressed: () => _copyCode(context),

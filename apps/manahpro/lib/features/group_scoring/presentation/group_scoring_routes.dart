@@ -7,6 +7,7 @@ import 'screens/group_detail_screen.dart';
 import 'screens/group_join_preview_screen.dart';
 import 'screens/group_leaderboard_screen.dart';
 import 'screens/group_list_screen.dart';
+import 'screens/claim_inbox_screen.dart';
 import 'screens/group_result_card_screen.dart';
 import 'screens/host_board_screen.dart';
 import 'screens/join_by_code_screen.dart';
@@ -56,6 +57,10 @@ abstract final class GroupScoringRoutes {
   /// The shareable, DNF-friendly result card preview (Sprint 07).
   static String resultCard(String groupId) =>
       '/group-scoring/$groupId/result-card';
+
+  /// The host claim inbox (Sprint 14, task 14.3) — approve/reject guest-slot
+  /// claims; also the deep-link target for a `group_claim_submitted` notice.
+  static String claims(String groupId) => '/group-scoring/$groupId/claims';
 }
 
 /// GoRoutes for the group scoring feature, spread into the app router.
@@ -120,6 +125,11 @@ final List<RouteBase> groupScoringRoutes = [
     path: '/group-scoring/:id/result-card',
     builder: (context, state) =>
         GroupResultCardScreen(groupId: state.pathParameters['id']!),
+  ),
+  GoRoute(
+    path: '/group-scoring/:id/claims',
+    builder: (context, state) =>
+        ClaimInboxScreen(groupId: state.pathParameters['id']!),
   ),
   // Keep the bare `/:id` (detail hub) **last** so the more specific
   // `/created` and `/board` segments match first.

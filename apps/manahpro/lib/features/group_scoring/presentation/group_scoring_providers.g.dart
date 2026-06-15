@@ -418,6 +418,187 @@ final class PendingJoinStoreProvider extends $FunctionalProvider<
 
 String _$pendingJoinStoreHash() => r'abbeb5a314cb9e6759b42e3c0d7908cf1ecf24e9';
 
+/// Guest slots of a group a code-holder may claim (task 14.1). Online-only —
+/// the deep-link landing needs the live truth; each slot carries this user's own
+/// claim status so the badge ("Menunggu persetujuan host") needs no extra call.
+
+@ProviderFor(claimableSlots)
+final claimableSlotsProvider = ClaimableSlotsFamily._();
+
+/// Guest slots of a group a code-holder may claim (task 14.1). Online-only —
+/// the deep-link landing needs the live truth; each slot carries this user's own
+/// claim status so the badge ("Menunggu persetujuan host") needs no extra call.
+
+final class ClaimableSlotsProvider extends $FunctionalProvider<
+        AsyncValue<List<ClaimableSlot>>,
+        List<ClaimableSlot>,
+        FutureOr<List<ClaimableSlot>>>
+    with
+        $FutureModifier<List<ClaimableSlot>>,
+        $FutureProvider<List<ClaimableSlot>> {
+  /// Guest slots of a group a code-holder may claim (task 14.1). Online-only —
+  /// the deep-link landing needs the live truth; each slot carries this user's own
+  /// claim status so the badge ("Menunggu persetujuan host") needs no extra call.
+  ClaimableSlotsProvider._(
+      {required ClaimableSlotsFamily super.from,
+      required String super.argument})
+      : super(
+          retry: null,
+          name: r'claimableSlotsProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$claimableSlotsHash();
+
+  @override
+  String toString() {
+    return r'claimableSlotsProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<ClaimableSlot>> $createElement(
+          $ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<ClaimableSlot>> create(Ref ref) {
+    final argument = this.argument as String;
+    return claimableSlots(
+      ref,
+      argument,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ClaimableSlotsProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$claimableSlotsHash() => r'eb0a29df8410379ef787d9ef57680d4b86295bd8';
+
+/// Guest slots of a group a code-holder may claim (task 14.1). Online-only —
+/// the deep-link landing needs the live truth; each slot carries this user's own
+/// claim status so the badge ("Menunggu persetujuan host") needs no extra call.
+
+final class ClaimableSlotsFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<ClaimableSlot>>, String> {
+  ClaimableSlotsFamily._()
+      : super(
+          retry: null,
+          name: r'claimableSlotsProvider',
+          dependencies: null,
+          $allTransitiveDependencies: null,
+          isAutoDispose: true,
+        );
+
+  /// Guest slots of a group a code-holder may claim (task 14.1). Online-only —
+  /// the deep-link landing needs the live truth; each slot carries this user's own
+  /// claim status so the badge ("Menunggu persetujuan host") needs no extra call.
+
+  ClaimableSlotsProvider call(
+    String groupId,
+  ) =>
+      ClaimableSlotsProvider._(argument: groupId, from: this);
+
+  @override
+  String toString() => r'claimableSlotsProvider';
+}
+
+/// The host inbox of claims to review for a group (task 14.3).
+
+@ProviderFor(hostClaims)
+final hostClaimsProvider = HostClaimsFamily._();
+
+/// The host inbox of claims to review for a group (task 14.3).
+
+final class HostClaimsProvider extends $FunctionalProvider<
+        AsyncValue<List<HostClaim>>, List<HostClaim>, FutureOr<List<HostClaim>>>
+    with $FutureModifier<List<HostClaim>>, $FutureProvider<List<HostClaim>> {
+  /// The host inbox of claims to review for a group (task 14.3).
+  HostClaimsProvider._(
+      {required HostClaimsFamily super.from, required String super.argument})
+      : super(
+          retry: null,
+          name: r'hostClaimsProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$hostClaimsHash();
+
+  @override
+  String toString() {
+    return r'hostClaimsProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  $FutureProviderElement<List<HostClaim>> $createElement(
+          $ProviderPointer pointer) =>
+      $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<HostClaim>> create(Ref ref) {
+    final argument = this.argument as String;
+    return hostClaims(
+      ref,
+      argument,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is HostClaimsProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$hostClaimsHash() => r'3e6c870ad4e2a35269f0c38fbee361be9acfc7ee';
+
+/// The host inbox of claims to review for a group (task 14.3).
+
+final class HostClaimsFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<List<HostClaim>>, String> {
+  HostClaimsFamily._()
+      : super(
+          retry: null,
+          name: r'hostClaimsProvider',
+          dependencies: null,
+          $allTransitiveDependencies: null,
+          isAutoDispose: true,
+        );
+
+  /// The host inbox of claims to review for a group (task 14.3).
+
+  HostClaimsProvider call(
+    String groupId,
+  ) =>
+      HostClaimsProvider._(argument: groupId, from: this);
+
+  @override
+  String toString() => r'hostClaimsProvider';
+}
+
 /// Drives the host board (Sprint 05): loads the group + participants, adds
 /// guests, and saves each round offline-first (the repository persists locally
 /// then syncs in the background). The screen only ever talks to this notifier.
@@ -604,7 +785,7 @@ final class LiveLeaderboardControllerProvider extends $AsyncNotifierProvider<
 }
 
 String _$liveLeaderboardControllerHash() =>
-    r'cc2b32e3ffe25b068f196d4d47ea241ae22a3496';
+    r'24b0136f51d7b47a65adaff5e04a2705052cee0b';
 
 /// Lifecycle-aware live leaderboard poller (Sprint 11, tasks 11.1/11.2).
 ///

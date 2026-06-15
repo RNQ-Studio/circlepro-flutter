@@ -3,6 +3,7 @@ import 'dart:developer';
 import '../../scoring/domain/scoring_entities.dart';
 import '../../scoring/domain/scoring_enums.dart';
 import '../domain/board_participant_entity.dart';
+import '../domain/group_claim.dart';
 import '../domain/group_entities.dart';
 import '../domain/group_live_leaderboard.dart';
 import '../domain/group_scoring_repository.dart';
@@ -192,6 +193,39 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
   }) async {
     final body = await _remote.getLeaderboard(groupId, version: version);
     return LiveLeaderboardSnapshot.fromEnvelope(body);
+  }
+
+  // ─── Claim ("Ini Saya") — Sprint 14 ─────────────────────────────────────
+
+  @override
+  Future<List<ClaimableSlot>> claimableSlots(String groupId) async {
+    final data = await _remote.getClaimableSlots(groupId);
+    return data.map(ClaimableSlot.fromJson).toList();
+  }
+
+  @override
+  Future<void> submitClaim(
+    String groupId,
+    String sessionId, {
+    String? message,
+  }) async {
+    await _remote.submitClaim(groupId, sessionId, message: message);
+  }
+
+  @override
+  Future<List<HostClaim>> hostClaims(String groupId, {ClaimStatus? status}) async {
+    final data = await _remote.getHostClaims(groupId, status: status?.value);
+    return data.map(HostClaim.fromJson).toList();
+  }
+
+  @override
+  Future<void> resolveClaim(String claimId, {required bool approve}) async {
+    await _remote.resolveClaim(claimId, approve ? 'approve' : 'reject');
+  }
+
+  @override
+  Future<void> cancelClaim(String claimId) async {
+    await _remote.cancelClaim(claimId);
   }
 
   /// Fire-and-forget sync; swallow errors (the field has no signal half the

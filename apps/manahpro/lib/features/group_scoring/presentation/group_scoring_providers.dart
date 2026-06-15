@@ -13,6 +13,7 @@ import '../data/local/group_scoring_local_data_source.dart';
 import '../data/pending_join_store.dart';
 import '../data/remote/group_scoring_remote_data_source.dart';
 import '../domain/board_participant_entity.dart';
+import '../domain/group_claim.dart';
 import '../domain/group_entities.dart';
 import '../domain/group_live_leaderboard.dart';
 import '../domain/group_scoring_repository.dart';
@@ -63,6 +64,22 @@ Future<ScoringGroupEntity> joinPreview(Ref ref, String joinCode) {
 @Riverpod(keepAlive: true)
 PendingJoinStore pendingJoinStore(Ref ref) {
   return PendingJoinStore(ref.watch(storageServiceProvider));
+}
+
+// ─── Claim ("Ini Saya") — Sprint 14, Phase 2 ───────────────────────────────
+
+/// Guest slots of a group a code-holder may claim (task 14.1). Online-only —
+/// the deep-link landing needs the live truth; each slot carries this user's own
+/// claim status so the badge ("Menunggu persetujuan host") needs no extra call.
+@riverpod
+Future<List<ClaimableSlot>> claimableSlots(Ref ref, String groupId) {
+  return ref.watch(groupScoringRepositoryProvider).claimableSlots(groupId);
+}
+
+/// The host inbox of claims to review for a group (task 14.3).
+@riverpod
+Future<List<HostClaim>> hostClaims(Ref ref, String groupId) {
+  return ref.watch(groupScoringRepositoryProvider).hostClaims(groupId);
 }
 
 /// Immutable state of the host board: the group (round format) plus its
