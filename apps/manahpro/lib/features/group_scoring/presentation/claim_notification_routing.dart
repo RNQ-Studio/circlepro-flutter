@@ -15,14 +15,20 @@ String? groupClaimNotificationRoute(String? type, Map<String, dynamic>? data) {
 
   final groupId = data['group_id'] as String?;
   final joinCode = data['join_code'] as String?;
+  final sessionId = data['session_id'] as String?;
 
   switch (type) {
     case 'group_claim_submitted':
       // → host inbox to approve/reject.
       return groupId == null ? null : GroupScoringRoutes.claims(groupId);
     case 'group_claim_approved':
-      // → the claimant's session (now theirs) to view/score.
-      return groupId == null ? null : GroupScoringRoutes.detail(groupId);
+      // → the skill-onboarding success screen for the claimant's session, now
+      // theirs (Sprint 15.3). Falls back to the session detail when no session
+      // id rode along (older payloads).
+      if (groupId == null) return null;
+      return sessionId != null && sessionId.isNotEmpty
+          ? GroupScoringRoutes.claimSuccess(groupId, sessionId)
+          : GroupScoringRoutes.detail(groupId);
     case 'group_claim_rejected':
       // → back to the join preview so they can try again on the right slot;
       // fall back to the session detail when no code rode along.

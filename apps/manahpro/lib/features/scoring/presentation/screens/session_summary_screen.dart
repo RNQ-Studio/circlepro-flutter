@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,6 +8,7 @@ import '../../../../theme/manah_tokens.dart';
 import '../../domain/scoring_entities.dart';
 import '../scoring_providers.dart';
 import '../scoring_routes.dart';
+import '../widgets/personal_best_banner.dart';
 
 /// Post-session summary: total, averages, per-end chart, PB celebration and a
 /// shareable scorecard. ui-ux-design-guide.md §6.
@@ -61,7 +61,7 @@ class _SummaryBody extends StatelessWidget {
         padding: const EdgeInsets.all(ManahSpacing.base),
         children: [
           if (session.isPersonalBest) ...[
-            _PersonalBestBanner(),
+            const PersonalBestBanner(),
             const SizedBox(height: ManahSpacing.base),
           ],
           Card(
@@ -117,59 +117,6 @@ class _SummaryBody extends StatelessWidget {
             child: const Text('Selesai'),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Celebratory PB banner — scales + fades in once and fires a heavy haptic.
-class _PersonalBestBanner extends StatefulWidget {
-  @override
-  State<_PersonalBestBanner> createState() => _PersonalBestBannerState();
-}
-
-class _PersonalBestBannerState extends State<_PersonalBestBanner> {
-  @override
-  void initState() {
-    super.initState();
-    HapticFeedback.heavyImpact();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 450),
-      curve: Curves.easeOutBack,
-      builder: (context, t, child) => Opacity(
-        opacity: t.clamp(0.0, 1.0),
-        child: Transform.scale(scale: 0.85 + 0.15 * t, child: child),
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(ManahSpacing.base),
-        decoration: BoxDecoration(
-          color: ManahColors.amberSurface,
-          borderRadius: BorderRadius.circular(ManahRadius.lg),
-          border: Border.all(color: ManahColors.amber),
-        ),
-        child: Row(
-          children: [
-            const Text('🎯', style: TextStyle(fontSize: 28)),
-            const SizedBox(width: ManahSpacing.md),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Personal Best Baru!',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(color: ManahColors.amberDeep),
-                  ),
-                  const Text('Rekor terbaik untuk format ini.'),
-                ],
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

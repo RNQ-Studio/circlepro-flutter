@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
 
+import '../domain/claim_success_summary.dart';
 import '../domain/group_entities.dart';
+import 'screens/claim_success_screen.dart';
 import 'screens/create_group_screen.dart';
 import 'screens/group_created_screen.dart';
 import 'screens/group_detail_screen.dart';
@@ -61,6 +63,12 @@ abstract final class GroupScoringRoutes {
   /// The host claim inbox (Sprint 14, task 14.3) — approve/reject guest-slot
   /// claims; also the deep-link target for a `group_claim_submitted` notice.
   static String claims(String groupId) => '/group-scoring/$groupId/claims';
+
+  /// The claim-success onboarding (Sprint 15.3) — the `group_claim_approved`
+  /// notification lands here so the new owner is welcomed with their first PB /
+  /// average, not a bare "berhasil". The skill numbers ride along via `extra`.
+  static String claimSuccess(String groupId, String sessionId) =>
+      '/group-scoring/$groupId/claim-success/$sessionId';
 }
 
 /// GoRoutes for the group scoring feature, spread into the app router.
@@ -130,6 +138,22 @@ final List<RouteBase> groupScoringRoutes = [
     path: '/group-scoring/:id/claims',
     builder: (context, state) =>
         ClaimInboxScreen(groupId: state.pathParameters['id']!),
+  ),
+  GoRoute(
+    path: '/group-scoring/:id/claim-success/:sessionId',
+    builder: (context, state) {
+      // The approved-claim notification rides its `data` map in via `extra` so
+      // the skill numbers render without a re-fetch; a cold/missing extra
+      // degrades gracefully to a plain warm welcome.
+      final data = state.extra is Map<String, dynamic>
+          ? state.extra as Map<String, dynamic>
+          : null;
+      return ClaimSuccessScreen(
+        groupId: state.pathParameters['id']!,
+        sessionId: state.pathParameters['sessionId']!,
+        summary: ClaimSuccessSummary.fromNotificationData(data),
+      );
+    },
   ),
   // Keep the bare `/:id` (detail hub) **last** so the more specific
   // `/created` and `/board` segments match first.

@@ -68,10 +68,12 @@ class _NotificationTile extends ConsumerWidget {
           ref.read(notificationsProvider.notifier).markRead(notification.id);
         }
         // Claim notifications deep-link to the right screen (task 14.4); other
-        // types keep the plain mark-read behaviour.
+        // types keep the plain mark-read behaviour. The payload rides along via
+        // `extra` so the claim-success onboarding (15.3) can show the skill
+        // numbers without a re-fetch.
         final route = groupClaimNotificationRoute(
             notification.type, notification.data);
-        if (route != null) context.push(route);
+        if (route != null) context.push(route, extra: notification.data);
       },
       leading: CircleAvatar(
         backgroundColor: notification.isRead ? Theme.of(context).dividerColor.withValues(alpha: 0.2) : ManahColors.brandSurface,

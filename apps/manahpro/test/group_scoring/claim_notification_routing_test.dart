@@ -16,7 +16,16 @@ void main() {
       expect(route, '/group-scoring/grp123/claims');
     });
 
-    test('approved → the claimant session detail', () {
+    test('approved → the skill-onboarding success screen (Sprint 15.3)', () {
+      final route = groupClaimNotificationRoute('group_claim_approved', {
+        'group_id': 'grp123',
+        'session_id': 'sess1',
+        'join_code': 'ABC234',
+      });
+      expect(route, '/group-scoring/grp123/claim-success/sess1');
+    });
+
+    test('approved without a session id falls back to the session detail', () {
       final route = groupClaimNotificationRoute('group_claim_approved', {
         'group_id': 'grp123',
         'join_code': 'ABC234',
