@@ -407,3 +407,320 @@ class LiveLeaderboardController extends _$LiveLeaderboardController {
     }
   }
 }
+
+/// Compact per-bantalan monitor state (Sprint 19). It deliberately mirrors the
+/// live leaderboard cursor contract: a stable [version] means the next poll can
+/// be cheap, while [butts] keeps the last visible board when the backend replies
+/// unchanged.
+class ButtStatusState extends Equatable {
+  const ButtStatusState({
+    this.butts = const [],
+    this.version,
+    this.groupStatus,
+    this.participantCount = 0,
+    this.buttCount = 0,
+    this.updatedAt,
+    this.lastCheckedAt,
+    this.offline = false,
+  });
+
+  final List<GroupButtEntity> butts;
+  final String? version;
+  final ScoringSessionStatus? groupStatus;
+  final int participantCount;
+  final int buttCount;
+  final DateTime? updatedAt;
+  final DateTime? lastCheckedAt;
+  final bool offline;
+
+  bool get isLive => groupStatus == ScoringSessionStatus.inProgress;
+
+  int get laggingCount => butts.where((b) => b.isLagging).length;
+
+  ButtStatusState copyWith({
+    List<GroupButtEntity>? butts,
+    String? version,
+    ScoringSessionStatus? groupStatus,
+    int? participantCount,
+    int? buttCount,
+    DateTime? updatedAt,
+    DateTime? lastCheckedAt,
+    bool? offline,
+  }) {
+    return ButtStatusState(
+      butts: butts ?? this.butts,
+      version: version ?? this.version,
+      groupStatus: groupStatus ?? this.groupStatus,
+      participantCount: participantCount ?? this.participantCount,
+      buttCount: buttCount ?? this.buttCount,
+      updatedAt: updatedAt ?? this.updatedAt,
+      lastCheckedAt: lastCheckedAt ?? this.lastCheckedAt,
+      offline: offline ?? this.offline,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        butts,
+        version,
+        groupStatus,
+        participantCount,
+        buttCount,
+        updatedAt,
+        lastCheckedAt,
+        offline,
+      ];
+}
+
+@riverpod
+class ButtStatusController extends _$ButtStatusController {
+  Timer? _timer;
+  bool _appPaused = false;
+
+  static const Duration pollInterval = Duration(seconds: 5);
+
+  @override
+  Future<ButtStatusState> build(String groupId) async {
+    ref.onDispose(() {
+      _timer?.cancel();
+      _timer = null;
+    });
+
+    final repo = ref.read(groupScoringRepositoryProvider);
+    ButtStatusState initial;
+    try {
+      final envelope = await repo.fetchButts(groupId);
+      initial = _merge(const ButtStatusState(), envelope, DateTime.now());
+    } catch (_) {
+      final group = await repo.getGroup(groupId);
+      initial = _cachedStateFromGroup(group, DateTime.now());
+    }
+
+    _syncTimer(initial);
+    return initial;
+  }
+
+  ButtStatusState _cachedStateFromGroup(
+    ScoringGroupEntity? group,
+    DateTime now,
+  ) {
+    if (group == null) {
+      return ButtStatusState(offline: true, lastCheckedAt: now);
+    }
+
+    final grouped = <int?, List<GroupParticipantEntity>>{};
+    for (final participant in group.participants) {
+      grouped.putIfAbsent(participant.targetButt, () => []).add(participant);
+    }
+
+    final sortedKeys = grouped.keys.toList()
+      ..sort((a, b) {
+        if (a == null) return 1;
+        if (b == null) return -1;
+        return a.compareTo(b);
+      });
+
+    final drafts = [
+      for (final key in sortedKeys)
+        _CachedButtDraft.fromParticipants(
+          targetButt: key,
+          participants: grouped[key]!,
+          group: group,
+        ),
+    ];
+    final maxProgress =
+        drafts.where((draft) => draft.targetButt != null).fold<int>(
+              0,
+              (max, draft) => draft.endProgress > max ? draft.endProgress : max,
+            );
+
+    final butts = [
+      for (final draft in drafts) draft.toEntity(maxProgress),
+    ];
+
+    return ButtStatusState(
+      butts: butts,
+      groupStatus: group.status,
+      participantCount: group.participants.length,
+      buttCount: grouped.keys.whereType<int>().length,
+      lastCheckedAt: now,
+      offline: true,
+    );
+  }
+
+  ButtStatusState _merge(
+    ButtStatusState previous,
+    GroupButtStatusEnvelope envelope,
+    DateTime now,
+  ) {
+    if (envelope.unchanged) {
+      return previous.copyWith(
+        version: envelope.version,
+        lastCheckedAt: now,
+        offline: false,
+      );
+    }
+    return ButtStatusState(
+      butts: envelope.butts,
+      version: envelope.version,
+      groupStatus: envelope.groupStatus ?? previous.groupStatus,
+      participantCount: envelope.participantCount,
+      buttCount: envelope.buttCount,
+      updatedAt: now,
+      lastCheckedAt: now,
+    );
+  }
+
+  void _syncTimer(ButtStatusState status) {
+    if (status.isLive && !_appPaused) {
+      _timer ??= Timer.periodic(pollInterval, (_) => _poll());
+    } else {
+      _timer?.cancel();
+      _timer = null;
+    }
+  }
+
+  Future<void> _poll() async {
+    final current = state.value;
+    if (current == null) return;
+    if (!current.isLive) {
+      _syncTimer(current);
+      return;
+    }
+
+    final repo = ref.read(groupScoringRepositoryProvider);
+    try {
+      final envelope = await repo.fetchButts(groupId, version: current.version);
+      final next = _merge(current, envelope, DateTime.now());
+      state = AsyncData(next);
+      _syncTimer(next);
+    } catch (_) {
+      state = AsyncData(current.copyWith(
+        offline: true,
+        lastCheckedAt: DateTime.now(),
+      ));
+    }
+  }
+
+  Future<void> refreshNow() async {
+    final repo = ref.read(groupScoringRepositoryProvider);
+    final base = state.value ?? const ButtStatusState();
+    try {
+      final envelope = await repo.fetchButts(groupId);
+      final next = _merge(base, envelope, DateTime.now());
+      state = AsyncData(next);
+      _syncTimer(next);
+    } catch (_) {
+      state = AsyncData(base.copyWith(
+        offline: true,
+        lastCheckedAt: DateTime.now(),
+      ));
+    }
+  }
+
+  Future<void> claimButt(int targetButt) async {
+    final repo = ref.read(groupScoringRepositoryProvider);
+    await repo.claimButt(groupId, targetButt);
+    await refreshNow();
+  }
+
+  void setAppActive(bool active) {
+    _appPaused = !active;
+    final current = state.value;
+    if (current == null) return;
+    _syncTimer(current);
+    if (active && current.isLive) {
+      unawaited(_poll());
+    }
+  }
+}
+
+class _CachedButtDraft {
+  const _CachedButtDraft({
+    required this.targetButt,
+    required this.participantCount,
+    required this.completedCount,
+    required this.submittedCount,
+    required this.endProgress,
+    required this.maxEndProgress,
+    required this.targetEnds,
+    required this.totalScore,
+    required this.participants,
+  });
+
+  final int? targetButt;
+  final int participantCount;
+  final int completedCount;
+  final int submittedCount;
+  final int endProgress;
+  final int maxEndProgress;
+  final int targetEnds;
+  final int totalScore;
+  final List<GroupParticipantEntity> participants;
+
+  factory _CachedButtDraft.fromParticipants({
+    required int? targetButt,
+    required List<GroupParticipantEntity> participants,
+    required ScoringGroupEntity group,
+  }) {
+    final arrowsPerEnd = group.arrowsPerEnd <= 0 ? 1 : group.arrowsPerEnd;
+    final progress = [
+      for (final participant in participants)
+        participant.arrowsShot ~/ arrowsPerEnd,
+    ];
+    final endProgress =
+        progress.isEmpty ? 0 : progress.reduce((a, b) => a < b ? a : b);
+    final maxEndProgress =
+        progress.isEmpty ? 0 : progress.reduce((a, b) => a > b ? a : b);
+    final completedCount = participants
+        .where((p) => p.status == ScoringSessionStatus.completed)
+        .length;
+    final allComplete =
+        participants.isNotEmpty && completedCount == participants.length;
+    final submittedCount = allComplete
+        ? participants.length
+        : progress.where((value) => value > endProgress).length;
+
+    return _CachedButtDraft(
+      targetButt: targetButt,
+      participantCount: participants.length,
+      completedCount: completedCount,
+      submittedCount: submittedCount,
+      endProgress: endProgress,
+      maxEndProgress: maxEndProgress,
+      targetEnds: group.numEnds,
+      totalScore: participants.fold<int>(
+        0,
+        (sum, participant) => sum + participant.totalScore,
+      ),
+      participants: participants,
+    );
+  }
+
+  GroupButtEntity toEntity(int globalMaxProgress) {
+    final complete = participantCount > 0 && completedCount == participantCount;
+    final rawLag = globalMaxProgress - endProgress;
+    final laggingByEnds = targetButt == null || rawLag < 0 ? 0 : rawLag;
+    final pendingCount = participantCount - submittedCount;
+    final currentEnd = targetEnds <= 0 || complete
+        ? null
+        : (endProgress + 1 > targetEnds ? targetEnds : endProgress + 1);
+
+    return GroupButtEntity(
+      targetButt: targetButt,
+      participantCount: participantCount,
+      completedCount: completedCount,
+      submittedCount: submittedCount,
+      pendingCount: pendingCount < 0 ? 0 : pendingCount,
+      endProgress: endProgress,
+      maxEndProgress: maxEndProgress,
+      currentEnd: currentEnd,
+      targetEnds: targetEnds,
+      isComplete: complete,
+      totalScore: totalScore,
+      laggingByEnds: laggingByEnds,
+      isLagging: laggingByEnds >= 2,
+      participants: participants,
+    );
+  }
+}

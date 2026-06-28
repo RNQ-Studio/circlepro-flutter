@@ -11,6 +11,10 @@ Map<String, dynamic> boardParticipantToSyncJson(BoardParticipant p) {
     'client_uuid': p.clientUuid,
     if (p.guestName != null) 'name': p.guestName,
     if (p.bowClass != null) 'bow_class': p.bowClass!.value,
+    if (p.distanceM != null) 'distance_m': p.distanceM,
+    if (p.targetFaceCm != null) 'target_face_cm': p.targetFaceCm,
+    if (p.targetButt != null) 'target_butt': p.targetButt,
+    if (p.targetLetter != null) 'target_letter': p.targetLetter,
     'status': p.status.value,
     if (p.completedAt != null)
       'completed_at': p.completedAt!.toUtc().toIso8601String(),

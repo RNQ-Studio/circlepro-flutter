@@ -2,6 +2,8 @@ import 'package:go_router/go_router.dart';
 
 import '../domain/claim_success_summary.dart';
 import '../domain/group_entities.dart';
+import 'screens/butt_picker_screen.dart';
+import 'screens/butt_status_dashboard_screen.dart';
 import 'screens/claim_success_screen.dart';
 import 'screens/create_group_screen.dart';
 import 'screens/group_created_screen.dart';
@@ -51,6 +53,17 @@ abstract final class GroupScoringRoutes {
     final base = '/group-scoring/$groupId/board';
     return participantId == null ? base : '$base?participant=$participantId';
   }
+
+  /// Per-bantalan picker for parallel scorers (Sprint 18).
+  static String butts(String groupId) => '/group-scoring/$groupId/butts';
+
+  /// Host board filtered to one target butt (Sprint 18).
+  static String buttBoard(String groupId, int targetButt) =>
+      '/group-scoring/$groupId/butts/$targetButt/board';
+
+  /// Throughput monitor per target butt (Sprint 19).
+  static String buttStatus(String groupId) =>
+      '/group-scoring/$groupId/butts/status';
 
   /// The session leaderboard (Sprint 07) — fair ranking + drill-down + share.
   static String leaderboard(String groupId) =>
@@ -111,6 +124,23 @@ final List<RouteBase> groupScoringRoutes = [
         group: group,
       );
     },
+  ),
+  GoRoute(
+    path: '/group-scoring/:id/butts/status',
+    builder: (context, state) =>
+        ButtStatusDashboardScreen(groupId: state.pathParameters['id']!),
+  ),
+  GoRoute(
+    path: '/group-scoring/:id/butts/:butt/board',
+    builder: (context, state) => HostBoardScreen(
+      groupId: state.pathParameters['id']!,
+      targetButt: int.tryParse(state.pathParameters['butt'] ?? ''),
+    ),
+  ),
+  GoRoute(
+    path: '/group-scoring/:id/butts',
+    builder: (context, state) =>
+        ButtPickerScreen(groupId: state.pathParameters['id']!),
   ),
   GoRoute(
     path: '/group-scoring/:id/board',

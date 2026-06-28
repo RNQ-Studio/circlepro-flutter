@@ -93,7 +93,12 @@ class GroupParticipantCacheRows extends Table {
   TextColumn get guestName => text().nullable()();
   BoolColumn get isGuest => boolean().withDefault(const Constant(false))();
   TextColumn get bowClass => text().nullable()();
+  TextColumn get distanceCategory => text().nullable()();
   IntColumn get distanceM => integer().nullable()();
+  IntColumn get targetFaceCm => integer().nullable()();
+  IntColumn get targetButt => integer().nullable()();
+  TextColumn get targetLetter => text().nullable()();
+  IntColumn get lastScoredByUserId => integer().nullable()();
   IntColumn get totalScore => integer().withDefault(const Constant(0))();
   IntColumn get maxPossibleScore => integer().nullable()();
   IntColumn get arrowsShot => integer().withDefault(const Constant(0))();
@@ -163,7 +168,7 @@ class ScoringDatabase extends _$ScoringDatabase {
 
   @override
   int get schemaVersion =>
-      10; // Sprint 05: bowClass nullable (guest rows) — bump to reset tables
+      11; // Sprint 18: cache per-bantalan roster metadata for offline boards
 
   @override
   MigrationStrategy get migration => MigrationStrategy(

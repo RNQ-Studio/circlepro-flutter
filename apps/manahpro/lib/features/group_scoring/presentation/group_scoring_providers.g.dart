@@ -871,3 +871,93 @@ abstract class _$LiveLeaderboardController
             ));
   }
 }
+
+@ProviderFor(ButtStatusController)
+final buttStatusControllerProvider = ButtStatusControllerFamily._();
+
+final class ButtStatusControllerProvider
+    extends $AsyncNotifierProvider<ButtStatusController, ButtStatusState> {
+  ButtStatusControllerProvider._(
+      {required ButtStatusControllerFamily super.from,
+      required String super.argument})
+      : super(
+          retry: null,
+          name: r'buttStatusControllerProvider',
+          isAutoDispose: true,
+          dependencies: null,
+          $allTransitiveDependencies: null,
+        );
+
+  @override
+  String debugGetCreateSourceHash() => _$buttStatusControllerHash();
+
+  @override
+  String toString() {
+    return r'buttStatusControllerProvider'
+        ''
+        '($argument)';
+  }
+
+  @$internal
+  @override
+  ButtStatusController create() => ButtStatusController();
+
+  @override
+  bool operator ==(Object other) {
+    return other is ButtStatusControllerProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
+  }
+}
+
+String _$buttStatusControllerHash() =>
+    r'5cfbeb79baa7321a33c3f6d8bf8cef016b03fc3f';
+
+final class ButtStatusControllerFamily extends $Family
+    with
+        $ClassFamilyOverride<ButtStatusController, AsyncValue<ButtStatusState>,
+            ButtStatusState, FutureOr<ButtStatusState>, String> {
+  ButtStatusControllerFamily._()
+      : super(
+          retry: null,
+          name: r'buttStatusControllerProvider',
+          dependencies: null,
+          $allTransitiveDependencies: null,
+          isAutoDispose: true,
+        );
+
+  ButtStatusControllerProvider call(
+    String groupId,
+  ) =>
+      ButtStatusControllerProvider._(argument: groupId, from: this);
+
+  @override
+  String toString() => r'buttStatusControllerProvider';
+}
+
+abstract class _$ButtStatusController extends $AsyncNotifier<ButtStatusState> {
+  late final _$args = ref.$arg as String;
+  String get groupId => _$args;
+
+  FutureOr<ButtStatusState> build(
+    String groupId,
+  );
+  @$mustCallSuper
+  @override
+  void runBuild() {
+    final ref = this.ref as $Ref<AsyncValue<ButtStatusState>, ButtStatusState>;
+    final element = ref.element as $ClassProviderElement<
+        AnyNotifier<AsyncValue<ButtStatusState>, ButtStatusState>,
+        AsyncValue<ButtStatusState>,
+        Object?,
+        Object?>;
+    element.handleCreate(
+        ref,
+        () => build(
+              _$args,
+            ));
+  }
+}

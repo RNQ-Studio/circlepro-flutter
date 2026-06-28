@@ -20,6 +20,10 @@ class BoardParticipant extends Equatable {
     this.guestName,
     this.displayName,
     this.bowClass,
+    this.distanceM,
+    this.targetFaceCm,
+    this.targetButt,
+    this.targetLetter,
     this.status = ScoringSessionStatus.inProgress,
     this.isSynced = false,
     this.syncAction,
@@ -44,6 +48,10 @@ class BoardParticipant extends Equatable {
   final String? displayName;
 
   final BowClass? bowClass;
+  final int? distanceM;
+  final int? targetFaceCm;
+  final int? targetButt;
+  final String? targetLetter;
   final ScoringSessionStatus status;
   final bool isSynced;
 
@@ -57,6 +65,21 @@ class BoardParticipant extends Equatable {
 
   /// Best label for the board: the guest's name, else a server display name.
   String labelOr(String fallback) => guestName ?? displayName ?? fallback;
+
+  String get targetLabel {
+    if (targetButt == null) return '-';
+    final letter = targetLetter?.trim();
+    return letter == null || letter.isEmpty
+        ? '$targetButt'
+        : '$targetButt$letter';
+  }
+
+  String get distanceLabel {
+    final distance = distanceM;
+    if (distance == null) return '-';
+    final face = targetFaceCm;
+    return face == null ? '$distance m' : '$distance m / $face cm';
+  }
 
   Iterable<ArrowScore> get _allArrows => ends.expand((e) => e.arrows);
 
@@ -77,6 +100,10 @@ class BoardParticipant extends Equatable {
   }
 
   BoardParticipant copyWith({
+    int? distanceM,
+    int? targetFaceCm,
+    int? targetButt,
+    String? targetLetter,
     ScoringSessionStatus? status,
     bool? isSynced,
     String? syncAction,
@@ -90,6 +117,10 @@ class BoardParticipant extends Equatable {
       guestName: guestName,
       displayName: displayName,
       bowClass: bowClass,
+      distanceM: distanceM ?? this.distanceM,
+      targetFaceCm: targetFaceCm ?? this.targetFaceCm,
+      targetButt: targetButt ?? this.targetButt,
+      targetLetter: targetLetter ?? this.targetLetter,
       status: status ?? this.status,
       isSynced: isSynced ?? this.isSynced,
       syncAction: syncAction ?? this.syncAction,
@@ -109,6 +140,10 @@ class BoardParticipant extends Equatable {
         guestName,
         displayName,
         bowClass,
+        distanceM,
+        targetFaceCm,
+        targetButt,
+        targetLetter,
         status,
         isSynced,
         syncAction,

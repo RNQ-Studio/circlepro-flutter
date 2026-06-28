@@ -63,21 +63,27 @@ void main() {
   });
 
   group('joinGroup', () {
-    test('posts bow class, returns session id, refreshes the roster cache',
+    test('posts bow class and distance override, then refreshes the cache',
         () async {
       when(() => remote.joinGroup('g1', any()))
           .thenAnswer((_) async => {'id': 'sess1', 'user_id': 42});
       when(() => remote.getGroup('g1'))
           .thenAnswer((_) async => groupJson('g1'));
 
-      final sessionId =
-          await repository.joinGroup('g1', bowClass: BowClass.recurve);
+      final sessionId = await repository.joinGroup(
+        'g1',
+        bowClass: BowClass.recurve,
+        distanceM: 30,
+        targetFaceCm: 80,
+      );
 
       expect(sessionId, 'sess1');
       final captured = verify(() => remote.joinGroup('g1', captureAny()))
           .captured
           .single as Map<String, dynamic>;
       expect(captured['bow_class'], 'recurve');
+      expect(captured['distance_m'], 30);
+      expect(captured['target_face_cm'], 80);
       // The roster is refreshed so loadBoard can seed the self row locally.
       verify(() => remote.getGroup('g1')).called(1);
       verify(() => local.upsertGroupWithRoster(any())).called(1);

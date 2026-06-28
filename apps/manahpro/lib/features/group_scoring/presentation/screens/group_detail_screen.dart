@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_text_styles.dart';
 import '../../../../theme/manah_tokens.dart';
+import '../../../scoring/domain/scoring_enums.dart';
 import '../../domain/board_participant_entity.dart';
 import '../../domain/group_entities.dart';
 import '../group_invite_share.dart';
@@ -47,7 +48,8 @@ class GroupDetailScreen extends ConsumerWidget {
           if (isHostAppBar)
             IconButton(
               tooltip: 'Klaim Masuk',
-              onPressed: () => context.push(GroupScoringRoutes.claims(group.id)),
+              onPressed: () =>
+                  context.push(GroupScoringRoutes.claims(group.id)),
               icon: const Icon(Icons.how_to_reg),
             ),
           if (group != null)
@@ -100,10 +102,16 @@ class GroupDetailScreen extends ConsumerWidget {
                   onTapParticipant: (p) => context.push(
                     GroupScoringRoutes.board(group.id, participantId: p.id),
                   ),
+                  onChangeDistance: (p) =>
+                      _changeDistance(context, ref, group, p),
                   onShare: () => shareGroupInvite(group),
                   onAdd: () => _addPlayers(context, ref),
                   onOpenBoard: () =>
                       context.push(GroupScoringRoutes.board(group.id)),
+                  onOpenButts: () =>
+                      context.push(GroupScoringRoutes.butts(group.id)),
+                  onOpenStatus: () =>
+                      context.push(GroupScoringRoutes.buttStatus(group.id)),
                   onOpenLeaderboard: () =>
                       context.push(GroupScoringRoutes.leaderboard(group.id)),
                 ),
@@ -131,6 +139,51 @@ class GroupDetailScreen extends ConsumerWidget {
         backgroundColor: ManahColors.success,
       ),
     );
+  }
+
+  Future<void> _changeDistance(
+    BuildContext context,
+    WidgetRef ref,
+    ScoringGroupEntity group,
+    BoardParticipant participant,
+  ) async {
+    final choice =
+        await showModalBottomSheet<({int distanceM, int? targetFaceCm})>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (_) => _DistanceOverrideSheet(
+        initialDistanceM: participant.distanceM ?? group.distanceM,
+        initialTargetFaceCm: participant.targetFaceCm ?? group.targetFaceCm,
+      ),
+    );
+    if (choice == null || !context.mounted) return;
+
+    try {
+      await ref.read(groupScoringRepositoryProvider).assignParticipantDistance(
+            group.id,
+            participant.id,
+            distanceM: choice.distanceM,
+            targetFaceCm: choice.targetFaceCm,
+          );
+      ref.invalidate(hostBoardControllerProvider(group.id));
+      ref.invalidate(buttStatusControllerProvider(group.id));
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Jarak peserta diperbarui.'),
+          backgroundColor: ManahColors.success,
+        ),
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Jarak tidak bisa diubah setelah skor masuk.'),
+          backgroundColor: ManahColors.error,
+        ),
+      );
+    }
   }
 
   // Share is link-first now (Sprint 09): an HTTPS invite that opens the preview
@@ -313,18 +366,24 @@ class _RosterSection extends StatelessWidget {
     required this.group,
     required this.participants,
     required this.onTapParticipant,
+    required this.onChangeDistance,
     required this.onShare,
     required this.onAdd,
     required this.onOpenBoard,
+    required this.onOpenButts,
+    required this.onOpenStatus,
     required this.onOpenLeaderboard,
   });
 
   final ScoringGroupEntity group;
   final List<BoardParticipant> participants;
   final ValueChanged<BoardParticipant> onTapParticipant;
+  final ValueChanged<BoardParticipant> onChangeDistance;
   final VoidCallback onShare;
   final VoidCallback onAdd;
   final VoidCallback onOpenBoard;
+  final VoidCallback onOpenButts;
+  final VoidCallback onOpenStatus;
   final VoidCallback onOpenLeaderboard;
 
   @override
@@ -356,6 +415,8 @@ class _RosterSection extends StatelessWidget {
               group: group,
               participant: p,
               onTap: () => onTapParticipant(p),
+              onChangeDistance:
+                  p.arrowsShot == 0 ? () => onChangeDistance(p) : null,
             ),
           ),
         const SizedBox(height: ManahSpacing.base),
@@ -366,12 +427,24 @@ class _RosterSection extends StatelessWidget {
         ),
         const SizedBox(height: ManahSpacing.sm),
         OutlinedButton.icon(
+          onPressed: onOpenStatus,
+          icon: const Icon(Icons.speed_outlined),
+          label: const Text('Monitor Bantalan'),
+        ),
+        const SizedBox(height: ManahSpacing.sm),
+        FilledButton.icon(
+          onPressed: onOpenButts,
+          icon: const Icon(Icons.adjust),
+          label: const Text('Pilih Bantalan'),
+        ),
+        const SizedBox(height: ManahSpacing.sm),
+        OutlinedButton.icon(
           onPressed: onOpenLeaderboard,
           icon: const Icon(Icons.leaderboard),
           label: const Text('Papan Peringkat & Kartu Hasil'),
         ),
         const SizedBox(height: ManahSpacing.sm),
-        FilledButton.icon(
+        OutlinedButton.icon(
           onPressed: onOpenBoard,
           icon: const Icon(Icons.sports_score),
           label: const Text('Buka Papan Skor'),
@@ -386,11 +459,13 @@ class _RosterCard extends StatelessWidget {
     required this.group,
     required this.participant,
     required this.onTap,
+    required this.onChangeDistance,
   });
 
   final ScoringGroupEntity group;
   final BoardParticipant participant;
   final VoidCallback onTap;
+  final VoidCallback? onChangeDistance;
 
   @override
   Widget build(BuildContext context) {
@@ -436,23 +511,136 @@ class _RosterCard extends StatelessWidget {
               const SizedBox(width: ManahSpacing.xs),
               _Tag(label: 'Lokal', color: ManahColors.amberDeep),
             ],
+            if (participant.targetButt != null) ...[
+              const SizedBox(width: ManahSpacing.xs),
+              _Tag(label: participant.targetLabel, color: ManahColors.brand),
+            ],
           ],
         ),
         subtitle: Text(
-          '$endsDone/${group.numEnds} rambahan · ${participant.arrowsShot} panah',
+          '${participant.distanceLabel} · $endsDone/${group.numEnds} rambahan · ${participant.arrowsShot} panah',
           style: ManahTextStyles.bodyS.copyWith(color: ManahColors.mediumGrey),
         ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${participant.totalScore}',
+                  style: ManahTextStyles.h3.copyWith(color: ManahColors.brand),
+                ),
+                Text(
+                  'total',
+                  style: ManahTextStyles.bodyS.copyWith(
+                    fontSize: 10,
+                    color: ManahColors.mediumGrey,
+                  ),
+                ),
+              ],
+            ),
+            if (onChangeDistance != null)
+              IconButton(
+                tooltip: 'Ubah jarak',
+                icon: const Icon(Icons.straighten, size: 18),
+                onPressed: onChangeDistance,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DistanceOverrideSheet extends StatefulWidget {
+  const _DistanceOverrideSheet({
+    required this.initialDistanceM,
+    required this.initialTargetFaceCm,
+  });
+
+  final int initialDistanceM;
+  final int? initialTargetFaceCm;
+
+  @override
+  State<_DistanceOverrideSheet> createState() => _DistanceOverrideSheetState();
+}
+
+class _DistanceOverrideSheetState extends State<_DistanceOverrideSheet> {
+  late int _distanceM = widget.initialDistanceM;
+  late int? _targetFaceCm = widget.initialTargetFaceCm;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final distances = DistanceCategory.values.map((d) => d.meters).toList();
+    final faces = {
+      if (widget.initialTargetFaceCm != null) widget.initialTargetFaceCm!,
+      122,
+      80,
+      60,
+      40,
+    }.toList();
+
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          ManahSpacing.base,
+          0,
+          ManahSpacing.base,
+          MediaQuery.of(context).viewInsets.bottom + ManahSpacing.base,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              '${participant.totalScore}',
-              style: ManahTextStyles.h3.copyWith(color: ManahColors.brand),
+              'Jarak peserta',
+              style: theme.textTheme.titleLarge
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
-            Text('total',
-                style: ManahTextStyles.bodyS
-                    .copyWith(fontSize: 10, color: ManahColors.mediumGrey)),
+            const SizedBox(height: ManahSpacing.xs),
+            Text(
+              'Bisa diubah sebelum peserta punya skor.',
+              style: ManahTextStyles.bodyS.copyWith(
+                color: ManahColors.mediumGrey,
+              ),
+            ),
+            const SizedBox(height: ManahSpacing.base),
+            Wrap(
+              spacing: ManahSpacing.xs,
+              runSpacing: ManahSpacing.xs,
+              children: [
+                for (final distance in distances)
+                  ChoiceChip(
+                    label: Text('$distance m'),
+                    selected: _distanceM == distance,
+                    onSelected: (_) => setState(() => _distanceM = distance),
+                  ),
+              ],
+            ),
+            const SizedBox(height: ManahSpacing.base),
+            Wrap(
+              spacing: ManahSpacing.xs,
+              runSpacing: ManahSpacing.xs,
+              children: [
+                for (final face in faces)
+                  ChoiceChip(
+                    label: Text('$face cm'),
+                    selected: _targetFaceCm == face,
+                    onSelected: (_) => setState(() => _targetFaceCm = face),
+                  ),
+              ],
+            ),
+            const SizedBox(height: ManahSpacing.lg),
+            FilledButton.icon(
+              onPressed: () => Navigator.of(context).pop(
+                (distanceM: _distanceM, targetFaceCm: _targetFaceCm),
+              ),
+              icon: const Icon(Icons.check),
+              label: const Text('Simpan Jarak'),
+            ),
           ],
         ),
       ),

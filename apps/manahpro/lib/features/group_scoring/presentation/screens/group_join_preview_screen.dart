@@ -193,14 +193,21 @@ class _SelfJoinButtonState extends ConsumerState<_SelfJoinButton> {
   bool _joining = false;
 
   Future<void> _join() async {
-    final choice = await showJoinBowClassSheet(context);
+    final choice = await showJoinBowClassSheet(
+      context,
+      defaultDistanceM: widget.group.distanceM,
+      defaultTargetFaceCm: widget.group.targetFaceCm,
+    );
     if (choice == null || !choice.confirmed || !mounted) return;
 
     setState(() => _joining = true);
     try {
-      await ref
-          .read(groupScoringRepositoryProvider)
-          .joinGroup(widget.group.id, bowClass: choice.bowClass);
+      await ref.read(groupScoringRepositoryProvider).joinGroup(
+            widget.group.id,
+            bowClass: choice.bowClass,
+            distanceM: choice.distanceM,
+            targetFaceCm: choice.targetFaceCm,
+          );
       if (!mounted) return;
       // Land on my own scorecard — "join → catat sendiri" (narrative).
       context.pushReplacement(

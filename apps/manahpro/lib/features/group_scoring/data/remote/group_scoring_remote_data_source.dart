@@ -73,6 +73,46 @@ class GroupScoringRemoteDataSource {
     return response.data as Map<String, dynamic>;
   }
 
+  /// Grouped roster/status per target butt (Sprint 18/19).
+  /// `GET /v1/scoring/groups/{group}/butts`.
+  Future<Map<String, dynamic>> getButts(
+    String groupId, {
+    String? version,
+  }) async {
+    final response = await _dio.get(
+      'v1/scoring/groups/$groupId/butts',
+      queryParameters: {if (version != null) 'version': version},
+    );
+    return response.data as Map<String, dynamic>;
+  }
+
+  /// Claim one target butt as the current scorer.
+  /// `POST /v1/scoring/groups/{group}/scorers/claim`.
+  Future<Map<String, dynamic>> claimButt(
+    String groupId,
+    int targetButt,
+  ) async {
+    final response = await _dio.post(
+      'v1/scoring/groups/$groupId/scorers/claim',
+      data: {'target_butt': targetButt},
+    );
+    return response.data['data'] as Map<String, dynamic>;
+  }
+
+  /// Assign/override a participant distance before any score exists.
+  /// `PATCH /v1/scoring/groups/{group}/participants/{session}/distance`.
+  Future<Map<String, dynamic>> assignParticipantDistance(
+    String groupId,
+    String sessionId,
+    Map<String, dynamic> body,
+  ) async {
+    final response = await _dio.patch(
+      'v1/scoring/groups/$groupId/participants/$sessionId/distance',
+      data: body,
+    );
+    return response.data['data'] as Map<String, dynamic>;
+  }
+
   // ─── Claim ("Ini Saya") — Sprint 14, Phase 2 ────────────────────────────
 
   /// Guest slots a code-holder may claim (task 14.1).

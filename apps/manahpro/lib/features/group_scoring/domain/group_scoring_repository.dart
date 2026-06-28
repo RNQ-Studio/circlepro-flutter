@@ -43,7 +43,12 @@ abstract interface class GroupScoringRepository {
   /// optional (K8). Online action: on success the group + roster is refreshed
   /// into the local cache so the joined member can score their own row
   /// offline-first. Returns the joined participant's session id.
-  Future<String> joinGroup(String groupId, {BowClass? bowClass});
+  Future<String> joinGroup(
+    String groupId, {
+    BowClass? bowClass,
+    int? distanceM,
+    int? targetFaceCm,
+  });
 
   /// Leave a group by removing one's own row (task 10.5). Deletes the row on the
   /// server, then clears the local copy so it no longer shows on the board.
@@ -83,6 +88,26 @@ abstract interface class GroupScoringRepository {
   /// Best-effort push of unsynced participant scores to the group sync endpoint.
   /// Forgives a dead/flaky connection (kept local for the next attempt).
   Future<void> syncBoard(ScoringGroupEntity group);
+
+  // ─── Per-bantalan scoring (Sprint 17-19) ────────────────────────────────
+
+  /// Fetch grouped roster/status per target butt. [version] is the lightweight
+  /// polling cursor; unchanged replies carry an empty butt list.
+  Future<GroupButtStatusEnvelope> fetchButts(
+    String groupId, {
+    String? version,
+  });
+
+  /// Claim the right to score one target butt on this device/user.
+  Future<GroupScorerEntity> claimButt(String groupId, int targetButt);
+
+  /// Host/owner distance override before the participant has submitted scores.
+  Future<GroupParticipantEntity> assignParticipantDistance(
+    String groupId,
+    String sessionId, {
+    required int distanceM,
+    int? targetFaceCm,
+  });
 
   // ─── Live leaderboard polling (Sprint 11) ───────────────────────────────
 

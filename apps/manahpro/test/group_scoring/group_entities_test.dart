@@ -27,6 +27,12 @@ void main() {
             'is_guest': false,
             'display_name': 'Coach Hadi',
             'bow_class': 'recurve',
+            'distance_category': '50m',
+            'distance_m': 50,
+            'target_face_cm': 122,
+            'target_butt': 1,
+            'target_letter': 'A',
+            'last_scored_by_user_id': 11,
             'total_score': 270,
             'arrows_shot': 36,
           },
@@ -53,6 +59,9 @@ void main() {
       expect(group.status, ScoringSessionStatus.inProgress);
       expect(group.participantCount, 2);
       expect(group.participants, hasLength(2));
+      expect(group.participants.first.targetLabel, '1A');
+      expect(group.participants.first.distanceLabel, '50 m / 122 cm');
+      expect(group.participants.first.lastScoredByUserId, 11);
     });
 
     test('tolerates a lookup payload without a roster', () {
@@ -81,7 +90,12 @@ void main() {
         'is_guest': false,
         'display_name': 'Coach Hadi',
         'bow_class': 'compound',
+        'distance_category': '50m',
         'distance_m': 50,
+        'target_face_cm': 122,
+        'target_butt': 2,
+        'target_letter': 'B',
+        'last_scored_by_user_id': 9,
         'total_score': 280,
         'max_possible_score': 360,
         'arrows_shot': 36,
@@ -93,6 +107,13 @@ void main() {
       expect(p.userId, 7);
       expect(p.isGuest, isFalse);
       expect(p.bowClass, BowClass.compound);
+      expect(p.distanceCategory, DistanceCategory.d50m);
+      expect(p.targetFaceCm, 122);
+      expect(p.targetButt, 2);
+      expect(p.targetLetter, 'B');
+      expect(p.targetLabel, '2B');
+      expect(p.distanceLabel, '50 m / 122 cm');
+      expect(p.lastScoredByUserId, 9);
       expect(p.totalScore, 280);
       expect(p.status, ScoringSessionStatus.completed);
     });
@@ -113,6 +134,80 @@ void main() {
       expect(p.bowClass, isNull);
       expect(p.status, isNull);
       expect(p.totalScore, 0);
+    });
+  });
+
+  group('GroupButtStatusEnvelope.fromEnvelope', () {
+    test('parses per-butt scorer, progress and participant metadata', () {
+      final envelope = GroupButtStatusEnvelope.fromEnvelope({
+        'data': {
+          'butts': [
+            {
+              'target_butt': 3,
+              'label': 'Bantalan 3',
+              'participant_count': 2,
+              'completed_count': 1,
+              'submitted_count': 1,
+              'pending_count': 1,
+              'end_progress': 4,
+              'max_end_progress': 6,
+              'current_end': 5,
+              'target_ends': 6,
+              'total_score': 512,
+              'is_complete': false,
+              'lagging_by_ends': 2,
+              'is_lagging': true,
+              'scorer': {
+                'id': 'gs1',
+                'user_id': 99,
+                'target_butt': 3,
+                'assignment_type': 'claimed',
+                'scorer': {'id': 99, 'name': 'Skorer A'},
+              },
+              'participants': [
+                {
+                  'id': 's1',
+                  'display_name': 'Archer A',
+                  'target_butt': 3,
+                  'target_letter': 'A',
+                  'distance_m': 50,
+                  'target_face_cm': 122,
+                  'arrows_shot': 24,
+                },
+              ],
+            },
+          ],
+        },
+        'meta': {
+          'version': '2-100-in_progress',
+          'group_status': 'in_progress',
+          'participant_count': 2,
+          'butt_count': 1,
+        },
+      });
+
+      expect(envelope.version, '2-100-in_progress');
+      expect(envelope.groupStatus, ScoringSessionStatus.inProgress);
+      expect(envelope.unchanged, isFalse);
+      expect(envelope.butts, hasLength(1));
+      final butt = envelope.butts.single;
+      expect(butt.targetButt, 3);
+      expect(butt.label, 'Bantalan 3');
+      expect(butt.scorer?.name, 'Skorer A');
+      expect(butt.isLagging, isTrue);
+      expect(butt.progressLabel, '4/6');
+      expect(butt.participants.single.targetLabel, '3A');
+    });
+
+    test('keeps previous state when backend says unchanged', () {
+      final envelope = GroupButtStatusEnvelope.fromEnvelope({
+        'data': {'butts': []},
+        'meta': {'version': 'v1', 'unchanged': true},
+      });
+
+      expect(envelope.unchanged, isTrue);
+      expect(envelope.butts, isEmpty);
+      expect(envelope.version, 'v1');
     });
   });
 }

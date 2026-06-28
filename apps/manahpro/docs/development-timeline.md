@@ -9,7 +9,7 @@
 
 ---
 
-## 🟢 Status Implementasi (update: 5 Juni 2026)
+## 🟢 Status Implementasi (update: 28 Juni 2026)
 
 > Repo: **`circlepro-flutter`** (app `apps/manahpro`) + **`circlepro-web`** (backend Laravel — _bukan_ `circlepro-laravel`; folder aktualnya `circlepro-web`).
 
@@ -36,6 +36,7 @@
 | **Phase 4 — Mobile (sebagian)** | **Coach** (`features/coaches/`: `coach_directory_screen` + `coach_detail_screen`). **Club enhanced** (`club_schedule_screen` 23KB + `club_attendance_dashboard_screen`). **Range finder** (`range_finder_screen` 17KB). **Article reader** (`article_list_screen` + `article_reader_screen`). **Achievement** (`achievement_dashboard_widget` 12KB). **Gamification** (providers + widget). |
 | **Bonus (di luar timeline awal)** | **Stories** (Instagram-style): `StoryController` backend + `story_viewer_screen`/`story_picker_preview_screen` mobile + migrasi `stories`/`story_views`. Tes: `StoryTest` hijau. · **Quotes**: `QuoteController` (love/unlove) + full clean-arch `features/quotes/` mobile + migrasi `quotes`/`quote_loves` + seeder 150 quotes. · **Target Face management**: `TargetFaceController` + migrasi `target_faces` + enhanced scoring setup (pilih target face dengan preview visual). |
 | **Phase 5 — Monetization (penuh)** | **Subscription Billing** (Free/Pro/Elite untuk user, Starter/Pro/Enterprise untuk klub) · **Premium Gating** (3 sesi/minggu untuk Free) · **Ads Framework** (AdCardWidget di Community Feed, targeted, premium bypass) · **Revenue Dashboard** (MRR/churn/plan counts). **Tes: MonetizationTest.php & monetization_providers_test.dart hijau, analyze 0 error.** |
+| **Latihan Bersama — Fase 3 Sprint 17–20 (ahead-of-plan)** | Multi-skorer per-bantalan: `group_scorers`, assign/claim skorer, otorisasi tulis per `target_butt`, audit `last_scored_by_user_id`; mobile picker/monitor/board scoped bantalan; `/butts` cursor `version` + `unchanged`; multi-jarak per peserta untuk self-join/override, leaderboard rank per distance group, dan PB klaim tamu tetap memakai jarak nyata. **Verifikasi:** backend `composer lint`, `composer analyse`, `composer test` hijau; Flutter `melos test` hijau, scoped `group_scoring` analyze 0 issue (full analyze masih mencetak info baseline lama di luar fitur). |
 
 **🚧 Yang benar-benar belum:**
 - **Phase 1–2 (device):** 1.15 uji keterbacaan outdoor **terukur** · 1.17 profiling 60fps.
@@ -746,6 +747,6 @@ Bulan ke-12 (May 2027) : Rp 20-30 jt (premium + club SaaS + coaching/training, g
 *Dokumen ini adalah living document. Update setiap 2 minggu berdasarkan actual progress vs planned.*
 
 *Dibuat: 29 Mei 2026*  
-*Update terakhir: **5 Juni 2026** — audit codebase menunjukkan Phase 3+4 sebagian besar selesai dan Marketplace dihapus*  
+*Update terakhir: **28 Juni 2026** — Latihan Bersama Fase 3 Sprint 17–20 diimplementasikan ahead-of-plan*
 *Konteks: 1 developer (Laravel + Flutter) + AI Agent, 8-10 jam/hari*  
 *Baseline: Business Strategy & UI/UX Design Guide ManahPro*

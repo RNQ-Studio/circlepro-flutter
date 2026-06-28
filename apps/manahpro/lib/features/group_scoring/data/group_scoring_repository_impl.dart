@@ -91,9 +91,16 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
   // ─── Self-join & self-scoring (Sprint 10) ───────────────────────────────
 
   @override
-  Future<String> joinGroup(String groupId, {BowClass? bowClass}) async {
+  Future<String> joinGroup(
+    String groupId, {
+    BowClass? bowClass,
+    int? distanceM,
+    int? targetFaceCm,
+  }) async {
     final body = <String, dynamic>{
       if (bowClass != null) 'bow_class': bowClass.value,
+      if (distanceM != null) 'distance_m': distanceM,
+      if (targetFaceCm != null) 'target_face_cm': targetFaceCm,
     };
     final participant = await _remote.joinGroup(groupId, body);
     final sessionId = participant['id'] as String;
@@ -116,7 +123,8 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
   @override
   Future<List<BoardParticipant>> loadBoard(ScoringGroupEntity group) async {
     await _local.seedParticipantsFromRoster(group);
-    return _local.getBoardParticipants(group.id);
+    final participants = await _local.getBoardParticipants(group.id);
+    return _withRosterMetadata(group, participants);
   }
 
   @override
@@ -126,7 +134,8 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
   ) async {
     await _local.createLocalGuest(group, name);
     _backgroundSync(group);
-    return _local.getBoardParticipants(group.id);
+    final participants = await _local.getBoardParticipants(group.id);
+    return _withRosterMetadata(group, participants);
   }
 
   @override
@@ -136,7 +145,8 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
   ) async {
     await _local.createLocalGuests(group, names);
     _backgroundSync(group);
-    return _local.getBoardParticipants(group.id);
+    final participants = await _local.getBoardParticipants(group.id);
+    return _withRosterMetadata(group, participants);
   }
 
   @override
@@ -161,7 +171,8 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
     }
 
     if (sync) _backgroundSync(group);
-    return _local.getBoardParticipants(group.id);
+    final participants = await _local.getBoardParticipants(group.id);
+    return _withRosterMetadata(group, participants);
   }
 
   @override
@@ -195,6 +206,40 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
     return LiveLeaderboardSnapshot.fromEnvelope(body);
   }
 
+  @override
+  Future<GroupButtStatusEnvelope> fetchButts(
+    String groupId, {
+    String? version,
+  }) async {
+    final body = await _remote.getButts(groupId, version: version);
+    return GroupButtStatusEnvelope.fromEnvelope(body);
+  }
+
+  @override
+  Future<GroupScorerEntity> claimButt(String groupId, int targetButt) async {
+    final json = await _remote.claimButt(groupId, targetButt);
+    return GroupScorerEntity.fromJson(json);
+  }
+
+  @override
+  Future<GroupParticipantEntity> assignParticipantDistance(
+    String groupId,
+    String sessionId, {
+    required int distanceM,
+    int? targetFaceCm,
+  }) async {
+    final json = await _remote.assignParticipantDistance(
+      groupId,
+      sessionId,
+      {
+        'distance_m': distanceM,
+        if (targetFaceCm != null) 'target_face_cm': targetFaceCm,
+      },
+    );
+    await getGroup(groupId);
+    return GroupParticipantEntity.fromJson(json);
+  }
+
   // ─── Claim ("Ini Saya") — Sprint 14 ─────────────────────────────────────
 
   @override
@@ -213,7 +258,8 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
   }
 
   @override
-  Future<List<HostClaim>> hostClaims(String groupId, {ClaimStatus? status}) async {
+  Future<List<HostClaim>> hostClaims(String groupId,
+      {ClaimStatus? status}) async {
     final data = await _remote.getHostClaims(groupId, status: status?.value);
     return data.map(HostClaim.fromJson).toList();
   }
@@ -234,5 +280,24 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
     syncBoard(group).catchError((Object e) {
       log('GroupScoringRepository background board sync error: $e');
     });
+  }
+
+  List<BoardParticipant> _withRosterMetadata(
+    ScoringGroupEntity group,
+    List<BoardParticipant> participants,
+  ) {
+    final roster = {for (final p in group.participants) p.id: p};
+    return [
+      for (final participant in participants)
+        if (roster[participant.id] case final meta?)
+          participant.copyWith(
+            distanceM: meta.distanceM,
+            targetFaceCm: meta.targetFaceCm,
+            targetButt: meta.targetButt,
+            targetLetter: meta.targetLetter,
+          )
+        else
+          participant,
+    ];
   }
 }

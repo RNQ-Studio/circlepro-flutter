@@ -24,6 +24,7 @@ class HostBoardScreen extends ConsumerStatefulWidget {
     super.key,
     required this.groupId,
     this.focusParticipantId,
+    this.targetButt,
   });
 
   final String groupId;
@@ -31,6 +32,7 @@ class HostBoardScreen extends ConsumerStatefulWidget {
   /// When set (Sprint 06, task 6.4), the board opens focused on this
   /// participant's tab — e.g. tapping a roster card on the detail screen.
   final String? focusParticipantId;
+  final int? targetButt;
 
   @override
   ConsumerState<HostBoardScreen> createState() => _HostBoardScreenState();
@@ -110,10 +112,13 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(hostBoardControllerProvider(widget.groupId));
+    final scopedTitle = widget.targetButt == null
+        ? 'Papan Skor'
+        : 'Bantalan ${widget.targetButt}';
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Papan Skor'),
+        title: Text(scopedTitle),
         actions: [
           async.maybeWhen(
             data: (state) => _SyncStatusChip(
@@ -124,11 +129,12 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
             ),
             orElse: () => const SizedBox.shrink(),
           ),
-          IconButton(
-            tooltip: 'Tambah pemain',
-            icon: const Icon(Icons.person_add_alt_1),
-            onPressed: async.hasValue ? _promptAddPlayers : null,
-          ),
+          if (widget.targetButt == null)
+            IconButton(
+              tooltip: 'Tambah pemain',
+              icon: const Icon(Icons.person_add_alt_1),
+              onPressed: async.hasValue ? _promptAddPlayers : null,
+            ),
           IconButton(
             tooltip: 'Papan peringkat',
             icon: const Icon(Icons.leaderboard),
@@ -144,9 +150,12 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
         error: (e, _) => _BoardError(message: '$e'),
         data: (state) {
           final group = state.group;
-          final participants = state.participants;
+          final participants = _visibleParticipants(state);
           if (participants.isEmpty) {
-            return _EmptyRoster(onAdd: _promptAddPlayers);
+            return _EmptyRoster(
+              onAdd: widget.targetButt == null ? _promptAddPlayers : null,
+              targetButt: widget.targetButt,
+            );
           }
 
           _seedTemp(participants, group.arrowsPerEnd);
@@ -250,7 +259,8 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
     final async = ref.read(hostBoardControllerProvider(widget.groupId));
     final state = async.value;
     if (state == null) return;
-    final participants = state.participants;
+    final participants = _visibleParticipants(state);
+    if (participants.isEmpty) return;
     final active = participants[_activeIndex];
     final scores = _temp[active.id]!;
 
@@ -275,7 +285,8 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
     final async = ref.read(hostBoardControllerProvider(widget.groupId));
     final state = async.value;
     if (state == null) return;
-    final participants = state.participants;
+    final participants = _visibleParticipants(state);
+    if (participants.isEmpty) return;
     final active = participants[_activeIndex];
     final scores = _temp[active.id]!;
 
@@ -399,6 +410,14 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message), backgroundColor: color),
     );
+  }
+
+  List<BoardParticipant> _visibleParticipants(HostBoardState state) {
+    final targetButt = widget.targetButt;
+    if (targetButt == null) return state.participants;
+    return state.participants
+        .where((participant) => participant.targetButt == targetButt)
+        .toList();
   }
 }
 
@@ -780,9 +799,10 @@ class _SyncStatusChip extends StatelessWidget {
 }
 
 class _EmptyRoster extends StatelessWidget {
-  const _EmptyRoster({required this.onAdd});
+  const _EmptyRoster({required this.onAdd, this.targetButt});
 
-  final VoidCallback onAdd;
+  final VoidCallback? onAdd;
+  final int? targetButt;
 
   @override
   Widget build(BuildContext context) {
@@ -800,17 +820,21 @@ class _EmptyRoster extends StatelessWidget {
                     ?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: ManahSpacing.sm),
             Text(
-              'Tambahkan pemanah untuk mulai mencatat rambahan.',
+              targetButt == null
+                  ? 'Tambahkan pemanah untuk mulai mencatat rambahan.'
+                  : 'Belum ada peserta yang dipetakan ke bantalan ini.',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium
                   ?.copyWith(color: theme.textTheme.bodySmall?.color),
             ),
-            const SizedBox(height: ManahSpacing.lg),
-            FilledButton.icon(
-              onPressed: onAdd,
-              icon: const Icon(Icons.person_add_alt_1),
-              label: const Text('Tambah Pemanah'),
-            ),
+            if (onAdd != null) ...[
+              const SizedBox(height: ManahSpacing.lg),
+              FilledButton.icon(
+                onPressed: onAdd,
+                icon: const Icon(Icons.person_add_alt_1),
+                label: const Text('Tambah Pemanah'),
+              ),
+            ],
           ],
         ),
       ),

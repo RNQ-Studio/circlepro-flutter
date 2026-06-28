@@ -110,7 +110,12 @@ class GroupParticipantEntity extends Equatable {
     this.guestName,
     this.isGuest = false,
     this.bowClass,
+    this.distanceCategory,
     this.distanceM,
+    this.targetFaceCm,
+    this.targetButt,
+    this.targetLetter,
+    this.lastScoredByUserId,
     this.totalScore = 0,
     this.maxPossibleScore,
     this.arrowsShot = 0,
@@ -125,7 +130,12 @@ class GroupParticipantEntity extends Equatable {
   final String? guestName;
   final bool isGuest;
   final BowClass? bowClass;
+  final DistanceCategory? distanceCategory;
   final int? distanceM;
+  final int? targetFaceCm;
+  final int? targetButt;
+  final String? targetLetter;
+  final int? lastScoredByUserId;
   final int totalScore;
   final int? maxPossibleScore;
   final int arrowsShot;
@@ -133,8 +143,24 @@ class GroupParticipantEntity extends Equatable {
   final int tenCount;
   final ScoringSessionStatus? status;
 
+  String get targetLabel {
+    if (targetButt == null) return '-';
+    final letter = targetLetter?.trim();
+    return letter == null || letter.isEmpty
+        ? '$targetButt'
+        : '$targetButt$letter';
+  }
+
+  String get distanceLabel {
+    final distance = distanceM;
+    if (distance == null) return '-';
+    final face = targetFaceCm;
+    return face == null ? '$distance m' : '$distance m / $face cm';
+  }
+
   factory GroupParticipantEntity.fromJson(Map<String, dynamic> json) {
     final bowClassValue = json['bow_class'] as String?;
+    final distanceCategoryValue = json['distance_category'] as String?;
     final statusValue = json['status'] as String?;
     return GroupParticipantEntity(
       id: json['id'] as String? ?? '',
@@ -144,7 +170,14 @@ class GroupParticipantEntity extends Equatable {
       isGuest: json['is_guest'] as bool? ?? false,
       bowClass:
           bowClassValue != null ? BowClass.fromValue(bowClassValue) : null,
+      distanceCategory: distanceCategoryValue != null
+          ? DistanceCategory.fromValue(distanceCategoryValue)
+          : null,
       distanceM: (json['distance_m'] as num?)?.toInt(),
+      targetFaceCm: (json['target_face_cm'] as num?)?.toInt(),
+      targetButt: (json['target_butt'] as num?)?.toInt(),
+      targetLetter: json['target_letter'] as String?,
+      lastScoredByUserId: (json['last_scored_by_user_id'] as num?)?.toInt(),
       totalScore: (json['total_score'] as num?)?.toInt() ?? 0,
       maxPossibleScore: (json['max_possible_score'] as num?)?.toInt(),
       arrowsShot: (json['arrows_shot'] as num?)?.toInt() ?? 0,
@@ -164,12 +197,184 @@ class GroupParticipantEntity extends Equatable {
         guestName,
         isGuest,
         bowClass,
+        distanceCategory,
         distanceM,
+        targetFaceCm,
+        targetButt,
+        targetLetter,
+        lastScoredByUserId,
         totalScore,
         maxPossibleScore,
         arrowsShot,
         xCount,
         tenCount,
         status,
+      ];
+}
+
+class GroupScorerEntity extends Equatable {
+  const GroupScorerEntity({
+    required this.id,
+    required this.userId,
+    required this.targetButt,
+    required this.assignmentType,
+    this.name,
+  });
+
+  final String id;
+  final int userId;
+  final int targetButt;
+  final String assignmentType;
+  final String? name;
+
+  factory GroupScorerEntity.fromJson(Map<String, dynamic> json) {
+    final scorer = json['scorer'] as Map<String, dynamic>?;
+    return GroupScorerEntity(
+      id: json['id'] as String? ?? '',
+      userId: (json['user_id'] as num?)?.toInt() ??
+          (scorer?['id'] as num?)?.toInt() ??
+          0,
+      targetButt: (json['target_butt'] as num?)?.toInt() ?? 0,
+      assignmentType: json['assignment_type'] as String? ?? 'assigned',
+      name: scorer?['name'] as String?,
+    );
+  }
+
+  @override
+  List<Object?> get props => [id, userId, targetButt, assignmentType, name];
+}
+
+class GroupButtEntity extends Equatable {
+  const GroupButtEntity({
+    required this.targetButt,
+    required this.participantCount,
+    required this.completedCount,
+    required this.submittedCount,
+    required this.pendingCount,
+    required this.endProgress,
+    required this.maxEndProgress,
+    required this.targetEnds,
+    required this.isComplete,
+    required this.totalScore,
+    required this.laggingByEnds,
+    required this.isLagging,
+    this.currentEnd,
+    this.scorer,
+    this.participants = const [],
+  });
+
+  final int? targetButt;
+  final int participantCount;
+  final int completedCount;
+  final int submittedCount;
+  final int pendingCount;
+  final int endProgress;
+  final int maxEndProgress;
+  final int? currentEnd;
+  final int targetEnds;
+  final bool isComplete;
+  final int totalScore;
+  final int laggingByEnds;
+  final bool isLagging;
+  final GroupScorerEntity? scorer;
+  final List<GroupParticipantEntity> participants;
+
+  String get label =>
+      targetButt == null ? 'Belum dipetakan' : 'Bantalan $targetButt';
+
+  String get progressLabel => '$endProgress/$targetEnds';
+
+  bool get canClaim => targetButt != null && scorer == null;
+
+  factory GroupButtEntity.fromJson(Map<String, dynamic> json) {
+    final scorerJson = json['scorer'] as Map<String, dynamic>?;
+    final participantsJson = json['participants'] as List<dynamic>? ?? const [];
+    return GroupButtEntity(
+      targetButt: (json['target_butt'] as num?)?.toInt(),
+      participantCount: (json['participant_count'] as num?)?.toInt() ?? 0,
+      completedCount: (json['completed_count'] as num?)?.toInt() ?? 0,
+      submittedCount: (json['submitted_count'] as num?)?.toInt() ?? 0,
+      pendingCount: (json['pending_count'] as num?)?.toInt() ?? 0,
+      endProgress: (json['end_progress'] as num?)?.toInt() ?? 0,
+      maxEndProgress: (json['max_end_progress'] as num?)?.toInt() ?? 0,
+      currentEnd: (json['current_end'] as num?)?.toInt(),
+      targetEnds: (json['target_ends'] as num?)?.toInt() ?? 0,
+      isComplete: json['is_complete'] as bool? ?? false,
+      totalScore: (json['total_score'] as num?)?.toInt() ?? 0,
+      laggingByEnds: (json['lagging_by_ends'] as num?)?.toInt() ?? 0,
+      isLagging: json['is_lagging'] as bool? ?? false,
+      scorer:
+          scorerJson == null ? null : GroupScorerEntity.fromJson(scorerJson),
+      participants: participantsJson
+          .map(
+              (e) => GroupParticipantEntity.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        targetButt,
+        participantCount,
+        completedCount,
+        submittedCount,
+        pendingCount,
+        endProgress,
+        maxEndProgress,
+        currentEnd,
+        targetEnds,
+        isComplete,
+        totalScore,
+        laggingByEnds,
+        isLagging,
+        scorer,
+        participants,
+      ];
+}
+
+class GroupButtStatusEnvelope extends Equatable {
+  const GroupButtStatusEnvelope({
+    required this.butts,
+    this.version,
+    this.groupStatus,
+    this.unchanged = false,
+    this.participantCount = 0,
+    this.buttCount = 0,
+  });
+
+  final List<GroupButtEntity> butts;
+  final String? version;
+  final ScoringSessionStatus? groupStatus;
+  final bool unchanged;
+  final int participantCount;
+  final int buttCount;
+
+  factory GroupButtStatusEnvelope.fromEnvelope(Map<String, dynamic> body) {
+    final meta = body['meta'] as Map<String, dynamic>? ?? const {};
+    final data = body['data'] as Map<String, dynamic>? ?? const {};
+    final buttsJson = data['butts'] as List<dynamic>? ?? const [];
+    final statusValue = meta['group_status'] as String?;
+    return GroupButtStatusEnvelope(
+      butts: buttsJson
+          .map((e) => GroupButtEntity.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      version: meta['version'] as String?,
+      groupStatus: statusValue == null
+          ? null
+          : ScoringSessionStatus.fromValue(statusValue),
+      unchanged: meta['unchanged'] as bool? ?? false,
+      participantCount: (meta['participant_count'] as num?)?.toInt() ?? 0,
+      buttCount: (meta['butt_count'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        butts,
+        version,
+        groupStatus,
+        unchanged,
+        participantCount,
+        buttCount,
       ];
 }

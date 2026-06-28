@@ -3220,11 +3220,41 @@ class $GroupParticipantCacheRowsTable extends GroupParticipantCacheRows
   late final GeneratedColumn<String> bowClass = GeneratedColumn<String>(
       'bow_class', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _distanceCategoryMeta =
+      const VerificationMeta('distanceCategory');
+  @override
+  late final GeneratedColumn<String> distanceCategory = GeneratedColumn<String>(
+      'distance_category', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _distanceMMeta =
       const VerificationMeta('distanceM');
   @override
   late final GeneratedColumn<int> distanceM = GeneratedColumn<int>(
       'distance_m', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _targetFaceCmMeta =
+      const VerificationMeta('targetFaceCm');
+  @override
+  late final GeneratedColumn<int> targetFaceCm = GeneratedColumn<int>(
+      'target_face_cm', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _targetButtMeta =
+      const VerificationMeta('targetButt');
+  @override
+  late final GeneratedColumn<int> targetButt = GeneratedColumn<int>(
+      'target_butt', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _targetLetterMeta =
+      const VerificationMeta('targetLetter');
+  @override
+  late final GeneratedColumn<String> targetLetter = GeneratedColumn<String>(
+      'target_letter', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _lastScoredByUserIdMeta =
+      const VerificationMeta('lastScoredByUserId');
+  @override
+  late final GeneratedColumn<int> lastScoredByUserId = GeneratedColumn<int>(
+      'last_scored_by_user_id', aliasedName, true,
       type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _totalScoreMeta =
       const VerificationMeta('totalScore');
@@ -3283,7 +3313,12 @@ class $GroupParticipantCacheRowsTable extends GroupParticipantCacheRows
         guestName,
         isGuest,
         bowClass,
+        distanceCategory,
         distanceM,
+        targetFaceCm,
+        targetButt,
+        targetLetter,
+        lastScoredByUserId,
         totalScore,
         maxPossibleScore,
         arrowsShot,
@@ -3336,9 +3371,39 @@ class $GroupParticipantCacheRowsTable extends GroupParticipantCacheRows
       context.handle(_bowClassMeta,
           bowClass.isAcceptableOrUnknown(data['bow_class']!, _bowClassMeta));
     }
+    if (data.containsKey('distance_category')) {
+      context.handle(
+          _distanceCategoryMeta,
+          distanceCategory.isAcceptableOrUnknown(
+              data['distance_category']!, _distanceCategoryMeta));
+    }
     if (data.containsKey('distance_m')) {
       context.handle(_distanceMMeta,
           distanceM.isAcceptableOrUnknown(data['distance_m']!, _distanceMMeta));
+    }
+    if (data.containsKey('target_face_cm')) {
+      context.handle(
+          _targetFaceCmMeta,
+          targetFaceCm.isAcceptableOrUnknown(
+              data['target_face_cm']!, _targetFaceCmMeta));
+    }
+    if (data.containsKey('target_butt')) {
+      context.handle(
+          _targetButtMeta,
+          targetButt.isAcceptableOrUnknown(
+              data['target_butt']!, _targetButtMeta));
+    }
+    if (data.containsKey('target_letter')) {
+      context.handle(
+          _targetLetterMeta,
+          targetLetter.isAcceptableOrUnknown(
+              data['target_letter']!, _targetLetterMeta));
+    }
+    if (data.containsKey('last_scored_by_user_id')) {
+      context.handle(
+          _lastScoredByUserIdMeta,
+          lastScoredByUserId.isAcceptableOrUnknown(
+              data['last_scored_by_user_id']!, _lastScoredByUserIdMeta));
     }
     if (data.containsKey('total_score')) {
       context.handle(
@@ -3400,8 +3465,18 @@ class $GroupParticipantCacheRowsTable extends GroupParticipantCacheRows
           .read(DriftSqlType.bool, data['${effectivePrefix}is_guest'])!,
       bowClass: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}bow_class']),
+      distanceCategory: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}distance_category']),
       distanceM: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}distance_m']),
+      targetFaceCm: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}target_face_cm']),
+      targetButt: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}target_butt']),
+      targetLetter: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}target_letter']),
+      lastScoredByUserId: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}last_scored_by_user_id']),
       totalScore: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}total_score'])!,
       maxPossibleScore: attachedDatabase.typeMapping
@@ -3434,7 +3509,12 @@ class GroupParticipantCacheRow extends DataClass
   final String? guestName;
   final bool isGuest;
   final String? bowClass;
+  final String? distanceCategory;
   final int? distanceM;
+  final int? targetFaceCm;
+  final int? targetButt;
+  final String? targetLetter;
+  final int? lastScoredByUserId;
   final int totalScore;
   final int? maxPossibleScore;
   final int arrowsShot;
@@ -3450,7 +3530,12 @@ class GroupParticipantCacheRow extends DataClass
       this.guestName,
       required this.isGuest,
       this.bowClass,
+      this.distanceCategory,
       this.distanceM,
+      this.targetFaceCm,
+      this.targetButt,
+      this.targetLetter,
+      this.lastScoredByUserId,
       required this.totalScore,
       this.maxPossibleScore,
       required this.arrowsShot,
@@ -3476,8 +3561,23 @@ class GroupParticipantCacheRow extends DataClass
     if (!nullToAbsent || bowClass != null) {
       map['bow_class'] = Variable<String>(bowClass);
     }
+    if (!nullToAbsent || distanceCategory != null) {
+      map['distance_category'] = Variable<String>(distanceCategory);
+    }
     if (!nullToAbsent || distanceM != null) {
       map['distance_m'] = Variable<int>(distanceM);
+    }
+    if (!nullToAbsent || targetFaceCm != null) {
+      map['target_face_cm'] = Variable<int>(targetFaceCm);
+    }
+    if (!nullToAbsent || targetButt != null) {
+      map['target_butt'] = Variable<int>(targetButt);
+    }
+    if (!nullToAbsent || targetLetter != null) {
+      map['target_letter'] = Variable<String>(targetLetter);
+    }
+    if (!nullToAbsent || lastScoredByUserId != null) {
+      map['last_scored_by_user_id'] = Variable<int>(lastScoredByUserId);
     }
     map['total_score'] = Variable<int>(totalScore);
     if (!nullToAbsent || maxPossibleScore != null) {
@@ -3509,9 +3609,24 @@ class GroupParticipantCacheRow extends DataClass
       bowClass: bowClass == null && nullToAbsent
           ? const Value.absent()
           : Value(bowClass),
+      distanceCategory: distanceCategory == null && nullToAbsent
+          ? const Value.absent()
+          : Value(distanceCategory),
       distanceM: distanceM == null && nullToAbsent
           ? const Value.absent()
           : Value(distanceM),
+      targetFaceCm: targetFaceCm == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetFaceCm),
+      targetButt: targetButt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetButt),
+      targetLetter: targetLetter == null && nullToAbsent
+          ? const Value.absent()
+          : Value(targetLetter),
+      lastScoredByUserId: lastScoredByUserId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastScoredByUserId),
       totalScore: Value(totalScore),
       maxPossibleScore: maxPossibleScore == null && nullToAbsent
           ? const Value.absent()
@@ -3536,7 +3651,12 @@ class GroupParticipantCacheRow extends DataClass
       guestName: serializer.fromJson<String?>(json['guestName']),
       isGuest: serializer.fromJson<bool>(json['isGuest']),
       bowClass: serializer.fromJson<String?>(json['bowClass']),
+      distanceCategory: serializer.fromJson<String?>(json['distanceCategory']),
       distanceM: serializer.fromJson<int?>(json['distanceM']),
+      targetFaceCm: serializer.fromJson<int?>(json['targetFaceCm']),
+      targetButt: serializer.fromJson<int?>(json['targetButt']),
+      targetLetter: serializer.fromJson<String?>(json['targetLetter']),
+      lastScoredByUserId: serializer.fromJson<int?>(json['lastScoredByUserId']),
       totalScore: serializer.fromJson<int>(json['totalScore']),
       maxPossibleScore: serializer.fromJson<int?>(json['maxPossibleScore']),
       arrowsShot: serializer.fromJson<int>(json['arrowsShot']),
@@ -3557,7 +3677,12 @@ class GroupParticipantCacheRow extends DataClass
       'guestName': serializer.toJson<String?>(guestName),
       'isGuest': serializer.toJson<bool>(isGuest),
       'bowClass': serializer.toJson<String?>(bowClass),
+      'distanceCategory': serializer.toJson<String?>(distanceCategory),
       'distanceM': serializer.toJson<int?>(distanceM),
+      'targetFaceCm': serializer.toJson<int?>(targetFaceCm),
+      'targetButt': serializer.toJson<int?>(targetButt),
+      'targetLetter': serializer.toJson<String?>(targetLetter),
+      'lastScoredByUserId': serializer.toJson<int?>(lastScoredByUserId),
       'totalScore': serializer.toJson<int>(totalScore),
       'maxPossibleScore': serializer.toJson<int?>(maxPossibleScore),
       'arrowsShot': serializer.toJson<int>(arrowsShot),
@@ -3576,7 +3701,12 @@ class GroupParticipantCacheRow extends DataClass
           Value<String?> guestName = const Value.absent(),
           bool? isGuest,
           Value<String?> bowClass = const Value.absent(),
+          Value<String?> distanceCategory = const Value.absent(),
           Value<int?> distanceM = const Value.absent(),
+          Value<int?> targetFaceCm = const Value.absent(),
+          Value<int?> targetButt = const Value.absent(),
+          Value<String?> targetLetter = const Value.absent(),
+          Value<int?> lastScoredByUserId = const Value.absent(),
           int? totalScore,
           Value<int?> maxPossibleScore = const Value.absent(),
           int? arrowsShot,
@@ -3592,7 +3722,18 @@ class GroupParticipantCacheRow extends DataClass
         guestName: guestName.present ? guestName.value : this.guestName,
         isGuest: isGuest ?? this.isGuest,
         bowClass: bowClass.present ? bowClass.value : this.bowClass,
+        distanceCategory: distanceCategory.present
+            ? distanceCategory.value
+            : this.distanceCategory,
         distanceM: distanceM.present ? distanceM.value : this.distanceM,
+        targetFaceCm:
+            targetFaceCm.present ? targetFaceCm.value : this.targetFaceCm,
+        targetButt: targetButt.present ? targetButt.value : this.targetButt,
+        targetLetter:
+            targetLetter.present ? targetLetter.value : this.targetLetter,
+        lastScoredByUserId: lastScoredByUserId.present
+            ? lastScoredByUserId.value
+            : this.lastScoredByUserId,
         totalScore: totalScore ?? this.totalScore,
         maxPossibleScore: maxPossibleScore.present
             ? maxPossibleScore.value
@@ -3614,7 +3755,21 @@ class GroupParticipantCacheRow extends DataClass
       guestName: data.guestName.present ? data.guestName.value : this.guestName,
       isGuest: data.isGuest.present ? data.isGuest.value : this.isGuest,
       bowClass: data.bowClass.present ? data.bowClass.value : this.bowClass,
+      distanceCategory: data.distanceCategory.present
+          ? data.distanceCategory.value
+          : this.distanceCategory,
       distanceM: data.distanceM.present ? data.distanceM.value : this.distanceM,
+      targetFaceCm: data.targetFaceCm.present
+          ? data.targetFaceCm.value
+          : this.targetFaceCm,
+      targetButt:
+          data.targetButt.present ? data.targetButt.value : this.targetButt,
+      targetLetter: data.targetLetter.present
+          ? data.targetLetter.value
+          : this.targetLetter,
+      lastScoredByUserId: data.lastScoredByUserId.present
+          ? data.lastScoredByUserId.value
+          : this.lastScoredByUserId,
       totalScore:
           data.totalScore.present ? data.totalScore.value : this.totalScore,
       maxPossibleScore: data.maxPossibleScore.present
@@ -3639,7 +3794,12 @@ class GroupParticipantCacheRow extends DataClass
           ..write('guestName: $guestName, ')
           ..write('isGuest: $isGuest, ')
           ..write('bowClass: $bowClass, ')
+          ..write('distanceCategory: $distanceCategory, ')
           ..write('distanceM: $distanceM, ')
+          ..write('targetFaceCm: $targetFaceCm, ')
+          ..write('targetButt: $targetButt, ')
+          ..write('targetLetter: $targetLetter, ')
+          ..write('lastScoredByUserId: $lastScoredByUserId, ')
           ..write('totalScore: $totalScore, ')
           ..write('maxPossibleScore: $maxPossibleScore, ')
           ..write('arrowsShot: $arrowsShot, ')
@@ -3660,7 +3820,12 @@ class GroupParticipantCacheRow extends DataClass
       guestName,
       isGuest,
       bowClass,
+      distanceCategory,
       distanceM,
+      targetFaceCm,
+      targetButt,
+      targetLetter,
+      lastScoredByUserId,
       totalScore,
       maxPossibleScore,
       arrowsShot,
@@ -3679,7 +3844,12 @@ class GroupParticipantCacheRow extends DataClass
           other.guestName == this.guestName &&
           other.isGuest == this.isGuest &&
           other.bowClass == this.bowClass &&
+          other.distanceCategory == this.distanceCategory &&
           other.distanceM == this.distanceM &&
+          other.targetFaceCm == this.targetFaceCm &&
+          other.targetButt == this.targetButt &&
+          other.targetLetter == this.targetLetter &&
+          other.lastScoredByUserId == this.lastScoredByUserId &&
           other.totalScore == this.totalScore &&
           other.maxPossibleScore == this.maxPossibleScore &&
           other.arrowsShot == this.arrowsShot &&
@@ -3698,7 +3868,12 @@ class GroupParticipantCacheRowsCompanion
   final Value<String?> guestName;
   final Value<bool> isGuest;
   final Value<String?> bowClass;
+  final Value<String?> distanceCategory;
   final Value<int?> distanceM;
+  final Value<int?> targetFaceCm;
+  final Value<int?> targetButt;
+  final Value<String?> targetLetter;
+  final Value<int?> lastScoredByUserId;
   final Value<int> totalScore;
   final Value<int?> maxPossibleScore;
   final Value<int> arrowsShot;
@@ -3715,7 +3890,12 @@ class GroupParticipantCacheRowsCompanion
     this.guestName = const Value.absent(),
     this.isGuest = const Value.absent(),
     this.bowClass = const Value.absent(),
+    this.distanceCategory = const Value.absent(),
     this.distanceM = const Value.absent(),
+    this.targetFaceCm = const Value.absent(),
+    this.targetButt = const Value.absent(),
+    this.targetLetter = const Value.absent(),
+    this.lastScoredByUserId = const Value.absent(),
     this.totalScore = const Value.absent(),
     this.maxPossibleScore = const Value.absent(),
     this.arrowsShot = const Value.absent(),
@@ -3733,7 +3913,12 @@ class GroupParticipantCacheRowsCompanion
     this.guestName = const Value.absent(),
     this.isGuest = const Value.absent(),
     this.bowClass = const Value.absent(),
+    this.distanceCategory = const Value.absent(),
     this.distanceM = const Value.absent(),
+    this.targetFaceCm = const Value.absent(),
+    this.targetButt = const Value.absent(),
+    this.targetLetter = const Value.absent(),
+    this.lastScoredByUserId = const Value.absent(),
     this.totalScore = const Value.absent(),
     this.maxPossibleScore = const Value.absent(),
     this.arrowsShot = const Value.absent(),
@@ -3753,7 +3938,12 @@ class GroupParticipantCacheRowsCompanion
     Expression<String>? guestName,
     Expression<bool>? isGuest,
     Expression<String>? bowClass,
+    Expression<String>? distanceCategory,
     Expression<int>? distanceM,
+    Expression<int>? targetFaceCm,
+    Expression<int>? targetButt,
+    Expression<String>? targetLetter,
+    Expression<int>? lastScoredByUserId,
     Expression<int>? totalScore,
     Expression<int>? maxPossibleScore,
     Expression<int>? arrowsShot,
@@ -3771,7 +3961,13 @@ class GroupParticipantCacheRowsCompanion
       if (guestName != null) 'guest_name': guestName,
       if (isGuest != null) 'is_guest': isGuest,
       if (bowClass != null) 'bow_class': bowClass,
+      if (distanceCategory != null) 'distance_category': distanceCategory,
       if (distanceM != null) 'distance_m': distanceM,
+      if (targetFaceCm != null) 'target_face_cm': targetFaceCm,
+      if (targetButt != null) 'target_butt': targetButt,
+      if (targetLetter != null) 'target_letter': targetLetter,
+      if (lastScoredByUserId != null)
+        'last_scored_by_user_id': lastScoredByUserId,
       if (totalScore != null) 'total_score': totalScore,
       if (maxPossibleScore != null) 'max_possible_score': maxPossibleScore,
       if (arrowsShot != null) 'arrows_shot': arrowsShot,
@@ -3791,7 +3987,12 @@ class GroupParticipantCacheRowsCompanion
       Value<String?>? guestName,
       Value<bool>? isGuest,
       Value<String?>? bowClass,
+      Value<String?>? distanceCategory,
       Value<int?>? distanceM,
+      Value<int?>? targetFaceCm,
+      Value<int?>? targetButt,
+      Value<String?>? targetLetter,
+      Value<int?>? lastScoredByUserId,
       Value<int>? totalScore,
       Value<int?>? maxPossibleScore,
       Value<int>? arrowsShot,
@@ -3808,7 +4009,12 @@ class GroupParticipantCacheRowsCompanion
       guestName: guestName ?? this.guestName,
       isGuest: isGuest ?? this.isGuest,
       bowClass: bowClass ?? this.bowClass,
+      distanceCategory: distanceCategory ?? this.distanceCategory,
       distanceM: distanceM ?? this.distanceM,
+      targetFaceCm: targetFaceCm ?? this.targetFaceCm,
+      targetButt: targetButt ?? this.targetButt,
+      targetLetter: targetLetter ?? this.targetLetter,
+      lastScoredByUserId: lastScoredByUserId ?? this.lastScoredByUserId,
       totalScore: totalScore ?? this.totalScore,
       maxPossibleScore: maxPossibleScore ?? this.maxPossibleScore,
       arrowsShot: arrowsShot ?? this.arrowsShot,
@@ -3844,8 +4050,23 @@ class GroupParticipantCacheRowsCompanion
     if (bowClass.present) {
       map['bow_class'] = Variable<String>(bowClass.value);
     }
+    if (distanceCategory.present) {
+      map['distance_category'] = Variable<String>(distanceCategory.value);
+    }
     if (distanceM.present) {
       map['distance_m'] = Variable<int>(distanceM.value);
+    }
+    if (targetFaceCm.present) {
+      map['target_face_cm'] = Variable<int>(targetFaceCm.value);
+    }
+    if (targetButt.present) {
+      map['target_butt'] = Variable<int>(targetButt.value);
+    }
+    if (targetLetter.present) {
+      map['target_letter'] = Variable<String>(targetLetter.value);
+    }
+    if (lastScoredByUserId.present) {
+      map['last_scored_by_user_id'] = Variable<int>(lastScoredByUserId.value);
     }
     if (totalScore.present) {
       map['total_score'] = Variable<int>(totalScore.value);
@@ -3884,7 +4105,12 @@ class GroupParticipantCacheRowsCompanion
           ..write('guestName: $guestName, ')
           ..write('isGuest: $isGuest, ')
           ..write('bowClass: $bowClass, ')
+          ..write('distanceCategory: $distanceCategory, ')
           ..write('distanceM: $distanceM, ')
+          ..write('targetFaceCm: $targetFaceCm, ')
+          ..write('targetButt: $targetButt, ')
+          ..write('targetLetter: $targetLetter, ')
+          ..write('lastScoredByUserId: $lastScoredByUserId, ')
           ..write('totalScore: $totalScore, ')
           ..write('maxPossibleScore: $maxPossibleScore, ')
           ..write('arrowsShot: $arrowsShot, ')
@@ -5403,7 +5629,12 @@ typedef $$GroupParticipantCacheRowsTableCreateCompanionBuilder
   Value<String?> guestName,
   Value<bool> isGuest,
   Value<String?> bowClass,
+  Value<String?> distanceCategory,
   Value<int?> distanceM,
+  Value<int?> targetFaceCm,
+  Value<int?> targetButt,
+  Value<String?> targetLetter,
+  Value<int?> lastScoredByUserId,
   Value<int> totalScore,
   Value<int?> maxPossibleScore,
   Value<int> arrowsShot,
@@ -5422,7 +5653,12 @@ typedef $$GroupParticipantCacheRowsTableUpdateCompanionBuilder
   Value<String?> guestName,
   Value<bool> isGuest,
   Value<String?> bowClass,
+  Value<String?> distanceCategory,
   Value<int?> distanceM,
+  Value<int?> targetFaceCm,
+  Value<int?> targetButt,
+  Value<String?> targetLetter,
+  Value<int?> lastScoredByUserId,
   Value<int> totalScore,
   Value<int?> maxPossibleScore,
   Value<int> arrowsShot,
@@ -5463,8 +5699,25 @@ class $$GroupParticipantCacheRowsTableFilterComposer
   ColumnFilters<String> get bowClass => $composableBuilder(
       column: $table.bowClass, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<String> get distanceCategory => $composableBuilder(
+      column: $table.distanceCategory,
+      builder: (column) => ColumnFilters(column));
+
   ColumnFilters<int> get distanceM => $composableBuilder(
       column: $table.distanceM, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get targetFaceCm => $composableBuilder(
+      column: $table.targetFaceCm, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get targetButt => $composableBuilder(
+      column: $table.targetButt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get targetLetter => $composableBuilder(
+      column: $table.targetLetter, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get lastScoredByUserId => $composableBuilder(
+      column: $table.lastScoredByUserId,
+      builder: (column) => ColumnFilters(column));
 
   ColumnFilters<int> get totalScore => $composableBuilder(
       column: $table.totalScore, builder: (column) => ColumnFilters(column));
@@ -5519,8 +5772,27 @@ class $$GroupParticipantCacheRowsTableOrderingComposer
   ColumnOrderings<String> get bowClass => $composableBuilder(
       column: $table.bowClass, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get distanceCategory => $composableBuilder(
+      column: $table.distanceCategory,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<int> get distanceM => $composableBuilder(
       column: $table.distanceM, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get targetFaceCm => $composableBuilder(
+      column: $table.targetFaceCm,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get targetButt => $composableBuilder(
+      column: $table.targetButt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get targetLetter => $composableBuilder(
+      column: $table.targetLetter,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get lastScoredByUserId => $composableBuilder(
+      column: $table.lastScoredByUserId,
+      builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<int> get totalScore => $composableBuilder(
       column: $table.totalScore, builder: (column) => ColumnOrderings(column));
@@ -5575,8 +5847,23 @@ class $$GroupParticipantCacheRowsTableAnnotationComposer
   GeneratedColumn<String> get bowClass =>
       $composableBuilder(column: $table.bowClass, builder: (column) => column);
 
+  GeneratedColumn<String> get distanceCategory => $composableBuilder(
+      column: $table.distanceCategory, builder: (column) => column);
+
   GeneratedColumn<int> get distanceM =>
       $composableBuilder(column: $table.distanceM, builder: (column) => column);
+
+  GeneratedColumn<int> get targetFaceCm => $composableBuilder(
+      column: $table.targetFaceCm, builder: (column) => column);
+
+  GeneratedColumn<int> get targetButt => $composableBuilder(
+      column: $table.targetButt, builder: (column) => column);
+
+  GeneratedColumn<String> get targetLetter => $composableBuilder(
+      column: $table.targetLetter, builder: (column) => column);
+
+  GeneratedColumn<int> get lastScoredByUserId => $composableBuilder(
+      column: $table.lastScoredByUserId, builder: (column) => column);
 
   GeneratedColumn<int> get totalScore => $composableBuilder(
       column: $table.totalScore, builder: (column) => column);
@@ -5638,7 +5925,12 @@ class $$GroupParticipantCacheRowsTableTableManager extends RootTableManager<
             Value<String?> guestName = const Value.absent(),
             Value<bool> isGuest = const Value.absent(),
             Value<String?> bowClass = const Value.absent(),
+            Value<String?> distanceCategory = const Value.absent(),
             Value<int?> distanceM = const Value.absent(),
+            Value<int?> targetFaceCm = const Value.absent(),
+            Value<int?> targetButt = const Value.absent(),
+            Value<String?> targetLetter = const Value.absent(),
+            Value<int?> lastScoredByUserId = const Value.absent(),
             Value<int> totalScore = const Value.absent(),
             Value<int?> maxPossibleScore = const Value.absent(),
             Value<int> arrowsShot = const Value.absent(),
@@ -5656,7 +5948,12 @@ class $$GroupParticipantCacheRowsTableTableManager extends RootTableManager<
             guestName: guestName,
             isGuest: isGuest,
             bowClass: bowClass,
+            distanceCategory: distanceCategory,
             distanceM: distanceM,
+            targetFaceCm: targetFaceCm,
+            targetButt: targetButt,
+            targetLetter: targetLetter,
+            lastScoredByUserId: lastScoredByUserId,
             totalScore: totalScore,
             maxPossibleScore: maxPossibleScore,
             arrowsShot: arrowsShot,
@@ -5674,7 +5971,12 @@ class $$GroupParticipantCacheRowsTableTableManager extends RootTableManager<
             Value<String?> guestName = const Value.absent(),
             Value<bool> isGuest = const Value.absent(),
             Value<String?> bowClass = const Value.absent(),
+            Value<String?> distanceCategory = const Value.absent(),
             Value<int?> distanceM = const Value.absent(),
+            Value<int?> targetFaceCm = const Value.absent(),
+            Value<int?> targetButt = const Value.absent(),
+            Value<String?> targetLetter = const Value.absent(),
+            Value<int?> lastScoredByUserId = const Value.absent(),
             Value<int> totalScore = const Value.absent(),
             Value<int?> maxPossibleScore = const Value.absent(),
             Value<int> arrowsShot = const Value.absent(),
@@ -5692,7 +5994,12 @@ class $$GroupParticipantCacheRowsTableTableManager extends RootTableManager<
             guestName: guestName,
             isGuest: isGuest,
             bowClass: bowClass,
+            distanceCategory: distanceCategory,
             distanceM: distanceM,
+            targetFaceCm: targetFaceCm,
+            targetButt: targetButt,
+            targetLetter: targetLetter,
+            lastScoredByUserId: lastScoredByUserId,
             totalScore: totalScore,
             maxPossibleScore: maxPossibleScore,
             arrowsShot: arrowsShot,
