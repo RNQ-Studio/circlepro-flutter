@@ -16,6 +16,9 @@ class ScoringGroupEntity extends Equatable {
     required this.numEnds,
     required this.arrowsPerEnd,
     required this.startedAt,
+    this.sighterEndCount = 0,
+    this.roundPresetKey,
+    this.roundPresetLabel,
     this.title,
     this.hostName,
     this.environment = ArcheryEnvironment.outdoor,
@@ -39,13 +42,28 @@ class ScoringGroupEntity extends Equatable {
   final String? targetFaceId;
   final int numEnds;
   final int arrowsPerEnd;
+  final int sighterEndCount;
+  final String? roundPresetKey;
+  final String? roundPresetLabel;
   final ScoringSessionStatus status;
   final int participantCount;
   final DateTime startedAt;
   final DateTime? completedAt;
   final List<GroupParticipantEntity> participants;
 
-  int get plannedArrows => numEnds * arrowsPerEnd;
+  int get countedEndCount {
+    final value = numEnds - sighterEndCount;
+    if (value <= 0) return 0;
+    if (value >= numEnds) return numEnds;
+    return value;
+  }
+
+  int get plannedArrows => countedEndCount * arrowsPerEnd;
+
+  int get physicalPlannedArrows => numEnds * arrowsPerEnd;
+
+  bool isSighterEnd(int endNumber) =>
+      sighterEndCount > 0 && endNumber >= 1 && endNumber <= sighterEndCount;
 
   factory ScoringGroupEntity.fromJson(Map<String, dynamic> json) {
     final host = json['host'] as Map<String, dynamic>?;
@@ -64,6 +82,9 @@ class ScoringGroupEntity extends Equatable {
       targetFaceId: json['target_face_id'] as String?,
       numEnds: (json['num_ends'] as num?)?.toInt() ?? 0,
       arrowsPerEnd: (json['arrows_per_end'] as num?)?.toInt() ?? 6,
+      sighterEndCount: (json['sighter_end_count'] as num?)?.toInt() ?? 0,
+      roundPresetKey: json['round_preset_key'] as String?,
+      roundPresetLabel: json['round_preset_label'] as String?,
       status: ScoringSessionStatus.fromValue(json['status'] as String?),
       participantCount: (json['participant_count'] as num?)?.toInt() ?? 0,
       startedAt: json['started_at'] != null
@@ -92,6 +113,9 @@ class ScoringGroupEntity extends Equatable {
         targetFaceId,
         numEnds,
         arrowsPerEnd,
+        sighterEndCount,
+        roundPresetKey,
+        roundPresetLabel,
         status,
         participantCount,
         startedAt,

@@ -99,7 +99,7 @@ class _GroupLeaderboardScreenState
               live == null || (live.offline && live.entries.isEmpty);
           final board = useLocal
               ? _RenderBoard.fromLocal(local)
-              : _RenderBoard.fromLive(live, local.group.numEnds);
+              : _RenderBoard.fromLive(live, local.group.countedEndCount);
 
           final localById = {for (final p in local.participants) p.id: p};
 
@@ -132,6 +132,10 @@ class _GroupLeaderboardScreenState
                       _FreshnessBar(board: board),
                       const SizedBox(height: ManahSpacing.sm),
                       _ProgressBanner(board: board),
+                      if (board.improvementLeader != null) ...[
+                        const SizedBox(height: ManahSpacing.sm),
+                        _ImprovementPanel(row: board.improvementLeader!),
+                      ],
                       if (availableClasses.length >= 2) ...[
                         const SizedBox(height: ManahSpacing.sm),
                         _ClassFilterChips(
@@ -188,7 +192,7 @@ class _GroupLeaderboardScreenState
       isScrollControlled: true,
       showDragHandle: true,
       builder: (_) => local != null && local.ends.isNotEmpty
-          ? _DrillDownSheet(group: group, participant: local)
+          ? _DrillDownSheet(group: group, participant: local, row: row)
           : _AggregateSheet(group: group, row: row),
     );
   }
@@ -211,6 +215,8 @@ class _BoardRow {
     required this.isComplete,
     this.bowClass,
     this.isProvisionalLeader = false,
+    this.isImprovementLeader = false,
+    this.skillInsight,
   });
 
   final int rank;
@@ -225,6 +231,8 @@ class _BoardRow {
   final int endsShot;
   final bool isComplete;
   final bool isProvisionalLeader;
+  final bool isImprovementLeader;
+  final ParticipantSkillInsight? skillInsight;
 
   bool get hasStarted => arrowsShot > 0;
 
@@ -245,6 +253,8 @@ class _BoardRow {
         endsShot: e.validatedEnds,
         isComplete: e.isComplete,
         isProvisionalLeader: e.isProvisionalLeader,
+        isImprovementLeader: e.isImprovementLeader,
+        skillInsight: e.skillInsight,
       );
 
   factory _BoardRow.fromLocal(GroupLeaderboardEntry e) => _BoardRow(
@@ -285,6 +295,13 @@ class _RenderBoard {
 
   String get leaderName => rows.isEmpty ? '—' : rows.first.name;
 
+  _BoardRow? get improvementLeader {
+    for (final row in rows) {
+      if (row.isImprovementLeader) return row;
+    }
+    return null;
+  }
+
   factory _RenderBoard.fromLive(LiveLeaderboardState live, int numEnds) {
     return _RenderBoard(
       rows: [for (final e in live.entries) _BoardRow.fromLive(e)],
@@ -299,7 +316,7 @@ class _RenderBoard {
   factory _RenderBoard.fromLocal(HostBoardState local) {
     final lb = buildGroupLeaderboard(
       participants: local.participants,
-      numEnds: local.group.numEnds,
+      numEnds: local.group.countedEndCount,
       arrowsPerEnd: local.group.arrowsPerEnd,
     );
     return _RenderBoard(
@@ -403,6 +420,49 @@ class _ProgressBanner extends StatelessWidget {
   }
 }
 
+class _ImprovementPanel extends StatelessWidget {
+  const _ImprovementPanel({required this.row});
+
+  final _BoardRow row;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = row.skillInsight?.baseline.label ?? 'Paling membaik sesi ini';
+    return Container(
+      padding: const EdgeInsets.all(ManahSpacing.base),
+      decoration: BoxDecoration(
+        color: ManahColors.success.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(ManahRadius.md),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.trending_up, color: ManahColors.success),
+          const SizedBox(width: ManahSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${row.name} paling membaik',
+                  style: ManahTextStyles.bodyM.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: ManahColors.success,
+                  ),
+                ),
+                Text(
+                  label,
+                  style: ManahTextStyles.bodyS
+                      .copyWith(color: ManahColors.mediumGrey),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _LeaderboardRow extends StatelessWidget {
   const _LeaderboardRow({
     required this.row,
@@ -432,7 +492,7 @@ class _LeaderboardRow extends StatelessWidget {
       statusText = 'belum mulai';
     } else if (!row.isComplete) {
       scoreText = '${row.totalScore}';
-      statusText = 'belum selesai · ${row.endsShot}/${group.numEnds}';
+      statusText = 'belum selesai · ${row.endsShot}/${group.countedEndCount}';
     } else {
       scoreText = '${row.totalScore}';
       statusText = null;
@@ -474,11 +534,14 @@ class _LeaderboardRow extends StatelessWidget {
             if (row.isGuest) _Tag(label: 'Tamu', color: ManahColors.mediumGrey),
             if (row.isProvisionalLeader)
               _Tag(label: 'Memimpin', color: ManahColors.amberDeep),
+            if (row.isImprovementLeader)
+              _Tag(label: 'Membaik', color: ManahColors.success),
           ],
         ),
         subtitle: Text(
           statusText ??
-              'X ${row.xCount} · 10 ${row.tenCount} · ${row.arrowsShot} panah',
+              (row.skillInsight?.baseline.label ??
+                  'X ${row.xCount} · 10 ${row.tenCount} · ${row.arrowsShot} panah'),
           style: ManahTextStyles.bodyS.copyWith(
             color: statusText != null
                 ? ManahColors.amberDeep
@@ -540,10 +603,15 @@ class _RankBadge extends StatelessWidget {
 /// settles "salah ketik" disputes on the spot. Only available for rows this
 /// device recorded; a row scored on another phone shows the aggregate sheet.
 class _DrillDownSheet extends StatelessWidget {
-  const _DrillDownSheet({required this.group, required this.participant});
+  const _DrillDownSheet({
+    required this.group,
+    required this.participant,
+    required this.row,
+  });
 
   final ScoringGroupEntity group;
   final BoardParticipant participant;
+  final _BoardRow row;
 
   @override
   Widget build(BuildContext context) {
@@ -574,6 +642,13 @@ class _DrillDownSheet extends StatelessWidget {
               style:
                   ManahTextStyles.bodyS.copyWith(color: ManahColors.mediumGrey),
             ),
+            if (row.skillInsight != null) ...[
+              const SizedBox(height: ManahSpacing.base),
+              _SkillInsightView(
+                insight: row.skillInsight!,
+                isImprovementLeader: row.isImprovementLeader,
+              ),
+            ],
             const SizedBox(height: ManahSpacing.base),
             Flexible(
               child: ListView(
@@ -584,6 +659,7 @@ class _DrillDownSheet extends StatelessWidget {
                       endNumber: end,
                       arrows: p.arrowsForEnd(end),
                       arrowsPerEnd: group.arrowsPerEnd,
+                      isSighter: group.isSighterEnd(end),
                     ),
                 ],
               ),
@@ -625,10 +701,17 @@ class _AggregateSheet extends StatelessWidget {
             ),
             Text(
               'X ${row.xCount} · 10 ${row.tenCount} · ${row.arrowsShot} panah'
-              '${row.isComplete ? '' : ' · ${row.endsShot}/${group.numEnds} rambahan'}',
+              '${row.isComplete ? '' : ' · ${row.endsShot}/${group.countedEndCount} rambahan'}',
               style:
                   ManahTextStyles.bodyS.copyWith(color: ManahColors.mediumGrey),
             ),
+            if (row.skillInsight != null) ...[
+              const SizedBox(height: ManahSpacing.base),
+              _SkillInsightView(
+                insight: row.skillInsight!,
+                isImprovementLeader: row.isImprovementLeader,
+              ),
+            ],
             const SizedBox(height: ManahSpacing.base),
             Container(
               padding: const EdgeInsets.all(ManahSpacing.base),
@@ -658,16 +741,71 @@ class _AggregateSheet extends StatelessWidget {
   }
 }
 
+class _SkillInsightView extends StatelessWidget {
+  const _SkillInsightView({
+    required this.insight,
+    required this.isImprovementLeader,
+  });
+
+  final ParticipantSkillInsight insight;
+  final bool isImprovementLeader;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isImprovementLeader ? ManahColors.success : ManahColors.brand;
+    final label = insight.baseline.label ?? insight.callout;
+    return Container(
+      padding: const EdgeInsets.all(ManahSpacing.base),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(ManahRadius.md),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            isImprovementLeader ? Icons.trending_up : Icons.insights,
+            color: color,
+            size: 20,
+          ),
+          const SizedBox(width: ManahSpacing.sm),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  insight.callout ?? 'Insight sesi tersimpan',
+                  style: ManahTextStyles.bodyM.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                if (label != null)
+                  Text(
+                    label,
+                    style: ManahTextStyles.bodyS
+                        .copyWith(color: ManahColors.mediumGrey),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _EndRow extends StatelessWidget {
   const _EndRow({
     required this.endNumber,
     required this.arrows,
     required this.arrowsPerEnd,
+    required this.isSighter,
   });
 
   final int endNumber;
   final List<ArrowScore> arrows;
   final int arrowsPerEnd;
+  final bool isSighter;
 
   @override
   Widget build(BuildContext context) {
@@ -681,7 +819,7 @@ class _EndRow extends StatelessWidget {
           SizedBox(
             width: 44,
             child: Text(
-              'R$endNumber',
+              isSighter ? 'P$endNumber' : 'R$endNumber',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
           ),

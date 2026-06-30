@@ -142,7 +142,12 @@ class _SelfScoringScreenState extends ConsumerState<SelfScoringScreen> {
     // bad field signal isn't hammered once per tap (sync flag).
     await ref
         .read(hostBoardControllerProvider(widget.groupId).notifier)
-        .saveEnd(end, {self.id: arrows}, sync: endComplete);
+        .saveEnd(
+          end,
+          {self.id: arrows},
+          isSighter: group.isSighterEnd(end),
+          sync: endComplete,
+        );
 
     // Follow the solo flow: roll to the next round once this one is full.
     if (endComplete && end < group.numEnds && mounted) {
@@ -159,7 +164,12 @@ class _SelfScoringScreenState extends ConsumerState<SelfScoringScreen> {
     final arrows = existing.sublist(0, existing.length - 1);
     await ref
         .read(hostBoardControllerProvider(widget.groupId).notifier)
-        .saveEnd(end, {self.id: arrows}, sync: false);
+        .saveEnd(
+          end,
+          {self.id: arrows},
+          isSighter: group.isSighterEnd(end),
+          sync: false,
+        );
   }
 
   Future<void> _finish(BuildContext context) async {
@@ -246,6 +256,7 @@ class _ScoringView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final endArrows = self.arrowsForEnd(currentEnd);
+    final isSighter = group.isSighterEnd(currentEnd);
     final isComplete = self.arrowsShot >= group.plannedArrows;
     final endTotal = endArrows.fold<int>(0, (s, a) => s + a.scoreValue);
     final maxPossible = group.plannedArrows * 10;
@@ -294,6 +305,7 @@ class _ScoringView extends StatelessWidget {
           _EndStrip(
             currentEnd: currentEnd,
             numEnds: group.numEnds,
+            sighterEndCount: group.sighterEndCount,
             shotEnds: {
               for (var e = 1; e <= group.numEnds; e++)
                 if (self.arrowsForEnd(e).isNotEmpty) e,
@@ -305,9 +317,12 @@ class _ScoringView extends StatelessWidget {
             padding: const EdgeInsets.all(ManahSpacing.base),
             child: Column(
               children: [
+                if (isSighter) const _SighterNote(),
+                if (isSighter) const SizedBox(height: ManahSpacing.sm),
                 ArrowSlots(arrows: endArrows, capacity: group.arrowsPerEnd),
                 const SizedBox(height: ManahSpacing.sm),
-                Text('Total Ronde: $endTotal',
+                Text(
+                    '${isSighter ? 'Total Percobaan' : 'Total Ronde'}: $endTotal',
                     style: theme.textTheme.titleMedium),
               ],
             ),
@@ -391,16 +406,43 @@ class _CountsForYouBanner extends StatelessWidget {
 
 /// Round chips — one tap jumps to any round to correct a past one (task 10.2).
 /// A shot round carries a ✓.
+class _SighterNote extends StatelessWidget {
+  const _SighterNote();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+          horizontal: ManahSpacing.base, vertical: ManahSpacing.sm),
+      decoration: BoxDecoration(
+        color: ManahColors.amberDeep.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(ManahRadius.md),
+      ),
+      child: Text(
+        'Rambahan percobaan: tersimpan, tetapi tidak masuk total atau PB.',
+        textAlign: TextAlign.center,
+        style: Theme.of(context)
+            .textTheme
+            .bodySmall
+            ?.copyWith(color: ManahColors.amberDeep),
+      ),
+    );
+  }
+}
+
 class _EndStrip extends StatelessWidget {
   const _EndStrip({
     required this.currentEnd,
     required this.numEnds,
+    required this.sighterEndCount,
     required this.shotEnds,
     required this.onSelect,
   });
 
   final int currentEnd;
   final int numEnds;
+  final int sighterEndCount;
   final Set<int> shotEnds;
   final ValueChanged<int> onSelect;
 
@@ -418,9 +460,11 @@ class _EndStrip extends StatelessWidget {
           final end = i + 1;
           final isActive = end == currentEnd;
           final isShot = shotEnds.contains(end);
+          final isSighter = sighterEndCount > 0 && end <= sighterEndCount;
           return ChoiceChip(
             selected: isActive,
-            selectedColor: ManahColors.brand,
+            selectedColor:
+                isSighter ? ManahColors.amberDeep : ManahColors.brand,
             showCheckmark: false,
             onSelected: (_) => onSelect(end),
             avatar: isShot
@@ -429,7 +473,7 @@ class _EndStrip extends StatelessWidget {
                     color: isActive ? Colors.white : ManahColors.success)
                 : null,
             label: Text(
-              'R$end',
+              isSighter ? 'P$end' : 'R$end',
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: isActive ? Colors.white : null,

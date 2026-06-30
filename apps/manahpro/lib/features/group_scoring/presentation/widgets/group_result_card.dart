@@ -86,7 +86,9 @@ class GroupResultCard extends StatelessWidget {
           ),
           const SizedBox(height: ManahSpacing.xs),
           Text(
-            '${group.distanceM} m · ${group.numEnds}×${group.arrowsPerEnd} · ${group.environment.label}',
+            '${group.roundPresetLabel ?? '${group.distanceM} m'} · '
+            '${group.countedEndCount}×${group.arrowsPerEnd} skor · '
+            '${group.environment.label}',
             style: const TextStyle(color: Colors.white70, fontSize: 13),
           ),
           const SizedBox(height: ManahSpacing.lg),

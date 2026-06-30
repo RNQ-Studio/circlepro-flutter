@@ -72,6 +72,9 @@ class GroupSessionRows extends Table {
   TextColumn get targetFaceId => text().nullable()();
   IntColumn get numEnds => integer()();
   IntColumn get arrowsPerEnd => integer()();
+  IntColumn get sighterEndCount => integer().withDefault(const Constant(0))();
+  TextColumn get roundPresetKey => text().nullable()();
+  TextColumn get roundPresetLabel => text().nullable()();
   TextColumn get status => text().withDefault(const Constant('in_progress'))();
   IntColumn get participantCount => integer().withDefault(const Constant(0))();
   DateTimeColumn get startedAt => dateTime()();
@@ -115,6 +118,7 @@ class ScoringEndRows extends Table {
   TextColumn get id => text()();
   TextColumn get sessionId => text()();
   IntColumn get endNumber => integer()();
+  BoolColumn get isSighter => boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -168,7 +172,7 @@ class ScoringDatabase extends _$ScoringDatabase {
 
   @override
   int get schemaVersion =>
-      11; // Sprint 18: cache per-bantalan roster metadata for offline boards
+      12; // Sprint 21-22: sighter rounds and round presets in group cache
 
   @override
   MigrationStrategy get migration => MigrationStrategy(

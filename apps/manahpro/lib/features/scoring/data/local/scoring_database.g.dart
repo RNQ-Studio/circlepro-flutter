@@ -1304,8 +1304,18 @@ class $ScoringEndRowsTable extends ScoringEndRows
   late final GeneratedColumn<int> endNumber = GeneratedColumn<int>(
       'end_number', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _isSighterMeta =
+      const VerificationMeta('isSighter');
   @override
-  List<GeneratedColumn> get $columns => [id, sessionId, endNumber];
+  late final GeneratedColumn<bool> isSighter = GeneratedColumn<bool>(
+      'is_sighter', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_sighter" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  @override
+  List<GeneratedColumn> get $columns => [id, sessionId, endNumber, isSighter];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1333,6 +1343,10 @@ class $ScoringEndRowsTable extends ScoringEndRows
     } else if (isInserting) {
       context.missing(_endNumberMeta);
     }
+    if (data.containsKey('is_sighter')) {
+      context.handle(_isSighterMeta,
+          isSighter.isAcceptableOrUnknown(data['is_sighter']!, _isSighterMeta));
+    }
     return context;
   }
 
@@ -1348,6 +1362,8 @@ class $ScoringEndRowsTable extends ScoringEndRows
           .read(DriftSqlType.string, data['${effectivePrefix}session_id'])!,
       endNumber: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}end_number'])!,
+      isSighter: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_sighter'])!,
     );
   }
 
@@ -1361,14 +1377,19 @@ class ScoringEndRow extends DataClass implements Insertable<ScoringEndRow> {
   final String id;
   final String sessionId;
   final int endNumber;
+  final bool isSighter;
   const ScoringEndRow(
-      {required this.id, required this.sessionId, required this.endNumber});
+      {required this.id,
+      required this.sessionId,
+      required this.endNumber,
+      required this.isSighter});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
     map['session_id'] = Variable<String>(sessionId);
     map['end_number'] = Variable<int>(endNumber);
+    map['is_sighter'] = Variable<bool>(isSighter);
     return map;
   }
 
@@ -1377,6 +1398,7 @@ class ScoringEndRow extends DataClass implements Insertable<ScoringEndRow> {
       id: Value(id),
       sessionId: Value(sessionId),
       endNumber: Value(endNumber),
+      isSighter: Value(isSighter),
     );
   }
 
@@ -1387,6 +1409,7 @@ class ScoringEndRow extends DataClass implements Insertable<ScoringEndRow> {
       id: serializer.fromJson<String>(json['id']),
       sessionId: serializer.fromJson<String>(json['sessionId']),
       endNumber: serializer.fromJson<int>(json['endNumber']),
+      isSighter: serializer.fromJson<bool>(json['isSighter']),
     );
   }
   @override
@@ -1396,20 +1419,24 @@ class ScoringEndRow extends DataClass implements Insertable<ScoringEndRow> {
       'id': serializer.toJson<String>(id),
       'sessionId': serializer.toJson<String>(sessionId),
       'endNumber': serializer.toJson<int>(endNumber),
+      'isSighter': serializer.toJson<bool>(isSighter),
     };
   }
 
-  ScoringEndRow copyWith({String? id, String? sessionId, int? endNumber}) =>
+  ScoringEndRow copyWith(
+          {String? id, String? sessionId, int? endNumber, bool? isSighter}) =>
       ScoringEndRow(
         id: id ?? this.id,
         sessionId: sessionId ?? this.sessionId,
         endNumber: endNumber ?? this.endNumber,
+        isSighter: isSighter ?? this.isSighter,
       );
   ScoringEndRow copyWithCompanion(ScoringEndRowsCompanion data) {
     return ScoringEndRow(
       id: data.id.present ? data.id.value : this.id,
       sessionId: data.sessionId.present ? data.sessionId.value : this.sessionId,
       endNumber: data.endNumber.present ? data.endNumber.value : this.endNumber,
+      isSighter: data.isSighter.present ? data.isSighter.value : this.isSighter,
     );
   }
 
@@ -1418,37 +1445,42 @@ class ScoringEndRow extends DataClass implements Insertable<ScoringEndRow> {
     return (StringBuffer('ScoringEndRow(')
           ..write('id: $id, ')
           ..write('sessionId: $sessionId, ')
-          ..write('endNumber: $endNumber')
+          ..write('endNumber: $endNumber, ')
+          ..write('isSighter: $isSighter')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, sessionId, endNumber);
+  int get hashCode => Object.hash(id, sessionId, endNumber, isSighter);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ScoringEndRow &&
           other.id == this.id &&
           other.sessionId == this.sessionId &&
-          other.endNumber == this.endNumber);
+          other.endNumber == this.endNumber &&
+          other.isSighter == this.isSighter);
 }
 
 class ScoringEndRowsCompanion extends UpdateCompanion<ScoringEndRow> {
   final Value<String> id;
   final Value<String> sessionId;
   final Value<int> endNumber;
+  final Value<bool> isSighter;
   final Value<int> rowid;
   const ScoringEndRowsCompanion({
     this.id = const Value.absent(),
     this.sessionId = const Value.absent(),
     this.endNumber = const Value.absent(),
+    this.isSighter = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ScoringEndRowsCompanion.insert({
     required String id,
     required String sessionId,
     required int endNumber,
+    this.isSighter = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
         sessionId = Value(sessionId),
@@ -1457,12 +1489,14 @@ class ScoringEndRowsCompanion extends UpdateCompanion<ScoringEndRow> {
     Expression<String>? id,
     Expression<String>? sessionId,
     Expression<int>? endNumber,
+    Expression<bool>? isSighter,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (sessionId != null) 'session_id': sessionId,
       if (endNumber != null) 'end_number': endNumber,
+      if (isSighter != null) 'is_sighter': isSighter,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1471,11 +1505,13 @@ class ScoringEndRowsCompanion extends UpdateCompanion<ScoringEndRow> {
       {Value<String>? id,
       Value<String>? sessionId,
       Value<int>? endNumber,
+      Value<bool>? isSighter,
       Value<int>? rowid}) {
     return ScoringEndRowsCompanion(
       id: id ?? this.id,
       sessionId: sessionId ?? this.sessionId,
       endNumber: endNumber ?? this.endNumber,
+      isSighter: isSighter ?? this.isSighter,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1492,6 +1528,9 @@ class ScoringEndRowsCompanion extends UpdateCompanion<ScoringEndRow> {
     if (endNumber.present) {
       map['end_number'] = Variable<int>(endNumber.value);
     }
+    if (isSighter.present) {
+      map['is_sighter'] = Variable<bool>(isSighter.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1504,6 +1543,7 @@ class ScoringEndRowsCompanion extends UpdateCompanion<ScoringEndRow> {
           ..write('id: $id, ')
           ..write('sessionId: $sessionId, ')
           ..write('endNumber: $endNumber, ')
+          ..write('isSighter: $isSighter, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2431,6 +2471,26 @@ class $GroupSessionRowsTable extends GroupSessionRows
   late final GeneratedColumn<int> arrowsPerEnd = GeneratedColumn<int>(
       'arrows_per_end', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _sighterEndCountMeta =
+      const VerificationMeta('sighterEndCount');
+  @override
+  late final GeneratedColumn<int> sighterEndCount = GeneratedColumn<int>(
+      'sighter_end_count', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _roundPresetKeyMeta =
+      const VerificationMeta('roundPresetKey');
+  @override
+  late final GeneratedColumn<String> roundPresetKey = GeneratedColumn<String>(
+      'round_preset_key', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _roundPresetLabelMeta =
+      const VerificationMeta('roundPresetLabel');
+  @override
+  late final GeneratedColumn<String> roundPresetLabel = GeneratedColumn<String>(
+      'round_preset_label', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _statusMeta = const VerificationMeta('status');
   @override
   late final GeneratedColumn<String> status = GeneratedColumn<String>(
@@ -2478,6 +2538,9 @@ class $GroupSessionRowsTable extends GroupSessionRows
         targetFaceId,
         numEnds,
         arrowsPerEnd,
+        sighterEndCount,
+        roundPresetKey,
+        roundPresetLabel,
         status,
         participantCount,
         startedAt,
@@ -2567,6 +2630,24 @@ class $GroupSessionRowsTable extends GroupSessionRows
     } else if (isInserting) {
       context.missing(_arrowsPerEndMeta);
     }
+    if (data.containsKey('sighter_end_count')) {
+      context.handle(
+          _sighterEndCountMeta,
+          sighterEndCount.isAcceptableOrUnknown(
+              data['sighter_end_count']!, _sighterEndCountMeta));
+    }
+    if (data.containsKey('round_preset_key')) {
+      context.handle(
+          _roundPresetKeyMeta,
+          roundPresetKey.isAcceptableOrUnknown(
+              data['round_preset_key']!, _roundPresetKeyMeta));
+    }
+    if (data.containsKey('round_preset_label')) {
+      context.handle(
+          _roundPresetLabelMeta,
+          roundPresetLabel.isAcceptableOrUnknown(
+              data['round_preset_label']!, _roundPresetLabelMeta));
+    }
     if (data.containsKey('status')) {
       context.handle(_statusMeta,
           status.isAcceptableOrUnknown(data['status']!, _statusMeta));
@@ -2628,6 +2709,12 @@ class $GroupSessionRowsTable extends GroupSessionRows
           .read(DriftSqlType.int, data['${effectivePrefix}num_ends'])!,
       arrowsPerEnd: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}arrows_per_end'])!,
+      sighterEndCount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}sighter_end_count'])!,
+      roundPresetKey: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}round_preset_key']),
+      roundPresetLabel: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}round_preset_label']),
       status: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
       participantCount: attachedDatabase.typeMapping
@@ -2660,6 +2747,9 @@ class GroupSessionRow extends DataClass implements Insertable<GroupSessionRow> {
   final String? targetFaceId;
   final int numEnds;
   final int arrowsPerEnd;
+  final int sighterEndCount;
+  final String? roundPresetKey;
+  final String? roundPresetLabel;
   final String status;
   final int participantCount;
   final DateTime startedAt;
@@ -2678,6 +2768,9 @@ class GroupSessionRow extends DataClass implements Insertable<GroupSessionRow> {
       this.targetFaceId,
       required this.numEnds,
       required this.arrowsPerEnd,
+      required this.sighterEndCount,
+      this.roundPresetKey,
+      this.roundPresetLabel,
       required this.status,
       required this.participantCount,
       required this.startedAt,
@@ -2706,6 +2799,13 @@ class GroupSessionRow extends DataClass implements Insertable<GroupSessionRow> {
     }
     map['num_ends'] = Variable<int>(numEnds);
     map['arrows_per_end'] = Variable<int>(arrowsPerEnd);
+    map['sighter_end_count'] = Variable<int>(sighterEndCount);
+    if (!nullToAbsent || roundPresetKey != null) {
+      map['round_preset_key'] = Variable<String>(roundPresetKey);
+    }
+    if (!nullToAbsent || roundPresetLabel != null) {
+      map['round_preset_label'] = Variable<String>(roundPresetLabel);
+    }
     map['status'] = Variable<String>(status);
     map['participant_count'] = Variable<int>(participantCount);
     map['started_at'] = Variable<DateTime>(startedAt);
@@ -2737,6 +2837,13 @@ class GroupSessionRow extends DataClass implements Insertable<GroupSessionRow> {
           : Value(targetFaceId),
       numEnds: Value(numEnds),
       arrowsPerEnd: Value(arrowsPerEnd),
+      sighterEndCount: Value(sighterEndCount),
+      roundPresetKey: roundPresetKey == null && nullToAbsent
+          ? const Value.absent()
+          : Value(roundPresetKey),
+      roundPresetLabel: roundPresetLabel == null && nullToAbsent
+          ? const Value.absent()
+          : Value(roundPresetLabel),
       status: Value(status),
       participantCount: Value(participantCount),
       startedAt: Value(startedAt),
@@ -2763,6 +2870,9 @@ class GroupSessionRow extends DataClass implements Insertable<GroupSessionRow> {
       targetFaceId: serializer.fromJson<String?>(json['targetFaceId']),
       numEnds: serializer.fromJson<int>(json['numEnds']),
       arrowsPerEnd: serializer.fromJson<int>(json['arrowsPerEnd']),
+      sighterEndCount: serializer.fromJson<int>(json['sighterEndCount']),
+      roundPresetKey: serializer.fromJson<String?>(json['roundPresetKey']),
+      roundPresetLabel: serializer.fromJson<String?>(json['roundPresetLabel']),
       status: serializer.fromJson<String>(json['status']),
       participantCount: serializer.fromJson<int>(json['participantCount']),
       startedAt: serializer.fromJson<DateTime>(json['startedAt']),
@@ -2786,6 +2896,9 @@ class GroupSessionRow extends DataClass implements Insertable<GroupSessionRow> {
       'targetFaceId': serializer.toJson<String?>(targetFaceId),
       'numEnds': serializer.toJson<int>(numEnds),
       'arrowsPerEnd': serializer.toJson<int>(arrowsPerEnd),
+      'sighterEndCount': serializer.toJson<int>(sighterEndCount),
+      'roundPresetKey': serializer.toJson<String?>(roundPresetKey),
+      'roundPresetLabel': serializer.toJson<String?>(roundPresetLabel),
       'status': serializer.toJson<String>(status),
       'participantCount': serializer.toJson<int>(participantCount),
       'startedAt': serializer.toJson<DateTime>(startedAt),
@@ -2807,6 +2920,9 @@ class GroupSessionRow extends DataClass implements Insertable<GroupSessionRow> {
           Value<String?> targetFaceId = const Value.absent(),
           int? numEnds,
           int? arrowsPerEnd,
+          int? sighterEndCount,
+          Value<String?> roundPresetKey = const Value.absent(),
+          Value<String?> roundPresetLabel = const Value.absent(),
           String? status,
           int? participantCount,
           DateTime? startedAt,
@@ -2827,6 +2943,12 @@ class GroupSessionRow extends DataClass implements Insertable<GroupSessionRow> {
             targetFaceId.present ? targetFaceId.value : this.targetFaceId,
         numEnds: numEnds ?? this.numEnds,
         arrowsPerEnd: arrowsPerEnd ?? this.arrowsPerEnd,
+        sighterEndCount: sighterEndCount ?? this.sighterEndCount,
+        roundPresetKey:
+            roundPresetKey.present ? roundPresetKey.value : this.roundPresetKey,
+        roundPresetLabel: roundPresetLabel.present
+            ? roundPresetLabel.value
+            : this.roundPresetLabel,
         status: status ?? this.status,
         participantCount: participantCount ?? this.participantCount,
         startedAt: startedAt ?? this.startedAt,
@@ -2857,6 +2979,15 @@ class GroupSessionRow extends DataClass implements Insertable<GroupSessionRow> {
       arrowsPerEnd: data.arrowsPerEnd.present
           ? data.arrowsPerEnd.value
           : this.arrowsPerEnd,
+      sighterEndCount: data.sighterEndCount.present
+          ? data.sighterEndCount.value
+          : this.sighterEndCount,
+      roundPresetKey: data.roundPresetKey.present
+          ? data.roundPresetKey.value
+          : this.roundPresetKey,
+      roundPresetLabel: data.roundPresetLabel.present
+          ? data.roundPresetLabel.value
+          : this.roundPresetLabel,
       status: data.status.present ? data.status.value : this.status,
       participantCount: data.participantCount.present
           ? data.participantCount.value
@@ -2883,6 +3014,9 @@ class GroupSessionRow extends DataClass implements Insertable<GroupSessionRow> {
           ..write('targetFaceId: $targetFaceId, ')
           ..write('numEnds: $numEnds, ')
           ..write('arrowsPerEnd: $arrowsPerEnd, ')
+          ..write('sighterEndCount: $sighterEndCount, ')
+          ..write('roundPresetKey: $roundPresetKey, ')
+          ..write('roundPresetLabel: $roundPresetLabel, ')
           ..write('status: $status, ')
           ..write('participantCount: $participantCount, ')
           ..write('startedAt: $startedAt, ')
@@ -2906,6 +3040,9 @@ class GroupSessionRow extends DataClass implements Insertable<GroupSessionRow> {
       targetFaceId,
       numEnds,
       arrowsPerEnd,
+      sighterEndCount,
+      roundPresetKey,
+      roundPresetLabel,
       status,
       participantCount,
       startedAt,
@@ -2927,6 +3064,9 @@ class GroupSessionRow extends DataClass implements Insertable<GroupSessionRow> {
           other.targetFaceId == this.targetFaceId &&
           other.numEnds == this.numEnds &&
           other.arrowsPerEnd == this.arrowsPerEnd &&
+          other.sighterEndCount == this.sighterEndCount &&
+          other.roundPresetKey == this.roundPresetKey &&
+          other.roundPresetLabel == this.roundPresetLabel &&
           other.status == this.status &&
           other.participantCount == this.participantCount &&
           other.startedAt == this.startedAt &&
@@ -2947,6 +3087,9 @@ class GroupSessionRowsCompanion extends UpdateCompanion<GroupSessionRow> {
   final Value<String?> targetFaceId;
   final Value<int> numEnds;
   final Value<int> arrowsPerEnd;
+  final Value<int> sighterEndCount;
+  final Value<String?> roundPresetKey;
+  final Value<String?> roundPresetLabel;
   final Value<String> status;
   final Value<int> participantCount;
   final Value<DateTime> startedAt;
@@ -2966,6 +3109,9 @@ class GroupSessionRowsCompanion extends UpdateCompanion<GroupSessionRow> {
     this.targetFaceId = const Value.absent(),
     this.numEnds = const Value.absent(),
     this.arrowsPerEnd = const Value.absent(),
+    this.sighterEndCount = const Value.absent(),
+    this.roundPresetKey = const Value.absent(),
+    this.roundPresetLabel = const Value.absent(),
     this.status = const Value.absent(),
     this.participantCount = const Value.absent(),
     this.startedAt = const Value.absent(),
@@ -2986,6 +3132,9 @@ class GroupSessionRowsCompanion extends UpdateCompanion<GroupSessionRow> {
     this.targetFaceId = const Value.absent(),
     required int numEnds,
     required int arrowsPerEnd,
+    this.sighterEndCount = const Value.absent(),
+    this.roundPresetKey = const Value.absent(),
+    this.roundPresetLabel = const Value.absent(),
     this.status = const Value.absent(),
     this.participantCount = const Value.absent(),
     required DateTime startedAt,
@@ -3014,6 +3163,9 @@ class GroupSessionRowsCompanion extends UpdateCompanion<GroupSessionRow> {
     Expression<String>? targetFaceId,
     Expression<int>? numEnds,
     Expression<int>? arrowsPerEnd,
+    Expression<int>? sighterEndCount,
+    Expression<String>? roundPresetKey,
+    Expression<String>? roundPresetLabel,
     Expression<String>? status,
     Expression<int>? participantCount,
     Expression<DateTime>? startedAt,
@@ -3034,6 +3186,9 @@ class GroupSessionRowsCompanion extends UpdateCompanion<GroupSessionRow> {
       if (targetFaceId != null) 'target_face_id': targetFaceId,
       if (numEnds != null) 'num_ends': numEnds,
       if (arrowsPerEnd != null) 'arrows_per_end': arrowsPerEnd,
+      if (sighterEndCount != null) 'sighter_end_count': sighterEndCount,
+      if (roundPresetKey != null) 'round_preset_key': roundPresetKey,
+      if (roundPresetLabel != null) 'round_preset_label': roundPresetLabel,
       if (status != null) 'status': status,
       if (participantCount != null) 'participant_count': participantCount,
       if (startedAt != null) 'started_at': startedAt,
@@ -3056,6 +3211,9 @@ class GroupSessionRowsCompanion extends UpdateCompanion<GroupSessionRow> {
       Value<String?>? targetFaceId,
       Value<int>? numEnds,
       Value<int>? arrowsPerEnd,
+      Value<int>? sighterEndCount,
+      Value<String?>? roundPresetKey,
+      Value<String?>? roundPresetLabel,
       Value<String>? status,
       Value<int>? participantCount,
       Value<DateTime>? startedAt,
@@ -3075,6 +3233,9 @@ class GroupSessionRowsCompanion extends UpdateCompanion<GroupSessionRow> {
       targetFaceId: targetFaceId ?? this.targetFaceId,
       numEnds: numEnds ?? this.numEnds,
       arrowsPerEnd: arrowsPerEnd ?? this.arrowsPerEnd,
+      sighterEndCount: sighterEndCount ?? this.sighterEndCount,
+      roundPresetKey: roundPresetKey ?? this.roundPresetKey,
+      roundPresetLabel: roundPresetLabel ?? this.roundPresetLabel,
       status: status ?? this.status,
       participantCount: participantCount ?? this.participantCount,
       startedAt: startedAt ?? this.startedAt,
@@ -3123,6 +3284,15 @@ class GroupSessionRowsCompanion extends UpdateCompanion<GroupSessionRow> {
     if (arrowsPerEnd.present) {
       map['arrows_per_end'] = Variable<int>(arrowsPerEnd.value);
     }
+    if (sighterEndCount.present) {
+      map['sighter_end_count'] = Variable<int>(sighterEndCount.value);
+    }
+    if (roundPresetKey.present) {
+      map['round_preset_key'] = Variable<String>(roundPresetKey.value);
+    }
+    if (roundPresetLabel.present) {
+      map['round_preset_label'] = Variable<String>(roundPresetLabel.value);
+    }
     if (status.present) {
       map['status'] = Variable<String>(status.value);
     }
@@ -3159,6 +3329,9 @@ class GroupSessionRowsCompanion extends UpdateCompanion<GroupSessionRow> {
           ..write('targetFaceId: $targetFaceId, ')
           ..write('numEnds: $numEnds, ')
           ..write('arrowsPerEnd: $arrowsPerEnd, ')
+          ..write('sighterEndCount: $sighterEndCount, ')
+          ..write('roundPresetKey: $roundPresetKey, ')
+          ..write('roundPresetLabel: $roundPresetLabel, ')
           ..write('status: $status, ')
           ..write('participantCount: $participantCount, ')
           ..write('startedAt: $startedAt, ')
@@ -4689,6 +4862,7 @@ typedef $$ScoringEndRowsTableCreateCompanionBuilder = ScoringEndRowsCompanion
   required String id,
   required String sessionId,
   required int endNumber,
+  Value<bool> isSighter,
   Value<int> rowid,
 });
 typedef $$ScoringEndRowsTableUpdateCompanionBuilder = ScoringEndRowsCompanion
@@ -4696,6 +4870,7 @@ typedef $$ScoringEndRowsTableUpdateCompanionBuilder = ScoringEndRowsCompanion
   Value<String> id,
   Value<String> sessionId,
   Value<int> endNumber,
+  Value<bool> isSighter,
   Value<int> rowid,
 });
 
@@ -4716,6 +4891,9 @@ class $$ScoringEndRowsTableFilterComposer
 
   ColumnFilters<int> get endNumber => $composableBuilder(
       column: $table.endNumber, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isSighter => $composableBuilder(
+      column: $table.isSighter, builder: (column) => ColumnFilters(column));
 }
 
 class $$ScoringEndRowsTableOrderingComposer
@@ -4735,6 +4913,9 @@ class $$ScoringEndRowsTableOrderingComposer
 
   ColumnOrderings<int> get endNumber => $composableBuilder(
       column: $table.endNumber, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isSighter => $composableBuilder(
+      column: $table.isSighter, builder: (column) => ColumnOrderings(column));
 }
 
 class $$ScoringEndRowsTableAnnotationComposer
@@ -4754,6 +4935,9 @@ class $$ScoringEndRowsTableAnnotationComposer
 
   GeneratedColumn<int> get endNumber =>
       $composableBuilder(column: $table.endNumber, builder: (column) => column);
+
+  GeneratedColumn<bool> get isSighter =>
+      $composableBuilder(column: $table.isSighter, builder: (column) => column);
 }
 
 class $$ScoringEndRowsTableTableManager extends RootTableManager<
@@ -4786,24 +4970,28 @@ class $$ScoringEndRowsTableTableManager extends RootTableManager<
             Value<String> id = const Value.absent(),
             Value<String> sessionId = const Value.absent(),
             Value<int> endNumber = const Value.absent(),
+            Value<bool> isSighter = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               ScoringEndRowsCompanion(
             id: id,
             sessionId: sessionId,
             endNumber: endNumber,
+            isSighter: isSighter,
             rowid: rowid,
           ),
           createCompanionCallback: ({
             required String id,
             required String sessionId,
             required int endNumber,
+            Value<bool> isSighter = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               ScoringEndRowsCompanion.insert(
             id: id,
             sessionId: sessionId,
             endNumber: endNumber,
+            isSighter: isSighter,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
@@ -5273,6 +5461,9 @@ typedef $$GroupSessionRowsTableCreateCompanionBuilder
   Value<String?> targetFaceId,
   required int numEnds,
   required int arrowsPerEnd,
+  Value<int> sighterEndCount,
+  Value<String?> roundPresetKey,
+  Value<String?> roundPresetLabel,
   Value<String> status,
   Value<int> participantCount,
   required DateTime startedAt,
@@ -5294,6 +5485,9 @@ typedef $$GroupSessionRowsTableUpdateCompanionBuilder
   Value<String?> targetFaceId,
   Value<int> numEnds,
   Value<int> arrowsPerEnd,
+  Value<int> sighterEndCount,
+  Value<String?> roundPresetKey,
+  Value<String?> roundPresetLabel,
   Value<String> status,
   Value<int> participantCount,
   Value<DateTime> startedAt,
@@ -5347,6 +5541,18 @@ class $$GroupSessionRowsTableFilterComposer
 
   ColumnFilters<int> get arrowsPerEnd => $composableBuilder(
       column: $table.arrowsPerEnd, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get sighterEndCount => $composableBuilder(
+      column: $table.sighterEndCount,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get roundPresetKey => $composableBuilder(
+      column: $table.roundPresetKey,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get roundPresetLabel => $composableBuilder(
+      column: $table.roundPresetLabel,
+      builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get status => $composableBuilder(
       column: $table.status, builder: (column) => ColumnFilters(column));
@@ -5414,6 +5620,18 @@ class $$GroupSessionRowsTableOrderingComposer
       column: $table.arrowsPerEnd,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<int> get sighterEndCount => $composableBuilder(
+      column: $table.sighterEndCount,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get roundPresetKey => $composableBuilder(
+      column: $table.roundPresetKey,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get roundPresetLabel => $composableBuilder(
+      column: $table.roundPresetLabel,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get status => $composableBuilder(
       column: $table.status, builder: (column) => ColumnOrderings(column));
 
@@ -5476,6 +5694,15 @@ class $$GroupSessionRowsTableAnnotationComposer
   GeneratedColumn<int> get arrowsPerEnd => $composableBuilder(
       column: $table.arrowsPerEnd, builder: (column) => column);
 
+  GeneratedColumn<int> get sighterEndCount => $composableBuilder(
+      column: $table.sighterEndCount, builder: (column) => column);
+
+  GeneratedColumn<String> get roundPresetKey => $composableBuilder(
+      column: $table.roundPresetKey, builder: (column) => column);
+
+  GeneratedColumn<String> get roundPresetLabel => $composableBuilder(
+      column: $table.roundPresetLabel, builder: (column) => column);
+
   GeneratedColumn<String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
 
@@ -5531,6 +5758,9 @@ class $$GroupSessionRowsTableTableManager extends RootTableManager<
             Value<String?> targetFaceId = const Value.absent(),
             Value<int> numEnds = const Value.absent(),
             Value<int> arrowsPerEnd = const Value.absent(),
+            Value<int> sighterEndCount = const Value.absent(),
+            Value<String?> roundPresetKey = const Value.absent(),
+            Value<String?> roundPresetLabel = const Value.absent(),
             Value<String> status = const Value.absent(),
             Value<int> participantCount = const Value.absent(),
             Value<DateTime> startedAt = const Value.absent(),
@@ -5551,6 +5781,9 @@ class $$GroupSessionRowsTableTableManager extends RootTableManager<
             targetFaceId: targetFaceId,
             numEnds: numEnds,
             arrowsPerEnd: arrowsPerEnd,
+            sighterEndCount: sighterEndCount,
+            roundPresetKey: roundPresetKey,
+            roundPresetLabel: roundPresetLabel,
             status: status,
             participantCount: participantCount,
             startedAt: startedAt,
@@ -5571,6 +5804,9 @@ class $$GroupSessionRowsTableTableManager extends RootTableManager<
             Value<String?> targetFaceId = const Value.absent(),
             required int numEnds,
             required int arrowsPerEnd,
+            Value<int> sighterEndCount = const Value.absent(),
+            Value<String?> roundPresetKey = const Value.absent(),
+            Value<String?> roundPresetLabel = const Value.absent(),
             Value<String> status = const Value.absent(),
             Value<int> participantCount = const Value.absent(),
             required DateTime startedAt,
@@ -5591,6 +5827,9 @@ class $$GroupSessionRowsTableTableManager extends RootTableManager<
             targetFaceId: targetFaceId,
             numEnds: numEnds,
             arrowsPerEnd: arrowsPerEnd,
+            sighterEndCount: sighterEndCount,
+            roundPresetKey: roundPresetKey,
+            roundPresetLabel: roundPresetLabel,
             status: status,
             participantCount: participantCount,
             startedAt: startedAt,

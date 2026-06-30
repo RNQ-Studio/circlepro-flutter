@@ -167,12 +167,14 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
               if (boardRoundIsSaved(participants, e)) e,
           };
           final isCorrection = savedEnds.contains(_currentEnd);
+          final isSighter = group.isSighterEnd(_currentEnd);
 
           return Column(
             children: [
               _EndStrip(
                 currentEnd: _currentEnd,
                 numEnds: group.numEnds,
+                sighterEndCount: group.sighterEndCount,
                 savedEnds: savedEnds,
                 onSelect: (e) => setState(() {
                   _currentEnd = e;
@@ -196,9 +198,11 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      if (isSighter) _SighterBanner(endNumber: _currentEnd),
                       if (isCorrection) const _CorrectionBanner(),
                       Text(
-                        '${active.labelOr('Saya')} — Rambahan $_currentEnd',
+                        '${active.labelOr('Saya')} — '
+                        '${isSighter ? 'Rambahan Percobaan' : 'Rambahan'} $_currentEnd',
                         style: ManahTextStyles.h3.copyWith(fontSize: 16),
                         textAlign: TextAlign.center,
                       ),
@@ -227,7 +231,11 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
                       FilledButton.icon(
                         onPressed: _isSaving
                             ? null
-                            : () => _saveEnd(participants, group.arrowsPerEnd),
+                            : () => _saveEnd(
+                                  participants,
+                                  group.arrowsPerEnd,
+                                  isSighter: isSighter,
+                                ),
                         icon: _isSaving
                             ? const SizedBox(
                                 width: 18,
@@ -239,8 +247,8 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
                         label: Text(_isSaving
                             ? 'Menyimpan…'
                             : isCorrection
-                                ? 'Simpan Koreksi Rambahan $_currentEnd'
-                                : 'Simpan Rambahan $_currentEnd'),
+                                ? 'Simpan Koreksi ${isSighter ? 'Percobaan' : 'Rambahan'} $_currentEnd'
+                                : 'Simpan ${isSighter ? 'Percobaan' : 'Rambahan'} $_currentEnd'),
                       ),
                     ],
                   ),
@@ -309,8 +317,9 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
 
   Future<void> _saveEnd(
     List<BoardParticipant> participants,
-    int arrowsPerEnd,
-  ) async {
+    int arrowsPerEnd, {
+    required bool isSighter,
+  }) async {
     // Validate: every participant must have a full end before "Simpan".
     for (final p in participants) {
       final scores = _temp[p.id]!;
@@ -349,7 +358,7 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
     try {
       await ref
           .read(hostBoardControllerProvider(widget.groupId).notifier)
-          .saveEnd(_currentEnd, arrowsByParticipantId);
+          .saveEnd(_currentEnd, arrowsByParticipantId, isSighter: isSighter);
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
@@ -362,7 +371,9 @@ class _HostBoardScreenState extends ConsumerState<HostBoardScreen> {
             .value
             ?.pendingSyncCount ??
         0;
-    final noun = wasCorrection ? 'Koreksi Rambahan' : 'Rambahan';
+    final noun = wasCorrection
+        ? 'Koreksi ${isSighter ? 'Percobaan' : 'Rambahan'}'
+        : (isSighter ? 'Percobaan' : 'Rambahan');
     _snack(
       pending > 0
           ? '$noun $_currentEnd tersimpan (lokal) — akan tersinkron otomatis.'
@@ -429,12 +440,14 @@ class _EndStrip extends StatelessWidget {
   const _EndStrip({
     required this.currentEnd,
     required this.numEnds,
+    required this.sighterEndCount,
     required this.savedEnds,
     required this.onSelect,
   });
 
   final int currentEnd;
   final int numEnds;
+  final int sighterEndCount;
   final Set<int> savedEnds;
   final ValueChanged<int> onSelect;
 
@@ -460,9 +473,11 @@ class _EndStrip extends StatelessWidget {
                 final end = i + 1;
                 final isActive = end == currentEnd;
                 final isSaved = savedEnds.contains(end);
+                final isSighter = sighterEndCount > 0 && end <= sighterEndCount;
                 return ChoiceChip(
                   selected: isActive,
-                  selectedColor: ManahColors.brand,
+                  selectedColor:
+                      isSighter ? ManahColors.amberDeep : ManahColors.brand,
                   showCheckmark: false,
                   onSelected: (_) => onSelect(end),
                   avatar: isSaved
@@ -471,7 +486,7 @@ class _EndStrip extends StatelessWidget {
                           color: isActive ? Colors.white : ManahColors.success)
                       : null,
                   label: Text(
-                    'R$end',
+                    isSighter ? 'P$end' : 'R$end',
                     style: ManahTextStyles.bodyM.copyWith(
                       fontWeight: FontWeight.bold,
                       color: isActive ? Colors.white : null,
@@ -489,6 +504,39 @@ class _EndStrip extends StatelessWidget {
 
 /// Shown above the slots while viewing an already-saved round, so it is obvious
 /// the host is correcting history — not entering a new round (task 6.2).
+class _SighterBanner extends StatelessWidget {
+  const _SighterBanner({required this.endNumber});
+
+  final int endNumber;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: ManahSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+          horizontal: ManahSpacing.base, vertical: ManahSpacing.sm),
+      decoration: BoxDecoration(
+        color: ManahColors.amberDeep.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(ManahRadius.md),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.flag_circle_outlined,
+              size: 20, color: ManahColors.amberDeep),
+          const SizedBox(width: ManahSpacing.sm),
+          Expanded(
+            child: Text(
+              'Percobaan $endNumber disimpan untuk catatan, tidak masuk total, PB, atau peringkat.',
+              style:
+                  ManahTextStyles.bodyS.copyWith(color: ManahColors.amberDeep),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _CorrectionBanner extends StatelessWidget {
   const _CorrectionBanner();
 

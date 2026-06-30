@@ -651,7 +651,7 @@ final class HostBoardControllerProvider
 }
 
 String _$hostBoardControllerHash() =>
-    r'3c93ad6a98cd3a8d075936f4b142600398586fbc';
+    r'd3cf13602eaa9e4ed5076530c34b742eee419248';
 
 /// Drives the host board (Sprint 05): loads the group + participants, adds
 /// guests, and saves each round offline-first (the repository persists locally
@@ -914,7 +914,7 @@ final class ButtStatusControllerProvider
 }
 
 String _$buttStatusControllerHash() =>
-    r'5cfbeb79baa7321a33c3f6d8bf8cef016b03fc3f';
+    r'f49074e814ca441ba15d6bbc2083ec95f29cce39';
 
 final class ButtStatusControllerFamily extends $Family
     with

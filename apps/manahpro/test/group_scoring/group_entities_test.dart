@@ -17,6 +17,9 @@ void main() {
         'target_face_id': 'tf_1',
         'num_ends': 6,
         'arrows_per_end': 6,
+        'sighter_end_count': 2,
+        'round_preset_key': 'wa_18m_indoor',
+        'round_preset_label': 'WA 18m Indoor',
         'status': 'in_progress',
         'participant_count': 2,
         'started_at': '2026-06-17T08:00:00Z',
@@ -55,7 +58,14 @@ void main() {
       expect(group.environment, ArcheryEnvironment.outdoor);
       expect(group.numEnds, 6);
       expect(group.arrowsPerEnd, 6);
-      expect(group.plannedArrows, 36);
+      expect(group.sighterEndCount, 2);
+      expect(group.roundPresetKey, 'wa_18m_indoor');
+      expect(group.roundPresetLabel, 'WA 18m Indoor');
+      expect(group.countedEndCount, 4);
+      expect(group.plannedArrows, 24);
+      expect(group.physicalPlannedArrows, 36);
+      expect(group.isSighterEnd(1), isTrue);
+      expect(group.isSighterEnd(3), isFalse);
       expect(group.status, ScoringSessionStatus.inProgress);
       expect(group.participantCount, 2);
       expect(group.participants, hasLength(2));

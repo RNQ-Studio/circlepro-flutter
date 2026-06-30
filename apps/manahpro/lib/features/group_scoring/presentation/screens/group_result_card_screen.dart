@@ -97,7 +97,7 @@ class _GroupResultCardScreenState extends ConsumerState<GroupResultCardScreen> {
         data: (state) {
           final leaderboard = buildGroupLeaderboard(
             participants: state.participants,
-            numEnds: state.group.numEnds,
+            numEnds: state.group.countedEndCount,
             arrowsPerEnd: state.group.arrowsPerEnd,
           );
           final title = state.group.title?.isNotEmpty == true

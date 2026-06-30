@@ -33,6 +33,9 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
     int? targetFaceCm,
     String? targetFaceId,
     String? title,
+    int sighterEndCount = 0,
+    String? roundPresetKey,
+    String? roundPresetLabel,
     bool hostParticipates = false,
     BowClass? hostBowClass,
   }) async {
@@ -42,8 +45,11 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
       'environment': environment.value,
       'num_ends': numEnds,
       'arrows_per_end': arrowsPerEnd,
+      'sighter_end_count': sighterEndCount,
       'host_participates': hostParticipates,
       if (title != null && title.isNotEmpty) 'title': title,
+      if (roundPresetKey != null) 'round_preset_key': roundPresetKey,
+      if (roundPresetLabel != null) 'round_preset_label': roundPresetLabel,
       if (targetFaceCm != null) 'target_face_cm': targetFaceCm,
       if (targetFaceId != null) 'target_face_id': targetFaceId,
       if (hostParticipates && hostBowClass != null)
@@ -154,6 +160,7 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
     required ScoringGroupEntity group,
     required int endNumber,
     required Map<String, List<ArrowScore>> arrowsByParticipantId,
+    bool? isSighter,
     bool sync = true,
   }) async {
     final current = await _local.getBoardParticipants(group.id);
@@ -167,6 +174,7 @@ class GroupScoringRepositoryImpl implements GroupScoringRepository {
         participant: participant,
         endNumber: endNumber,
         arrows: entry.value,
+        isSighter: isSighter,
       );
     }
 

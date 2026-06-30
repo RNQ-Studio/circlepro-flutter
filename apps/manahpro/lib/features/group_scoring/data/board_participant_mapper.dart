@@ -25,6 +25,7 @@ Map<String, dynamic> boardParticipantToSyncJson(BoardParticipant p) {
         .map((end) => {
               'id': end.id,
               'end_number': end.endNumber,
+              'is_sighter': end.isSighter,
               'arrows': end.arrows
                   .map((a) => {
                         'id': a.id,

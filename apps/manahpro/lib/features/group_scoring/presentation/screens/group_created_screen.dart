@@ -164,7 +164,8 @@ class GroupCreatedScreen extends ConsumerWidget {
                         label: 'Lingkungan', value: g.environment.label),
                     _SummaryRow(
                         label: 'Format',
-                        value: '${g.numEnds} ronde × ${g.arrowsPerEnd} panah'),
+                        value:
+                            '${g.countedEndCount} ronde skor × ${g.arrowsPerEnd} panah'),
                     _SummaryRow(
                         label: 'Peserta', value: '${g.participantCount}'),
                   ],
@@ -200,7 +201,6 @@ class GroupCreatedScreen extends ConsumerWidget {
       );
     }
   }
-
 }
 
 class _SummaryRow extends StatelessWidget {

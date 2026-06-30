@@ -8,6 +8,7 @@ import '../../../../theme/manah_tokens.dart';
 import '../../../monetization/presentation/monetization_providers.dart';
 import '../../domain/scoring_entities.dart';
 import '../../domain/scoring_enums.dart';
+import '../../domain/round_preset.dart';
 import '../equipment_notifier.dart';
 import '../scoring_providers.dart';
 import '../scoring_routes.dart';
@@ -27,8 +28,10 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
   DistanceCategory? _distance = DistanceCategory.d50m;
   ArcheryEnvironment? _environment = ArcheryEnvironment.outdoor;
   TargetFaceEntity? _selectedTargetFace;
+  RoundPreset? _selectedPreset;
   int _numEnds = 6;
   int _arrowsPerEnd = 6;
+  int _sighterEndCount = 0;
   String? _equipmentProfileId;
   bool _starting = false;
 
@@ -46,7 +49,7 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
     try {
       final storage = SharedPreferencesStorage();
       await storage.init();
-      
+
       final lastId = await storage.read('last_selected_target_face_id');
       final lastBowCat = await storage.read('last_selected_bow_category');
       final lastBowClass = await storage.read('last_selected_bow_class');
@@ -56,18 +59,26 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
       if (mounted) {
         setState(() {
           _lastSelectedTargetFaceId = lastId;
-          
+
           if (lastBowCat != null) {
-            _bowCategory = BowCategory.values.firstWhere((e) => e.value == lastBowCat, orElse: () => BowCategory.modern);
+            _bowCategory = BowCategory.values.firstWhere(
+                (e) => e.value == lastBowCat,
+                orElse: () => BowCategory.modern);
           }
           if (lastBowClass != null) {
-            _bowClass = BowClass.values.firstWhere((e) => e.value == lastBowClass, orElse: () => BowClass.recurve);
+            _bowClass = BowClass.values.firstWhere(
+                (e) => e.value == lastBowClass,
+                orElse: () => BowClass.recurve);
           }
           if (lastDist != null) {
-            _distance = DistanceCategory.values.firstWhere((e) => e.value == lastDist, orElse: () => DistanceCategory.d70m);
+            _distance = DistanceCategory.values.firstWhere(
+                (e) => e.value == lastDist,
+                orElse: () => DistanceCategory.d70m);
           }
           if (lastEnv != null) {
-            _environment = ArcheryEnvironment.values.firstWhere((e) => e.value == lastEnv, orElse: () => ArcheryEnvironment.outdoor);
+            _environment = ArcheryEnvironment.values.firstWhere(
+                (e) => e.value == lastEnv,
+                orElse: () => ArcheryEnvironment.outdoor);
           }
 
           _hasLoadedLastSelected = true;
@@ -83,12 +94,49 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
   }
 
   Future<void> _updateSelectedTargetFace(TargetFaceEntity target) async {
-    setState(() => _selectedTargetFace = target);
+    setState(() {
+      _selectedPreset = null;
+      _selectedTargetFace = target;
+    });
     try {
       final storage = SharedPreferencesStorage();
       await storage.init();
       await storage.write('last_selected_target_face_id', target.id);
     } catch (_) {}
+  }
+
+  void _applyPreset(
+    RoundPreset preset,
+    List<TargetFaceEntity> targetFaces,
+  ) {
+    setState(() {
+      _selectedPreset = preset;
+      _numEnds = preset.numEnds;
+      _arrowsPerEnd = preset.arrowsPerEnd;
+      _distance = preset.distanceCategory;
+      _environment = preset.environment;
+      _sighterEndCount =
+          preset.sighterEndCount.clamp(0, preset.numEnds - 1).toInt();
+      _selectedTargetFace =
+          _targetFaceForPreset(preset, targetFaces) ?? _selectedTargetFace;
+    });
+  }
+
+  TargetFaceEntity? _targetFaceForPreset(
+    RoundPreset preset,
+    List<TargetFaceEntity> targetFaces,
+  ) {
+    if (preset.key.contains('jemparingan')) {
+      final matches = targetFaces.where((face) => face.code == 'jemparingan');
+      if (matches.isNotEmpty) return matches.first;
+    }
+
+    final cm = preset.targetFaceCm;
+    if (cm == null) return null;
+    final fallbackCode = 'fita_$cm';
+    final matches = targetFaces.where((face) => face.code == fallbackCode);
+    if (matches.isNotEmpty) return matches.first;
+    return null;
   }
 
   Future<void> _updateBowCategory(BowCategory cat) async {
@@ -114,7 +162,10 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
   }
 
   Future<void> _updateDistance(DistanceCategory val) async {
-    setState(() => _distance = val);
+    setState(() {
+      _selectedPreset = null;
+      _distance = val;
+    });
     try {
       final storage = SharedPreferencesStorage();
       await storage.init();
@@ -123,7 +174,10 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
   }
 
   Future<void> _updateEnvironment(ArcheryEnvironment val) async {
-    setState(() => _environment = val);
+    setState(() {
+      _selectedPreset = null;
+      _environment = val;
+    });
     try {
       final storage = SharedPreferencesStorage();
       await storage.init();
@@ -137,13 +191,18 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
     try {
       final targetFace = _selectedTargetFace;
       final maxScore = targetFace != null
-          ? targetFace.scoringRules.map((r) => r.value).reduce((a, b) => a > b ? a : b)
+          ? targetFace.scoringRules
+              .map((r) => r.value)
+              .reduce((a, b) => a > b ? a : b)
           : 10;
 
       int? targetFaceCm;
       if (targetFace != null && targetFace.code.startsWith('fita_')) {
         targetFaceCm = int.tryParse(targetFace.code.replaceAll('fita_', ''));
       }
+      targetFaceCm ??= _selectedPreset?.targetFaceCm;
+      final countedEndCount =
+          (_numEnds - _sighterEndCount).clamp(0, _numEnds).toInt();
 
       final session = await ref.read(scoringRepositoryProvider).startSession(
             bowClass: _bowClass!,
@@ -154,8 +213,11 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
             environment: _environment!,
             targetFaceCm: targetFaceCm,
             targetFaceId: targetFace?.id,
-            maxPossibleScoreOverride: _numEnds * _arrowsPerEnd * maxScore,
+            maxPossibleScoreOverride:
+                countedEndCount * _arrowsPerEnd * maxScore,
             equipmentProfileId: _equipmentProfileId,
+            title: _selectedPreset?.label,
+            sighterEndCount: _sighterEndCount,
           );
       if (!mounted) return;
       context.push(ScoringRoutes.input(session.id));
@@ -177,7 +239,8 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
         DropdownButtonFormField<String?>(
           initialValue: _equipmentProfileId,
           items: [
-            const DropdownMenuItem<String?>(value: null, child: Text('Tanpa equipment')),
+            const DropdownMenuItem<String?>(
+                value: null, child: Text('Tanpa equipment')),
             for (final p in profiles)
               DropdownMenuItem<String?>(value: p.id, child: Text(p.name)),
           ],
@@ -197,10 +260,13 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
     final subStatus = subStatusAsync.value;
     final isGated = subStatus?.isGated ?? false;
 
-    if (!_initialTargetFaceApplied && targetFaces.isNotEmpty && _hasLoadedLastSelected) {
+    if (!_initialTargetFaceApplied &&
+        targetFaces.isNotEmpty &&
+        _hasLoadedLastSelected) {
       _initialTargetFaceApplied = true;
       if (_lastSelectedTargetFaceId != null) {
-        final found = targetFaces.where((t) => t.id == _lastSelectedTargetFaceId);
+        final found =
+            targetFaces.where((t) => t.id == _lastSelectedTargetFaceId);
         if (found.isNotEmpty) {
           final matched = found.first;
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -215,8 +281,14 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
     }
 
     final maxScore = _selectedTargetFace != null
-        ? _selectedTargetFace!.scoringRules.map((r) => r.value).reduce((a, b) => a > b ? a : b)
+        ? _selectedTargetFace!.scoringRules
+            .map((r) => r.value)
+            .reduce((a, b) => a > b ? a : b)
         : 10;
+    final countedEndCount =
+        (_numEnds - _sighterEndCount).clamp(0, _numEnds).toInt();
+    final countedArrows = countedEndCount * _arrowsPerEnd;
+    final sighterArrows = _sighterEndCount * _arrowsPerEnd;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Mulai Scoring')),
@@ -228,10 +300,13 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
             _SectionLabel('Kategori Busur'),
             SegmentedButton<BowCategory>(
               segments: const [
-                ButtonSegment(value: BowCategory.traditional, label: Text('Tradisional')),
+                ButtonSegment(
+                    value: BowCategory.traditional, label: Text('Tradisional')),
                 ButtonSegment(value: BowCategory.modern, label: Text('Modern')),
               ],
-              selected: _bowCategory != null ? {_bowCategory!} : const <BowCategory>{},
+              selected: _bowCategory != null
+                  ? {_bowCategory!}
+                  : const <BowCategory>{},
               emptySelectionAllowed: true,
               onSelectionChanged: (s) => _updateBowCategory(s.first),
             ),
@@ -240,7 +315,8 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
             if (_bowCategory == null)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: ManahSpacing.sm),
-                child: Text('Pilih kategori busur terlebih dahulu', style: TextStyle(fontStyle: FontStyle.italic)),
+                child: Text('Pilih kategori busur terlebih dahulu',
+                    style: TextStyle(fontStyle: FontStyle.italic)),
               )
             else
               Wrap(
@@ -260,6 +336,12 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
               ),
             const SizedBox(height: ManahSpacing.lg),
             _buildEquipmentPicker(),
+            _SectionLabel('Preset Ronde'),
+            _RoundPresetPicker(
+              selected: _selectedPreset,
+              onSelected: (preset) => _applyPreset(preset, targetFaces),
+            ),
+            const SizedBox(height: ManahSpacing.lg),
             _SectionLabel('Jarak'),
             Wrap(
               spacing: ManahSpacing.sm,
@@ -280,10 +362,14 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
             _SectionLabel('Lingkungan'),
             SegmentedButton<ArcheryEnvironment>(
               segments: const [
-                ButtonSegment(value: ArcheryEnvironment.outdoor, label: Text('Outdoor')),
-                ButtonSegment(value: ArcheryEnvironment.indoor, label: Text('Indoor')),
+                ButtonSegment(
+                    value: ArcheryEnvironment.outdoor, label: Text('Outdoor')),
+                ButtonSegment(
+                    value: ArcheryEnvironment.indoor, label: Text('Indoor')),
               ],
-              selected: _environment != null ? {_environment!} : const <ArcheryEnvironment>{},
+              selected: _environment != null
+                  ? {_environment!}
+                  : const <ArcheryEnvironment>{},
               emptySelectionAllowed: true,
               onSelectionChanged: (s) => _updateEnvironment(s.first),
             ),
@@ -296,10 +382,12 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
                   child: CircularProgressIndicator(),
                 ),
               ),
-              error: (e, _) => Center(child: Text('Gagal memuat target face: $e')),
+              error: (e, _) =>
+                  Center(child: Text('Gagal memuat target face: $e')),
               data: (targets) {
                 if (targets.isEmpty) {
-                  return const Center(child: Text('Tidak ada target face tersedia'));
+                  return const Center(
+                      child: Text('Tidak ada target face tersedia'));
                 }
 
                 final selected = _selectedTargetFace;
@@ -331,8 +419,10 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
                               width: 54,
                               height: 54,
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.surfaceContainerHighest,
-                                borderRadius: BorderRadius.circular(ManahRadius.md),
+                                color:
+                                    theme.colorScheme.surfaceContainerHighest,
+                                borderRadius:
+                                    BorderRadius.circular(ManahRadius.md),
                               ),
                               child: Icon(
                                 Icons.adjust,
@@ -346,7 +436,8 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
                                 children: [
                                   Text(
                                     'Pilih Target Face',
-                                    style: theme.textTheme.titleMedium?.copyWith(
+                                    style:
+                                        theme.textTheme.titleMedium?.copyWith(
                                       fontWeight: FontWeight.bold,
                                       color: theme.colorScheme.onSurfaceVariant,
                                     ),
@@ -438,7 +529,13 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
               value: _numEnds,
               min: 1,
               max: 30,
-              onChanged: (v) => setState(() => _numEnds = v),
+              onChanged: (v) => setState(() {
+                _selectedPreset = null;
+                _numEnds = v;
+                if (_sighterEndCount >= _numEnds) {
+                  _sighterEndCount = (_numEnds - 1).clamp(0, _numEnds).toInt();
+                }
+              }),
             ),
             const SizedBox(height: ManahSpacing.md),
             _Stepper(
@@ -446,29 +543,52 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
               value: _arrowsPerEnd,
               min: 1,
               max: 12,
-              onChanged: (v) => setState(() => _arrowsPerEnd = v),
+              onChanged: (v) => setState(() {
+                _selectedPreset = null;
+                _arrowsPerEnd = v;
+              }),
+            ),
+            const SizedBox(height: ManahSpacing.md),
+            _Stepper(
+              label: 'Rambahan Percobaan',
+              value: _sighterEndCount,
+              min: 0,
+              max: (_numEnds - 1).clamp(0, _numEnds).toInt(),
+              onChanged: (v) => setState(() {
+                _selectedPreset = null;
+                _sighterEndCount = v;
+              }),
             ),
             const SizedBox(height: ManahSpacing.xl),
             if (subStatus != null && !subStatus.isPremium) ...[
               Card(
-                color: isGated ? const Color(0xFFFFEBEE) : ManahColors.brandSurface,
+                color: isGated
+                    ? const Color(0xFFFFEBEE)
+                    : ManahColors.brandSurface,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(ManahRadius.md),
                   side: BorderSide(
-                    color: isGated ? ManahColors.error.withOpacity(0.3) : ManahColors.brandLight.withOpacity(0.3),
+                    color: isGated
+                        ? ManahColors.error.withValues(alpha: 0.3)
+                        : ManahColors.brandLight.withValues(alpha: 0.3),
                   ),
                 ),
                 child: InkWell(
-                  onTap: isGated ? () => context.push('/monetization/paywall') : null,
+                  onTap: isGated
+                      ? () => context.push('/monetization/paywall')
+                      : null,
                   borderRadius: BorderRadius.circular(ManahRadius.md),
                   child: Padding(
                     padding: const EdgeInsets.all(ManahSpacing.base),
                     child: Row(
                       children: [
                         Icon(
-                          isGated ? Icons.lock_outline_rounded : Icons.info_outline_rounded,
-                          color: isGated ? ManahColors.error : ManahColors.brand,
+                          isGated
+                              ? Icons.lock_outline_rounded
+                              : Icons.info_outline_rounded,
+                          color:
+                              isGated ? ManahColors.error : ManahColors.brand,
                         ),
                         const SizedBox(width: ManahSpacing.base),
                         Expanded(
@@ -479,7 +599,9 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
                                 'Sesi Latihan Minggu Ini: ${subStatus.scoringSessionsThisWeek}/${subStatus.scoringSessionsLimit}',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: isGated ? ManahColors.error : ManahColors.brand,
+                                  color: isGated
+                                      ? ManahColors.error
+                                      : ManahColors.brand,
                                 ),
                               ),
                               const SizedBox(height: 2),
@@ -489,14 +611,18 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
                                     : 'Paket Gratis dibatasi 3 sesi per minggu.',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: isGated ? ManahColors.error.withOpacity(0.8) : ManahColors.brand.withOpacity(0.8),
+                                  color: isGated
+                                      ? ManahColors.error.withValues(alpha: 0.8)
+                                      : ManahColors.brand
+                                          .withValues(alpha: 0.8),
                                 ),
                               ),
                             ],
                           ),
                         ),
                         if (isGated)
-                          const Icon(Icons.chevron_right, color: ManahColors.error),
+                          const Icon(Icons.chevron_right,
+                              color: ManahColors.error),
                       ],
                     ),
                   ),
@@ -513,8 +639,12 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
                   children: [
                     const Text('Total anak panah'),
                     Text(
-                      '${_numEnds * _arrowsPerEnd} anak panah · maks ${_numEnds * _arrowsPerEnd * maxScore}',
-                      style: const TextStyle(fontWeight: FontWeight.w700, color: ManahColors.brand),
+                      sighterArrows > 0
+                          ? '$countedArrows dihitung + $sighterArrows percobaan · maks ${countedArrows * maxScore}'
+                          : '$countedArrows anak panah · maks ${countedArrows * maxScore}',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: ManahColors.brand),
                     ),
                   ],
                 ),
@@ -534,11 +664,15 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
                           ? null
                           : _start)),
               style: isGated
-                  ? FilledButton.styleFrom(backgroundColor: ManahColors.amberDeep)
+                  ? FilledButton.styleFrom(
+                      backgroundColor: ManahColors.amberDeep)
                   : null,
               child: _starting
                   ? const SizedBox(
-                      height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white))
                   : (isGated
                       ? Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -568,6 +702,51 @@ class _SectionLabel extends StatelessWidget {
       );
 }
 
+class _RoundPresetPicker extends StatelessWidget {
+  const _RoundPresetPicker({
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final RoundPreset? selected;
+  final ValueChanged<RoundPreset> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final description = selected?.description;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Wrap(
+          spacing: ManahSpacing.sm,
+          runSpacing: ManahSpacing.sm,
+          children: [
+            for (final preset in RoundPreset.values)
+              _ChoiceChip(
+                label: preset.label,
+                selected: selected?.key == preset.key,
+                onSelected: (_) => onSelected(preset),
+              ),
+          ],
+        ),
+        if (selected != null) ...[
+          const SizedBox(height: ManahSpacing.sm),
+          Text(
+            description == null
+                ? selected!.category.label
+                : '${selected!.category.label} · $description',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
 class _ChoiceChip extends StatelessWidget {
   const _ChoiceChip({
     required this.label,
@@ -587,9 +766,8 @@ class _ChoiceChip extends StatelessWidget {
     final backgroundColor = selected
         ? theme.colorScheme.primary
         : (isDark ? ManahColors.darkSurface : ManahColors.lightGrey);
-    final foregroundColor = selected
-        ? Colors.white
-        : theme.colorScheme.onSurface;
+    final foregroundColor =
+        selected ? Colors.white : theme.colorScheme.onSurface;
 
     return InkWell(
       onTap: () => onSelected(!selected),
@@ -603,8 +781,8 @@ class _ChoiceChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: backgroundColor,
           border: Border.all(
-            color: selected 
-                ? theme.colorScheme.primary 
+            color: selected
+                ? theme.colorScheme.primary
                 : theme.dividerColor.withValues(alpha: 0.1),
             width: 1.5,
           ),
@@ -641,14 +819,17 @@ class _Stepper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: Text(label, style: Theme.of(context).textTheme.titleSmall)),
+        Expanded(
+            child: Text(label, style: Theme.of(context).textTheme.titleSmall)),
         IconButton.filledTonal(
           onPressed: value > min ? () => onChanged(value - 1) : null,
           icon: const Icon(Icons.remove),
         ),
         SizedBox(
           width: 44,
-          child: Text('$value', textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleLarge),
+          child: Text('$value',
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.titleLarge),
         ),
         IconButton.filledTonal(
           onPressed: value < max ? () => onChanged(value + 1) : null,

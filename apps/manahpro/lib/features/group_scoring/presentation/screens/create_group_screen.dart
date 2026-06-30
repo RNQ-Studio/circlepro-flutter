@@ -6,6 +6,7 @@ import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../../../scoring/domain/scoring_entities.dart';
 import '../../../scoring/domain/scoring_enums.dart';
+import '../../../scoring/domain/round_preset.dart';
 import '../../../scoring/presentation/scoring_providers.dart';
 import '../../../scoring/presentation/scoring_routes.dart';
 import '../../../scoring/presentation/screens/scoring_setup_screen.dart'
@@ -30,8 +31,11 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
   DistanceCategory? _distance = DistanceCategory.d50m;
   ArcheryEnvironment? _environment = ArcheryEnvironment.outdoor;
   TargetFaceEntity? _selectedTargetFace;
+  int? _targetFaceCm;
   int _numEnds = 6;
   int _arrowsPerEnd = 6;
+  int _sighterEndCount = 0;
+  RoundPreset? _selectedPreset;
 
   bool _hostParticipates = true;
   BowCategory _bowCategory = BowCategory.modern;
@@ -51,15 +55,14 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
       _environment != null &&
       (!_hostParticipates || _bowClass.category == _bowCategory);
 
+  int get _maxSighterEnds => _numEnds <= 1 ? 0 : _numEnds - 1;
+
   Future<void> _create() async {
     if (_distance == null || _environment == null) return;
     setState(() => _creating = true);
     try {
       final targetFace = _selectedTargetFace;
-      int? targetFaceCm;
-      if (targetFace != null && targetFace.code.startsWith('fita_')) {
-        targetFaceCm = int.tryParse(targetFace.code.replaceAll('fita_', ''));
-      }
+      final targetFaceCm = _targetFaceCm;
 
       final title = _titleController.text.trim();
       final group = await ref.read(groupScoringRepositoryProvider).createGroup(
@@ -71,6 +74,9 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
             targetFaceCm: targetFaceCm,
             targetFaceId: targetFace?.id,
             title: title.isEmpty ? null : title,
+            sighterEndCount: _sighterEndCount,
+            roundPresetKey: _selectedPreset?.key,
+            roundPresetLabel: _selectedPreset?.label,
             hostParticipates: _hostParticipates,
             hostBowClass: _hostParticipates ? _bowClass : null,
           );
@@ -113,6 +119,12 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
             ),
             const SizedBox(height: ManahSpacing.lg),
 
+            _PresetPicker(
+              selected: _selectedPreset,
+              onSelected: _applyPreset,
+            ),
+            const SizedBox(height: ManahSpacing.lg),
+
             const _SectionLabel('Jarak'),
             Wrap(
               spacing: ManahSpacing.sm,
@@ -121,7 +133,10 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
                 return _ChoiceChip(
                   label: d.label,
                   selected: _distance == d,
-                  onSelected: (_) => setState(() => _distance = d),
+                  onSelected: (_) => setState(() {
+                    _selectedPreset = null;
+                    _distance = d;
+                  }),
                 );
               }).toList(),
             ),
@@ -139,7 +154,10 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
                   ? {_environment!}
                   : const <ArcheryEnvironment>{},
               emptySelectionAllowed: true,
-              onSelectionChanged: (s) => setState(() => _environment = s.first),
+              onSelectionChanged: (s) => setState(() {
+                _selectedPreset = null;
+                _environment = s.first;
+              }),
             ),
             const SizedBox(height: ManahSpacing.lg),
 
@@ -152,7 +170,13 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
               value: _numEnds,
               min: 1,
               max: 30,
-              onChanged: (v) => setState(() => _numEnds = v),
+              onChanged: (v) => setState(() {
+                _selectedPreset = null;
+                _numEnds = v;
+                if (_sighterEndCount >= _numEnds) {
+                  _sighterEndCount = _maxSighterEnds;
+                }
+              }),
             ),
             const SizedBox(height: ManahSpacing.md),
             _Stepper(
@@ -160,7 +184,21 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
               value: _arrowsPerEnd,
               min: 1,
               max: 12,
-              onChanged: (v) => setState(() => _arrowsPerEnd = v),
+              onChanged: (v) => setState(() {
+                _selectedPreset = null;
+                _arrowsPerEnd = v;
+              }),
+            ),
+            const SizedBox(height: ManahSpacing.md),
+            _Stepper(
+              label: 'Rambahan Percobaan',
+              value: _sighterEndCount,
+              min: 0,
+              max: _maxSighterEnds,
+              onChanged: (v) => setState(() {
+                _selectedPreset = null;
+                _sighterEndCount = v;
+              }),
             ),
             const SizedBox(height: ManahSpacing.lg),
 
@@ -238,7 +276,8 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
                   children: [
                     const Text('Total anak panah'),
                     Text(
-                      '${_numEnds * _arrowsPerEnd} anak panah',
+                      '${(_numEnds - _sighterEndCount) * _arrowsPerEnd} skor'
+                      '${_sighterEndCount > 0 ? ' + ${_sighterEndCount * _arrowsPerEnd} percobaan' : ''}',
                       style: const TextStyle(
                           fontWeight: FontWeight.w700,
                           color: ManahColors.brand),
@@ -286,7 +325,11 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
                   extra: selected,
                 );
                 if (result != null && mounted) {
-                  setState(() => _selectedTargetFace = result);
+                  setState(() {
+                    _selectedPreset = null;
+                    _selectedTargetFace = result;
+                    _targetFaceCm = _targetFaceCmFromCode(result.code);
+                  });
                 }
               }
             : null,
@@ -313,7 +356,10 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
               const SizedBox(width: ManahSpacing.base),
               Expanded(
                 child: Text(
-                  selected?.name ?? 'Pilih target face',
+                  selected?.name ??
+                      (_targetFaceCm == null
+                          ? 'Pilih target face'
+                          : 'Target $_targetFaceCm cm'),
                   style: theme.textTheme.titleMedium
                       ?.copyWith(fontWeight: FontWeight.bold),
                 ),
@@ -323,6 +369,67 @@ class _CreateGroupScreenState extends ConsumerState<CreateGroupScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  void _applyPreset(RoundPreset preset) {
+    setState(() {
+      _selectedPreset = preset;
+      _distance = preset.distanceCategory;
+      _environment = preset.environment;
+      _selectedTargetFace = null;
+      _targetFaceCm = preset.targetFaceCm;
+      _numEnds = preset.numEnds;
+      _arrowsPerEnd = preset.arrowsPerEnd;
+      _sighterEndCount = preset.sighterEndCount;
+    });
+  }
+
+  int? _targetFaceCmFromCode(String code) {
+    if (!code.startsWith('fita_')) return null;
+    return int.tryParse(code.replaceAll('fita_', ''));
+  }
+}
+
+class _PresetPicker extends StatelessWidget {
+  const _PresetPicker({
+    required this.selected,
+    required this.onSelected,
+  });
+
+  final RoundPreset? selected;
+  final ValueChanged<RoundPreset> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const _SectionLabel('Preset Ronde'),
+        Wrap(
+          spacing: ManahSpacing.sm,
+          runSpacing: ManahSpacing.sm,
+          children: [
+            for (final preset in RoundPreset.values)
+              _ChoiceChip(
+                label: preset.label,
+                selected: selected?.key == preset.key,
+                onSelected: (_) => onSelected(preset),
+              ),
+          ],
+        ),
+        if (selected != null) ...[
+          const SizedBox(height: ManahSpacing.sm),
+          Text(
+            selected!.description ??
+                '${selected!.distanceM}m, ${selected!.numEnds}x${selected!.arrowsPerEnd}',
+            style: Theme.of(context)
+                .textTheme
+                .bodySmall
+                ?.copyWith(color: ManahColors.mediumGrey),
+          ),
+        ],
+      ],
     );
   }
 }

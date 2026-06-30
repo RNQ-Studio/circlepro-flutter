@@ -26,7 +26,8 @@ class ScoreInputScreen extends ConsumerWidget {
     final notifier = ref.read(activeScoringProvider(sessionId).notifier);
 
     return asyncState.when(
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (e, _) => Scaffold(
         appBar: AppBar(),
         body: Center(child: Text('Gagal memuat sesi: $e')),
@@ -34,7 +35,9 @@ class ScoreInputScreen extends ConsumerWidget {
       data: (s) {
         final targetFaces = targetFacesAsync.value ?? const [];
         final targetFace = s.session.targetFaceId != null
-            ? targetFaces.where((t) => t.id == s.session.targetFaceId).firstOrNull
+            ? targetFaces
+                .where((t) => t.id == s.session.targetFaceId)
+                .firstOrNull
             : null;
 
         return _ScoreInputView(
@@ -71,7 +74,8 @@ class _ScoreInputView extends StatelessWidget {
       HapticFeedback.selectionClick();
     }
     // Persistence + auto-advance to the next end are handled in the notifier.
-    await notifier.enterScore(value: key.value, isX: key.isX, isMiss: key.isMiss);
+    await notifier.enterScore(
+        value: key.value, isX: key.isX, isMiss: key.isMiss);
   }
 
   Future<void> _finish(BuildContext context) async {
@@ -92,7 +96,9 @@ class _ScoreInputView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Ronde ${end.endNumber}/${session.numEnds}'),
+        title: Text(
+          '${end.isSighter ? 'Percobaan' : 'Ronde'} ${end.endNumber}/${session.numEnds}',
+        ),
         actions: [
           TextButton(
             onPressed: () => _finish(context),
@@ -105,7 +111,9 @@ class _ScoreInputView extends StatelessWidget {
           children: [
             // Progress across all ends.
             LinearProgressIndicator(
-              value: session.plannedArrows == 0 ? 0 : session.arrowsShot / session.plannedArrows,
+              value: session.plannedArrows == 0
+                  ? 0
+                  : session.arrowsShot / session.plannedArrows,
               minHeight: 4,
               backgroundColor: ManahColors.brandSurface,
             ),
@@ -147,13 +155,17 @@ class _ScoreInputView extends StatelessWidget {
               padding: const EdgeInsets.all(ManahSpacing.base),
               child: Column(
                 children: [
+                  if (end.isSighter) ...[
+                    const _SighterNote(),
+                    const SizedBox(height: ManahSpacing.sm),
+                  ],
                   ArrowSlots(
                     arrows: end.arrows,
                     capacity: session.arrowsPerEnd,
                   ),
                   const SizedBox(height: ManahSpacing.sm),
                   Text(
-                    'Total Ronde: ${end.endTotal}',
+                    '${end.isSighter ? 'Total Percobaan' : 'Total Ronde'}: ${end.endTotal}',
                     style: theme.textTheme.titleMedium,
                   ),
                 ],
@@ -177,7 +189,8 @@ class _ScoreInputView extends StatelessWidget {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: state.hasPreviousEnd ? notifier.previousEnd : null,
+                      onPressed:
+                          state.hasPreviousEnd ? notifier.previousEnd : null,
                       icon: const Icon(Icons.chevron_left),
                       label: const Text('Ronde Sebelumnya'),
                     ),
@@ -195,6 +208,31 @@ class _ScoreInputView extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SighterNote extends StatelessWidget {
+  const _SighterNote();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(
+          horizontal: ManahSpacing.base, vertical: ManahSpacing.sm),
+      decoration: BoxDecoration(
+        color: ManahColors.amberDeep.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(ManahRadius.md),
+      ),
+      child: Text(
+        'Rambahan percobaan tersimpan, tetapi tidak masuk total atau PB.',
+        textAlign: TextAlign.center,
+        style: Theme.of(context)
+            .textTheme
+            .bodySmall
+            ?.copyWith(color: ManahColors.amberDeep),
       ),
     );
   }

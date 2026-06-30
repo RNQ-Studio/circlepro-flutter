@@ -36,23 +36,27 @@ class ScoringEndEntity extends Equatable {
   const ScoringEndEntity({
     required this.id,
     required this.endNumber,
+    this.isSighter = false,
     this.arrows = const [],
   });
 
   final String id;
   final int endNumber;
+  final bool isSighter;
   final List<ArrowScore> arrows;
 
   int get endTotal => arrows.fold(0, (sum, a) => sum + a.scoreValue);
 
-  ScoringEndEntity copyWith({List<ArrowScore>? arrows}) => ScoringEndEntity(
+  ScoringEndEntity copyWith({bool? isSighter, List<ArrowScore>? arrows}) =>
+      ScoringEndEntity(
         id: id,
         endNumber: endNumber,
+        isSighter: isSighter ?? this.isSighter,
         arrows: arrows ?? this.arrows,
       );
 
   @override
-  List<Object?> get props => [id, endNumber, arrows];
+  List<Object?> get props => [id, endNumber, isSighter, arrows];
 }
 
 /// A scoring session owned by the current user (offline-first).
@@ -104,25 +108,41 @@ class ScoringSessionEntity extends Equatable {
   final int? maxPossibleScoreOverride;
 
   // ─── Derived aggregates (computed from arrows) ──────────────────
-  Iterable<ArrowScore> get _allArrows => ends.expand((e) => e.arrows);
+  List<ScoringEndEntity> get countedEnds =>
+      ends.where((e) => !e.isSighter).toList(growable: false);
 
-  int get totalScore => _allArrows.fold(0, (sum, a) => sum + a.scoreValue);
+  List<ScoringEndEntity> get sighterEnds =>
+      ends.where((e) => e.isSighter).toList(growable: false);
 
-  int get arrowsShot => _allArrows.length;
+  Iterable<ArrowScore> get _countedArrows =>
+      countedEnds.expand((e) => e.arrows);
 
-  int get maxPossibleScore => maxPossibleScoreOverride ?? (numEnds * arrowsPerEnd * 10);
+  int get totalScore => _countedArrows.fold(0, (sum, a) => sum + a.scoreValue);
 
-  int get xCount => _allArrows.where((a) => a.isX).length;
+  int get arrowsShot => _countedArrows.length;
 
-  int get tenCount => _allArrows.where((a) => a.isTen).length;
+  int get maxPossibleScore => maxPossibleScoreOverride ?? (plannedArrows * 10);
 
-  int get missCount => _allArrows.where((a) => a.isMiss).length;
+  int get xCount => _countedArrows.where((a) => a.isX).length;
+
+  int get tenCount => _countedArrows.where((a) => a.isTen).length;
+
+  int get missCount => _countedArrows.where((a) => a.isMiss).length;
 
   double? get avgPerArrow => arrowsShot == 0 ? null : totalScore / arrowsShot;
 
-  int get plannedArrows => numEnds * arrowsPerEnd;
+  int get sighterEndCount => sighterEnds.map((e) => e.endNumber).toSet().length;
 
-  bool get isComplete => arrowsShot >= plannedArrows;
+  int get countedEndCount {
+    final value = numEnds - sighterEndCount;
+    if (value <= 0) return 0;
+    if (value >= numEnds) return numEnds;
+    return value;
+  }
+
+  int get plannedArrows => countedEndCount * arrowsPerEnd;
+
+  bool get isComplete => plannedArrows > 0 && arrowsShot >= plannedArrows;
 
   ScoringSessionEntity copyWith({
     ScoringSessionStatus? status,
@@ -143,6 +163,7 @@ class ScoringSessionEntity extends Equatable {
       distanceM: distanceM,
       environment: environment,
       targetFaceCm: targetFaceCm,
+      targetFaceId: targetFaceId,
       numEnds: numEnds,
       arrowsPerEnd: arrowsPerEnd,
       status: status ?? this.status,
@@ -153,6 +174,7 @@ class ScoringSessionEntity extends Equatable {
       isSynced: isSynced ?? this.isSynced,
       syncAction: syncAction ?? this.syncAction,
       ends: ends ?? this.ends,
+      maxPossibleScoreOverride: maxPossibleScoreOverride,
     );
   }
 
@@ -243,8 +265,11 @@ class TargetFaceEntity extends Equatable {
       code: json['code'] as String? ?? '',
       name: json['name'] as String? ?? '',
       imagePath: json['image_path'] as String?,
-      usedCount: json['used_count'] as int? ?? json['total_participants'] as int? ?? 0,
-      scoringRules: rulesJson.map((r) => TargetFaceRule.fromJson(r as Map<String, dynamic>)).toList(),
+      usedCount:
+          json['used_count'] as int? ?? json['total_participants'] as int? ?? 0,
+      scoringRules: rulesJson
+          .map((r) => TargetFaceRule.fromJson(r as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -263,5 +288,15 @@ class TargetFaceEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, organizationId, organizationName, organizationSlug, code, name, imagePath, usedCount, scoringRules];
+  List<Object?> get props => [
+        id,
+        organizationId,
+        organizationName,
+        organizationSlug,
+        code,
+        name,
+        imagePath,
+        usedCount,
+        scoringRules
+      ];
 }

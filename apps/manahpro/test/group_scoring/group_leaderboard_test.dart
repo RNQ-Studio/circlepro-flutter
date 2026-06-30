@@ -9,10 +9,15 @@ typedef _A = ({int value, bool isX, bool isMiss});
 _A _v(int value) => (value: value, isX: false, isMiss: false);
 _A _x() => (value: 10, isX: true, isMiss: false);
 
-ScoringEndEntity _end(int number, List<_A> arrows) {
+ScoringEndEntity _end(
+  int number,
+  List<_A> arrows, {
+  bool isSighter = false,
+}) {
   return ScoringEndEntity(
     id: 'e$number',
     endNumber: number,
+    isSighter: isSighter,
     arrows: [
       for (var i = 0; i < arrows.length; i++)
         ArrowScore(
@@ -179,6 +184,34 @@ void main() {
       expect(lb.roundsShot, 2);
       expect(lb.numEnds, 6);
       expect(lb.leader?.participant.id, 'a');
+    });
+
+    test(
+        'sighter rounds stay on the detail but are excluded from rank and completion',
+        () {
+      final board = [
+        _p('warmup-winner', [
+          _end(1, [_v(10), _v(10), _v(10)], isSighter: true),
+          _end(2, [_v(7), _v(7), _v(7)]),
+        ]),
+        _p('score-winner', [
+          _end(1, [_v(0), _v(0), _v(0)], isSighter: true),
+          _end(2, [_v(9), _v(9), _v(9)]),
+        ]),
+      ];
+
+      final lb = buildGroupLeaderboard(
+        participants: board,
+        numEnds: 1,
+        arrowsPerEnd: 3,
+      );
+
+      expect(lb.entries.first.participant.id, 'score-winner');
+      expect(lb.entries.first.participant.totalScore, 27);
+      expect(lb.entries.last.participant.totalScore, 21);
+      expect(lb.isComplete, isTrue);
+      expect(lb.roundsShot, 1);
+      expect(board.first.ends, hasLength(2));
     });
   });
 }

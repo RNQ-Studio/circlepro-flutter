@@ -26,6 +26,8 @@ class LiveLeaderboardEntry extends Equatable {
     this.displayName,
     this.bowClass,
     this.status,
+    this.isImprovementLeader = false,
+    this.skillInsight,
   });
 
   final int rank;
@@ -54,6 +56,8 @@ class LiveLeaderboardEntry extends Equatable {
   /// Sole rank-1 row while the round is still provisional — the UI may label it
   /// "memimpin sementara" (never "winner", never "live race" — task 11.4).
   final bool isProvisionalLeader;
+  final bool isImprovementLeader;
+  final ParticipantSkillInsight? skillInsight;
 
   /// Has any arrow at all — a zero-arrow row shows "—", never a shaming 0.
   bool get hasStarted => arrowsShot > 0;
@@ -82,6 +86,12 @@ class LiveLeaderboardEntry extends Equatable {
       isComplete: json['is_complete'] as bool? ?? false,
       tied: json['tied'] as bool? ?? false,
       isProvisionalLeader: json['is_provisional_leader'] as bool? ?? false,
+      isImprovementLeader: json['is_improvement_leader'] as bool? ?? false,
+      skillInsight: json['skill_insight'] is Map<String, dynamic>
+          ? ParticipantSkillInsight.fromJson(
+              json['skill_insight'] as Map<String, dynamic>,
+            )
+          : null,
     );
   }
 
@@ -107,7 +117,111 @@ class LiveLeaderboardEntry extends Equatable {
         isComplete,
         tied,
         isProvisionalLeader,
+        isImprovementLeader,
+        skillInsight,
       ];
+}
+
+class ParticipantSkillInsight extends Equatable {
+  const ParticipantSkillInsight({
+    required this.baseline,
+    this.endTrend = const [],
+    this.callout,
+    this.isImprovementLeader = false,
+  });
+
+  final SkillBaseline baseline;
+  final List<SkillEndTrend> endTrend;
+  final String? callout;
+  final bool isImprovementLeader;
+
+  factory ParticipantSkillInsight.fromJson(Map<String, dynamic> json) {
+    final trendJson = json['end_trend'] as List<dynamic>? ?? const [];
+    return ParticipantSkillInsight(
+      baseline: SkillBaseline.fromJson(
+        json['baseline'] as Map<String, dynamic>? ?? const {},
+      ),
+      endTrend: trendJson
+          .map((e) => SkillEndTrend.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      callout: json['callout'] as String?,
+      isImprovementLeader: json['is_improvement_leader'] as bool? ?? false,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        baseline,
+        endTrend,
+        callout,
+        isImprovementLeader,
+      ];
+}
+
+class SkillBaseline extends Equatable {
+  const SkillBaseline({
+    this.hasBaseline = false,
+    this.sessionsCount = 0,
+    this.averageScore,
+    this.bestScore,
+    this.deltaVsAverage,
+    this.deltaVsBest,
+    this.label,
+  });
+
+  final bool hasBaseline;
+  final int sessionsCount;
+  final double? averageScore;
+  final int? bestScore;
+  final double? deltaVsAverage;
+  final int? deltaVsBest;
+  final String? label;
+
+  factory SkillBaseline.fromJson(Map<String, dynamic> json) {
+    return SkillBaseline(
+      hasBaseline: json['has_baseline'] as bool? ?? false,
+      sessionsCount: (json['sessions_count'] as num?)?.toInt() ?? 0,
+      averageScore: (json['average_score'] as num?)?.toDouble(),
+      bestScore: (json['best_score'] as num?)?.toInt(),
+      deltaVsAverage: (json['delta_vs_average'] as num?)?.toDouble(),
+      deltaVsBest: (json['delta_vs_best'] as num?)?.toInt(),
+      label: json['label'] as String?,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+        hasBaseline,
+        sessionsCount,
+        averageScore,
+        bestScore,
+        deltaVsAverage,
+        deltaVsBest,
+        label,
+      ];
+}
+
+class SkillEndTrend extends Equatable {
+  const SkillEndTrend({
+    required this.endNumber,
+    required this.total,
+    this.isSighter = false,
+  });
+
+  final int endNumber;
+  final int total;
+  final bool isSighter;
+
+  factory SkillEndTrend.fromJson(Map<String, dynamic> json) {
+    return SkillEndTrend(
+      endNumber: (json['end_number'] as num?)?.toInt() ?? 0,
+      total: (json['total'] as num?)?.toInt() ?? 0,
+      isSighter: json['is_sighter'] as bool? ?? false,
+    );
+  }
+
+  @override
+  List<Object?> get props => [endNumber, total, isSighter];
 }
 
 /// A single response from the live leaderboard endpoint (Sprint 11).

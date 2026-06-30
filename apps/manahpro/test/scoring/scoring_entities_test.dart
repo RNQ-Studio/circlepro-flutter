@@ -3,7 +3,8 @@ import 'package:manahpro/features/scoring/domain/scoring_entities.dart';
 import 'package:manahpro/features/scoring/domain/scoring_enums.dart';
 import 'package:manahpro/features/scoring/utils/ulid.dart';
 
-ArrowScore _arrow(int index, int value, {bool isX = false, bool isMiss = false}) {
+ArrowScore _arrow(int index, int value,
+    {bool isX = false, bool isMiss = false}) {
   return ArrowScore(
     id: Ids.ulid(),
     arrowIndex: index,
@@ -13,7 +14,11 @@ ArrowScore _arrow(int index, int value, {bool isX = false, bool isMiss = false})
   );
 }
 
-ScoringSessionEntity _session(List<List<ArrowScore>> ends, {int? arrowsPerEnd}) {
+ScoringSessionEntity _session(
+  List<List<ArrowScore>> ends, {
+  int? arrowsPerEnd,
+  Set<int> sighterEnds = const {},
+}) {
   return ScoringSessionEntity(
     id: Ids.ulid(),
     clientUuid: Ids.uuid(),
@@ -25,7 +30,12 @@ ScoringSessionEntity _session(List<List<ArrowScore>> ends, {int? arrowsPerEnd}) 
     startedAt: DateTime(2026, 6, 1),
     ends: [
       for (var i = 0; i < ends.length; i++)
-        ScoringEndEntity(id: Ids.ulid(), endNumber: i + 1, arrows: ends[i]),
+        ScoringEndEntity(
+          id: Ids.ulid(),
+          endNumber: i + 1,
+          isSighter: sighterEnds.contains(i + 1),
+          arrows: ends[i],
+        ),
     ],
   );
 }
@@ -64,11 +74,35 @@ void main() {
       expect(session.isComplete, isTrue);
     });
 
-    test('partial session reports not complete and null average when empty', () {
+    test('partial session reports not complete and null average when empty',
+        () {
       final empty = _session([[], []], arrowsPerEnd: 3);
       expect(empty.arrowsShot, 0);
       expect(empty.avgPerArrow, isNull);
       expect(empty.isComplete, isFalse);
+    });
+
+    test(
+        'sighter ends stay visible but do not count toward aggregates or PB format',
+        () {
+      final session = _session(
+        [
+          [_arrow(0, 10, isX: true), _arrow(1, 10), _arrow(2, 10)],
+          [_arrow(0, 8), _arrow(1, 8), _arrow(2, 8)],
+          [_arrow(0, 7), _arrow(1, 7), _arrow(2, 7)],
+        ],
+        sighterEnds: {1},
+      );
+
+      expect(session.sighterEnds.map((e) => e.endNumber), [1]);
+      expect(session.countedEnds.map((e) => e.endNumber), [2, 3]);
+      expect(session.totalScore, 45);
+      expect(session.arrowsShot, 6);
+      expect(session.xCount, 0);
+      expect(session.tenCount, 0);
+      expect(session.maxPossibleScore, 60);
+      expect(session.plannedArrows, 6);
+      expect(session.isComplete, isTrue);
     });
   });
 
@@ -81,7 +115,8 @@ void main() {
 
     test('fromValue round-trips wire values', () {
       expect(BowClass.fromValue('compound'), BowClass.compound);
-      expect(ScoringSessionStatus.fromValue('completed'), ScoringSessionStatus.completed);
+      expect(ScoringSessionStatus.fromValue('completed'),
+          ScoringSessionStatus.completed);
     });
   });
 

@@ -81,15 +81,22 @@ class BoardParticipant extends Equatable {
     return face == null ? '$distance m' : '$distance m / $face cm';
   }
 
-  Iterable<ArrowScore> get _allArrows => ends.expand((e) => e.arrows);
+  List<ScoringEndEntity> get countedEnds =>
+      ends.where((e) => !e.isSighter).toList(growable: false);
 
-  int get totalScore => _allArrows.fold(0, (sum, a) => sum + a.scoreValue);
+  List<ScoringEndEntity> get sighterEnds =>
+      ends.where((e) => e.isSighter).toList(growable: false);
 
-  int get arrowsShot => _allArrows.length;
+  Iterable<ArrowScore> get _countedArrows =>
+      countedEnds.expand((e) => e.arrows);
 
-  int get xCount => _allArrows.where((a) => a.isX).length;
+  int get totalScore => _countedArrows.fold(0, (sum, a) => sum + a.scoreValue);
 
-  int get tenCount => _allArrows.where((a) => a.isTen).length;
+  int get arrowsShot => _countedArrows.length;
+
+  int get xCount => _countedArrows.where((a) => a.isX).length;
+
+  int get tenCount => _countedArrows.where((a) => a.isTen).length;
 
   /// Arrows recorded for a given end number (empty when not yet scored).
   List<ArrowScore> arrowsForEnd(int endNumber) {
@@ -130,7 +137,7 @@ class BoardParticipant extends Equatable {
   }
 
   /// Number of rounds this participant has actually shot (ends with arrows).
-  int get endsShot => ends.where((e) => e.arrows.isNotEmpty).length;
+  int get endsShot => countedEnds.where((e) => e.arrows.isNotEmpty).length;
 
   @override
   List<Object?> get props => [

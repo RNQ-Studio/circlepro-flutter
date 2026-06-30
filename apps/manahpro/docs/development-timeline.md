@@ -9,7 +9,7 @@
 
 ---
 
-## 🟢 Status Implementasi (update: 28 Juni 2026)
+## 🟢 Status Implementasi (update: 30 Juni 2026)
 
 > Repo: **`circlepro-flutter`** (app `apps/manahpro`) + **`circlepro-web`** (backend Laravel — _bukan_ `circlepro-laravel`; folder aktualnya `circlepro-web`).
 
@@ -37,6 +37,7 @@
 | **Bonus (di luar timeline awal)** | **Stories** (Instagram-style): `StoryController` backend + `story_viewer_screen`/`story_picker_preview_screen` mobile + migrasi `stories`/`story_views`. Tes: `StoryTest` hijau. · **Quotes**: `QuoteController` (love/unlove) + full clean-arch `features/quotes/` mobile + migrasi `quotes`/`quote_loves` + seeder 150 quotes. · **Target Face management**: `TargetFaceController` + migrasi `target_faces` + enhanced scoring setup (pilih target face dengan preview visual). |
 | **Phase 5 — Monetization (penuh)** | **Subscription Billing** (Free/Pro/Elite untuk user, Starter/Pro/Enterprise untuk klub) · **Premium Gating** (3 sesi/minggu untuk Free) · **Ads Framework** (AdCardWidget di Community Feed, targeted, premium bypass) · **Revenue Dashboard** (MRR/churn/plan counts). **Tes: MonetizationTest.php & monetization_providers_test.dart hijau, analyze 0 error.** |
 | **Latihan Bersama — Fase 3 Sprint 17–20 (ahead-of-plan)** | Multi-skorer per-bantalan: `group_scorers`, assign/claim skorer, otorisasi tulis per `target_butt`, audit `last_scored_by_user_id`; mobile picker/monitor/board scoped bantalan; `/butts` cursor `version` + `unchanged`; multi-jarak per peserta untuk self-join/override, leaderboard rank per distance group, dan PB klaim tamu tetap memakai jarak nyata. **Verifikasi:** backend `composer lint`, `composer analyse`, `composer test` hijau; Flutter `melos test` hijau, scoped `group_scoring` analyze 0 issue (full analyze masih mencetak info baseline lama di luar fitur). |
+| **Latihan Bersama — Fase 3 Sprint 21–24 (ahead-of-plan)** | Babak percobaan/sighter hidup end-to-end dan dikecualikan dari agregat, PB, completion, serta leaderboard; preset ronde `RoundPreset` mengisi format grup dan solo (WA 70m/50m/18m, latihan nasional 50m/30m, jemparingan); leaderboard membawa `skill_insight` dan badge `Membaik` berbasis delta rata-rata personal; kartu hasil/drill-down menampilkan tren end-by-end dan callout skill positif. **Verifikasi:** backend `composer lint`, `composer analyse`, `composer test` hijau (360 test); Flutter `melos run analyze` exit 0 (125 info baseline lama), `melos run test` hijau (162 test), dan APK release berhasil dibuild. **Catatan:** auto-post feed pasca-sesi sengaja backlog terlihat karena butuh kontrol persetujuan host dan anti-spam komunitas. |
 
 **🚧 Yang benar-benar belum:**
 - **Phase 1–2 (device):** 1.15 uji keterbacaan outdoor **terukur** · 1.17 profiling 60fps.
@@ -747,6 +748,6 @@ Bulan ke-12 (May 2027) : Rp 20-30 jt (premium + club SaaS + coaching/training, g
 *Dokumen ini adalah living document. Update setiap 2 minggu berdasarkan actual progress vs planned.*
 
 *Dibuat: 29 Mei 2026*  
-*Update terakhir: **28 Juni 2026** — Latihan Bersama Fase 3 Sprint 17–20 diimplementasikan ahead-of-plan*
+*Update terakhir: **30 Juni 2026** — Latihan Bersama Fase 3 Sprint 21–24 diimplementasikan ahead-of-plan*
 *Konteks: 1 developer (Laravel + Flutter) + AI Agent, 8-10 jam/hari*  
 *Baseline: Business Strategy & UI/UX Design Guide ManahPro*

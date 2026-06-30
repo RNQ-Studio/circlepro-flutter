@@ -81,6 +81,9 @@ class GroupScoringLocalDataSource {
       targetFaceId: Value(group.targetFaceId),
       numEnds: group.numEnds,
       arrowsPerEnd: group.arrowsPerEnd,
+      sighterEndCount: Value(group.sighterEndCount),
+      roundPresetKey: Value(group.roundPresetKey),
+      roundPresetLabel: Value(group.roundPresetLabel),
       status: Value(group.status.value),
       participantCount: Value(group.participantCount),
       startedAt: group.startedAt,
@@ -134,6 +137,9 @@ class GroupScoringLocalDataSource {
       targetFaceId: row.targetFaceId,
       numEnds: row.numEnds,
       arrowsPerEnd: row.arrowsPerEnd,
+      sighterEndCount: row.sighterEndCount,
+      roundPresetKey: row.roundPresetKey,
+      roundPresetLabel: row.roundPresetLabel,
       status: ScoringSessionStatus.fromValue(row.status),
       participantCount: row.participantCount,
       startedAt: row.startedAt,
@@ -327,13 +333,18 @@ class GroupScoringLocalDataSource {
     required BoardParticipant participant,
     required int endNumber,
     required List<ArrowScore> arrows,
+    bool? isSighter,
   }) async {
     await _db.transaction(() async {
       final ends = [...participant.ends];
       final idx = ends.indexWhere((e) => e.endNumber == endNumber);
       final endId = idx >= 0 ? ends[idx].id : Ids.ulid();
-      final newEnd =
-          ScoringEndEntity(id: endId, endNumber: endNumber, arrows: arrows);
+      final newEnd = ScoringEndEntity(
+        id: endId,
+        endNumber: endNumber,
+        isSighter: isSighter ?? group.isSighterEnd(endNumber),
+        arrows: arrows,
+      );
       if (idx >= 0) {
         ends[idx] = newEnd;
       } else {
@@ -341,14 +352,15 @@ class GroupScoringLocalDataSource {
       }
       ends.sort((a, b) => a.endNumber.compareTo(b.endNumber));
 
-      final allArrows = ends.expand((e) => e.arrows);
-      final total = allArrows.fold(0, (s, a) => s + a.scoreValue);
-      final shot = allArrows.length;
-      final x = allArrows.where((a) => a.isX).length;
-      final ten = allArrows.where((a) => a.isTen).length;
-      final miss = allArrows.where((a) => a.isMiss).length;
+      final countedArrows =
+          ends.where((e) => !e.isSighter).expand((e) => e.arrows);
+      final total = countedArrows.fold(0, (s, a) => s + a.scoreValue);
+      final shot = countedArrows.length;
+      final x = countedArrows.where((a) => a.isX).length;
+      final ten = countedArrows.where((a) => a.isTen).length;
+      final miss = countedArrows.where((a) => a.isMiss).length;
 
-      final plannedArrows = group.numEnds * group.arrowsPerEnd;
+      final plannedArrows = group.plannedArrows;
       final completed = shot >= plannedArrows;
       final status = completed
           ? ScoringSessionStatus.completed
@@ -441,6 +453,7 @@ class GroupScoringLocalDataSource {
         ScoringEndEntity(
           id: endRow.id,
           endNumber: endRow.endNumber,
+          isSighter: endRow.isSighter,
           arrows: arrowRows
               .map((a) => ArrowScore(
                     id: a.id,
@@ -478,6 +491,7 @@ class GroupScoringLocalDataSource {
               id: end.id,
               sessionId: sessionId,
               endNumber: end.endNumber,
+              isSighter: Value(end.isSighter),
             ),
           );
       for (final arrow in end.arrows) {

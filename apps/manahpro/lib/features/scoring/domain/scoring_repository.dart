@@ -16,6 +16,7 @@ abstract interface class ScoringRepository {
     int? maxPossibleScoreOverride,
     String? equipmentProfileId,
     String? title,
+    int sighterEndCount = 0,
   });
 
   /// Persist the current arrows of an end (replaces that end's arrows).

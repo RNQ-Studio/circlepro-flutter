@@ -146,6 +146,7 @@ class HostBoardController extends _$HostBoardController {
   Future<void> saveEnd(
     int endNumber,
     Map<String, List<ArrowScore>> arrowsByParticipantId, {
+    bool? isSighter,
     bool sync = true,
   }) async {
     final current = state.value;
@@ -155,6 +156,7 @@ class HostBoardController extends _$HostBoardController {
       group: current.group,
       endNumber: endNumber,
       arrowsByParticipantId: arrowsByParticipantId,
+      isSighter: isSighter,
       sync: sync,
     );
     state = AsyncData(current.copyWith(participants: participants));
@@ -688,7 +690,7 @@ class _CachedButtDraft {
       submittedCount: submittedCount,
       endProgress: endProgress,
       maxEndProgress: maxEndProgress,
-      targetEnds: group.numEnds,
+      targetEnds: group.countedEndCount,
       totalScore: participants.fold<int>(
         0,
         (sum, participant) => sum + participant.totalScore,

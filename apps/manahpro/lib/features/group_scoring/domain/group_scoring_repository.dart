@@ -24,6 +24,9 @@ abstract interface class GroupScoringRepository {
     int? targetFaceCm,
     String? targetFaceId,
     String? title,
+    int sighterEndCount = 0,
+    String? roundPresetKey,
+    String? roundPresetLabel,
     bool hostParticipates = false,
     BowClass? hostBowClass,
   });
@@ -82,6 +85,7 @@ abstract interface class GroupScoringRepository {
     required ScoringGroupEntity group,
     required int endNumber,
     required Map<String, List<ArrowScore>> arrowsByParticipantId,
+    bool? isSighter,
     bool sync = true,
   });
 

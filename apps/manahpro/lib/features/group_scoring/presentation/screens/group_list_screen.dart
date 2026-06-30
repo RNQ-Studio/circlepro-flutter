@@ -80,7 +80,9 @@ class _GroupCard extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
-          '${group.distanceM} m · ${group.numEnds}×${group.arrowsPerEnd} · ${group.participantCount} peserta',
+          '${group.roundPresetLabel ?? '${group.distanceM} m'} · '
+          '${group.countedEndCount}×${group.arrowsPerEnd} · '
+          '${group.participantCount} peserta',
         ),
         leading: CircleAvatar(
           backgroundColor: ManahColors.brandSurface,

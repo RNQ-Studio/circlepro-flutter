@@ -38,6 +38,23 @@ void main() {
               'is_complete': false,
               'tied': false,
               'is_provisional_leader': true,
+              'is_improvement_leader': true,
+              'skill_insight': {
+                'baseline': {
+                  'has_baseline': true,
+                  'sessions_count': 3,
+                  'average_score': 42.0,
+                  'best_score': 50,
+                  'delta_vs_average': 12.0,
+                  'delta_vs_best': 4,
+                  'label': '+12 dari rata-ratamu',
+                },
+                'end_trend': [
+                  {'end_number': 1, 'total': 27, 'is_sighter': false},
+                  {'end_number': 2, 'total': 27, 'is_sighter': false},
+                ],
+                'callout': 'Paling membaik sore ini.',
+              },
             },
             {
               'rank': 2,
@@ -83,7 +100,13 @@ void main() {
       expect(leader.bowClass, BowClass.recurve);
       expect(leader.totalScore, 54);
       expect(leader.isProvisionalLeader, isTrue);
+      expect(leader.isImprovementLeader, isTrue);
       expect(leader.hasStarted, isTrue);
+      expect(leader.skillInsight?.baseline.hasBaseline, isTrue);
+      expect(leader.skillInsight?.baseline.deltaVsAverage, 12);
+      expect(
+          leader.skillInsight?.endTrend.map((e) => e.total).toList(), [27, 27]);
+      expect(leader.skillInsight?.callout, 'Paling membaik sore ini.');
 
       final guest = snapshot.entries[1];
       expect(guest.isGuest, isTrue);

@@ -7,7 +7,8 @@ Map<String, dynamic> scoringSessionToSyncJson(ScoringSessionEntity s) {
   return {
     'id': s.id,
     'client_uuid': s.clientUuid,
-    if (s.equipmentProfileId != null) 'equipment_profile_id': s.equipmentProfileId,
+    if (s.equipmentProfileId != null)
+      'equipment_profile_id': s.equipmentProfileId,
     if (s.title != null) 'title': s.title,
     'bow_class': s.bowClass.value,
     'distance_category': s.distanceCategory.value,
@@ -21,11 +22,13 @@ Map<String, dynamic> scoringSessionToSyncJson(ScoringSessionEntity s) {
     if (s.notes != null) 'notes': s.notes,
     'source': 'mobile',
     'started_at': s.startedAt.toUtc().toIso8601String(),
-    if (s.completedAt != null) 'completed_at': s.completedAt!.toUtc().toIso8601String(),
+    if (s.completedAt != null)
+      'completed_at': s.completedAt!.toUtc().toIso8601String(),
     'ends': s.ends
         .map((end) => {
               'id': end.id,
               'end_number': end.endNumber,
+              'is_sighter': end.isSighter,
               'arrows': end.arrows
                   .map((a) => {
                         'id': a.id,
@@ -59,6 +62,7 @@ ScoringSessionEntity scoringSessionFromJson(Map<String, dynamic> json) {
     return ScoringEndEntity(
       id: endMap['id'] as String? ?? '',
       endNumber: endMap['end_number'] as int? ?? 0,
+      isSighter: endMap['is_sighter'] as bool? ?? false,
       arrows: arrows,
     );
   }).toList();
@@ -69,7 +73,8 @@ ScoringSessionEntity scoringSessionFromJson(Map<String, dynamic> json) {
     equipmentProfileId: json['equipment_profile_id'] as String?,
     title: json['title'] as String?,
     bowClass: BowClass.fromValue(json['bow_class'] as String?),
-    distanceCategory: DistanceCategory.fromValue(json['distance_category'] as String?),
+    distanceCategory:
+        DistanceCategory.fromValue(json['distance_category'] as String?),
     distanceM: json['distance_m'] as int? ?? 0,
     environment: ArcheryEnvironment.fromValue(json['environment'] as String?),
     targetFaceCm: json['target_face_cm'] as int?,

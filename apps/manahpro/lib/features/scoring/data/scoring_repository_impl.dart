@@ -32,7 +32,10 @@ class ScoringRepositoryImpl implements ScoringRepository {
     int? maxPossibleScoreOverride,
     String? equipmentProfileId,
     String? title,
+    int sighterEndCount = 0,
   }) async {
+    final normalizedSighterEndCount =
+        sighterEndCount.clamp(0, numEnds - 1).toInt();
     final session = ScoringSessionEntity(
       id: Ids.ulid(),
       clientUuid: Ids.uuid(),
@@ -49,7 +52,11 @@ class ScoringRepositoryImpl implements ScoringRepository {
       startedAt: DateTime.now(),
       ends: List.generate(
         numEnds,
-        (i) => ScoringEndEntity(id: Ids.ulid(), endNumber: i + 1),
+        (i) => ScoringEndEntity(
+          id: Ids.ulid(),
+          endNumber: i + 1,
+          isSighter: i < normalizedSighterEndCount,
+        ),
       ),
       maxPossibleScoreOverride: maxPossibleScoreOverride,
     );
@@ -99,7 +106,8 @@ class ScoringRepositoryImpl implements ScoringRepository {
   }
 
   @override
-  Future<ScoringSessionEntity?> getSession(String sessionId) => _local.getSession(sessionId);
+  Future<ScoringSessionEntity?> getSession(String sessionId) =>
+      _local.getSession(sessionId);
 
   @override
   Future<List<ScoringSessionEntity>> getSessions() => _local.getAllSessions();
@@ -164,7 +172,8 @@ class ScoringRepositoryImpl implements ScoringRepository {
 
     if (comparable.isEmpty) return session.arrowsShot > 0;
 
-    final bestOther = comparable.map((s) => s.totalScore).reduce((a, b) => a > b ? a : b);
+    final bestOther =
+        comparable.map((s) => s.totalScore).reduce((a, b) => a > b ? a : b);
     return session.totalScore > bestOther;
   }
 
@@ -175,13 +184,15 @@ class ScoringRepositoryImpl implements ScoringRepository {
   }
 
   @override
-  Stream<List<TargetFaceEntity>> watchTargetFaces() => _local.watchTargetFaces();
+  Stream<List<TargetFaceEntity>> watchTargetFaces() =>
+      _local.watchTargetFaces();
 
   @override
   Future<void> refreshTargetFaces() async {
     try {
       final data = await _remote.getTargetFaces();
-      final entities = data.map((json) => TargetFaceEntity.fromJson(json)).toList();
+      final entities =
+          data.map((json) => TargetFaceEntity.fromJson(json)).toList();
       await _local.saveTargetFaces(entities);
     } catch (e) {
       log('ScoringRepository.refreshTargetFaces failed: $e');

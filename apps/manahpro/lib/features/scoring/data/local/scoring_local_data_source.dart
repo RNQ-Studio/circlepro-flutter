@@ -75,6 +75,7 @@ class ScoringLocalDataSource {
               id: end.id,
               sessionId: session.id,
               endNumber: end.endNumber,
+              isSighter: Value(end.isSighter),
             ),
           );
       for (final arrow in end.arrows) {
@@ -192,6 +193,7 @@ class ScoringLocalDataSource {
         ScoringEndEntity(
           id: endRow.id,
           endNumber: endRow.endNumber,
+          isSighter: endRow.isSighter,
           arrows: arrowRows
               .map((a) => ArrowScore(
                     id: a.id,

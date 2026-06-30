@@ -103,7 +103,7 @@ class _PreviewBody extends ConsumerWidget {
                   _Row(
                     label: 'Format',
                     value:
-                        '${group.numEnds} ronde × ${group.arrowsPerEnd} panah',
+                        '${group.countedEndCount} ronde skor × ${group.arrowsPerEnd} panah',
                   ),
                   _Row(
                     label: 'Target Face',

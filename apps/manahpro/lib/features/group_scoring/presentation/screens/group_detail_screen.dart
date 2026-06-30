@@ -224,7 +224,9 @@ class _FormatSummary extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${group.distanceM} m · ${group.numEnds}×${group.arrowsPerEnd} · ${group.environment.label}',
+                    '${group.roundPresetLabel ?? '${group.distanceM} m'} · '
+                    '${group.countedEndCount}×${group.arrowsPerEnd} · '
+                    '${group.environment.label}',
                     style: ManahTextStyles.bodyM
                         .copyWith(fontWeight: FontWeight.w600),
                   ),
@@ -518,7 +520,7 @@ class _RosterCard extends StatelessWidget {
           ],
         ),
         subtitle: Text(
-          '${participant.distanceLabel} · $endsDone/${group.numEnds} rambahan · ${participant.arrowsShot} panah',
+          '${participant.distanceLabel} · $endsDone/${group.countedEndCount} rambahan · ${participant.arrowsShot} panah',
           style: ManahTextStyles.bodyS.copyWith(color: ManahColors.mediumGrey),
         ),
         trailing: Row(
