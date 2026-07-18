@@ -1,3 +1,5 @@
+import 'dart:ui' show FontFeature;
+
 import 'package:core/core.dart';
 import 'package:features_shared/features_shared.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../theme/manah_tokens.dart';
+import '../../scoring/domain/scoring_entities.dart';
+import '../../scoring/domain/scoring_enums.dart';
 import '../../scoring/presentation/scoring_providers.dart';
 import '../../scoring/presentation/scoring_routes.dart';
 
@@ -54,7 +58,7 @@ class HomeScreen extends ConsumerWidget {
                 error: (_, __) => _HomeError(
                   onRetry: () => ref.invalidate(sessionsListProvider),
                 ),
-                data: (_) => const _HomeScoringContent(),
+                data: (sessions) => _HomeScoringContent(sessions: sessions),
               ),
             ],
           ),
@@ -108,26 +112,55 @@ class _HomeTopBar extends StatelessWidget {
 }
 
 class _HomeScoringContent extends StatelessWidget {
-  const _HomeScoringContent();
+  const _HomeScoringContent({required this.sessions});
+
+  final List<ScoringSessionEntity> sessions;
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
+    final activeSession = _firstWhereOrNull(
+      sessions,
+      (session) => session.status == ScoringSessionStatus.inProgress,
+    );
+    final latestCompletedSession = _firstWhereOrNull(
+      sessions,
+      (session) => session.status == ScoringSessionStatus.completed,
+    );
+
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _StartScoringSurface(),
-        SizedBox(height: ManahSpacing.lg),
-        _ScoringLinks(),
+        _PrimaryScoringSurface(session: activeSession),
+        const SizedBox(height: ManahSpacing.lg),
+        const _ScoringLinks(),
+        if (latestCompletedSession != null) ...[
+          const SizedBox(height: ManahSpacing.xl),
+          Text(
+            'Sesi terakhir',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: ManahSpacing.md),
+          _LatestCompletedSession(session: latestCompletedSession),
+        ],
       ],
     );
   }
 }
 
-class _StartScoringSurface extends StatelessWidget {
-  const _StartScoringSurface();
+class _PrimaryScoringSurface extends StatelessWidget {
+  const _PrimaryScoringSurface({required this.session});
+
+  final ScoringSessionEntity? session;
 
   @override
   Widget build(BuildContext context) {
+    final activeSession = session;
+    if (activeSession != null) {
+      return _ActiveScoringSurface(session: activeSession);
+    }
+
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -186,6 +219,173 @@ class _StartScoringSurface extends StatelessWidget {
               label: const Text('Mulai scoring'),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ActiveScoringSurface extends StatelessWidget {
+  const _ActiveScoringSurface({required this.session});
+
+  final ScoringSessionEntity session;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final progress = session.plannedArrows == 0
+        ? 0.0
+        : session.arrowsShot / session.plannedArrows;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(ManahRadius.lg),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(ManahSpacing.base),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.adjust_rounded,
+              color: colorScheme.onPrimaryContainer,
+              size: ManahSpacing.xl,
+            ),
+            const SizedBox(height: ManahSpacing.base),
+            Text(
+              'Lanjutkan scoring',
+              style: theme.textTheme.titleLarge?.copyWith(
+                color: colorScheme.onPrimaryContainer,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: ManahSpacing.xs),
+            Text(
+              '${session.bowClass.label} · '
+              '${session.distanceCategory.label}',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onPrimaryContainer,
+              ),
+            ),
+            const SizedBox(height: ManahSpacing.base),
+            Text(
+              '${session.arrowsShot} dari ${session.plannedArrows} panah',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onPrimaryContainer,
+                fontFeatures: const [FontFeature.tabularFigures()],
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: ManahSpacing.sm),
+            LinearProgressIndicator(
+              value: progress.clamp(0, 1),
+              backgroundColor: colorScheme.surface.withValues(alpha: 0.5),
+              color: colorScheme.primary,
+              borderRadius: BorderRadius.circular(ManahRadius.full),
+            ),
+            const SizedBox(height: ManahSpacing.base),
+            FilledButton.icon(
+              onPressed: () => context.push(ScoringRoutes.input(session.id)),
+              icon: const Icon(Icons.play_arrow_rounded),
+              label: const Text('Lanjutkan scoring'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LatestCompletedSession extends StatelessWidget {
+  const _LatestCompletedSession({required this.session});
+
+  final ScoringSessionEntity session;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final syncLabel = session.isSynced ? 'Tersinkron' : 'Menunggu sinkronisasi';
+
+    return Material(
+      color: colorScheme.surfaceContainerLow,
+      borderRadius: BorderRadius.circular(ManahRadius.lg),
+      child: InkWell(
+        key: const ValueKey('latest-completed-session'),
+        onTap: () => context.push(ScoringRoutes.summary(session.id)),
+        borderRadius: BorderRadius.circular(ManahRadius.lg),
+        child: Padding(
+          padding: const EdgeInsets.all(ManahSpacing.base),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${session.bowClass.label} · '
+                      '${session.distanceCategory.label}',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: ManahSpacing.xs),
+                    Text(
+                      _formatSessionDate(session.startedAt),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: ManahSpacing.sm),
+                    Row(
+                      children: [
+                        Icon(
+                          session.isSynced
+                              ? Icons.cloud_done_outlined
+                              : Icons.cloud_upload_outlined,
+                          size: ManahSpacing.base,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: ManahSpacing.sm),
+                        Expanded(
+                          child: Text(
+                            syncLabel,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: ManahSpacing.base),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${session.totalScore}',
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      color: colorScheme.primary,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    '/ ${session.maxPossibleScore}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -381,4 +581,26 @@ class _HomeError extends StatelessWidget {
       ),
     );
   }
+}
+
+ScoringSessionEntity? _firstWhereOrNull(
+  List<ScoringSessionEntity> sessions,
+  bool Function(ScoringSessionEntity) predicate,
+) {
+  for (final session in sessions) {
+    if (predicate(session)) return session;
+  }
+  return null;
+}
+
+String _formatSessionDate(DateTime value) {
+  final date = value.toLocal();
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final sessionDay = DateTime(date.year, date.month, date.day);
+  final difference = today.difference(sessionDay).inDays;
+
+  if (difference == 0) return 'Hari ini';
+  if (difference == 1) return 'Kemarin';
+  return '${date.day}/${date.month}/${date.year}';
 }
