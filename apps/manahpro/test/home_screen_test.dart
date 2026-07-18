@@ -5,6 +5,7 @@ import 'package:manahpro/features/quotes/presentation/quotes_notifier.dart';
 import 'package:manahpro/features/quotes/domain/entities/quote_entity.dart';
 import 'package:manahpro/features/gamification/presentation/gamification_providers.dart';
 import 'package:manahpro/features/gamification/domain/gamification_entities.dart';
+import 'package:manahpro/features/scoring/presentation/scoring_providers.dart';
 import 'package:core/core.dart';
 import 'package:features_shared/features_shared.dart';
 import 'package:flutter/material.dart';
@@ -57,6 +58,7 @@ void main() {
           quotesProvider.overrideWith(() => FakeQuotesNotifier()),
           userProfileProvider.overrideWith((_) async => testProfile),
           gamificationStatsProvider.overrideWith((_) async => testStats),
+          sessionsListProvider.overrideWith((_) async => const []),
         ],
         child: MaterialApp.router(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -111,5 +113,21 @@ void main() {
     await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pumpAndSettle();
     expect(find.text('Settings'), findsOneWidget);
+  });
+
+  testWidgets('focuses the home screen on individual scoring', (tester) async {
+    await tester.pumpWidget(buildSubject());
+    await tester.pumpAndSettle();
+
+    expect(find.text('Scoring individu'), findsOneWidget);
+    expect(find.text('Mulai scoring'), findsOneWidget);
+    expect(find.text('Riwayat'), findsOneWidget);
+    expect(find.text('Statistik'), findsOneWidget);
+    expect(find.text('Bersama'), findsNothing);
+    expect(find.text('Klub'), findsNothing);
+    expect(find.text('Event'), findsNothing);
+    expect(find.text('Pelatih'), findsNothing);
+    expect(find.text('Lapangan'), findsNothing);
+    expect(find.text('Artikel'), findsNothing);
   });
 }

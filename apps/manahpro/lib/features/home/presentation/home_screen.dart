@@ -1,505 +1,383 @@
+import 'package:core/core.dart';
+import 'package:features_shared/features_shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:core/core.dart';
-import 'package:features_shared/features_shared.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
-import '../../../shared/routes/social_routes.dart';
-import '../../../theme/manah_colors.dart';
+import '../../../theme/manah_tokens.dart';
+import '../../scoring/presentation/scoring_providers.dart';
 import '../../scoring/presentation/scoring_routes.dart';
-import '../../group_scoring/presentation/group_scoring_routes.dart';
-import '../../events/presentation/events_routes.dart';
-import '../../gamification/presentation/gamification_providers.dart';
-import '../../stories/presentation/widgets/story_header_list_widget.dart';
-import 'home_provider.dart';
-import 'widgets/home_user_header.dart';
-import 'widgets/home_menu_grid.dart';
-import 'widgets/home_quote_of_the_day.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
     final authState = ref.watch(authProvider);
     final isAuthenticated = authState is AuthAuthenticated;
-    final theme = Theme.of(context);
+    final sessionsAsync = ref.watch(sessionsListProvider);
 
     return Scaffold(
       body: SafeArea(
-        bottom: false,
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // Logo dan Aksi dipaling atas
-            SliverToBoxAdapter(
-              child: _buildTopBar(context, ref, isAuthenticated),
+        child: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(sessionsListProvider);
+            await ref.read(sessionsListProvider.future);
+          },
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(
+              ManahSpacing.base,
+              ManahSpacing.sm,
+              ManahSpacing.base,
+              ManahSpacing.xl,
             ),
-
-            // Welcoming User Banner
-            SliverToBoxAdapter(
-              child: isAuthenticated
-                  ? _buildAuthenticatedHeader(context, ref)
-                  : _buildGuestHeader(context),
-            ),
-
-            if (isAuthenticated)
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.only(top: 8.0),
-                  child: StoryHeaderListWidget(),
+            children: [
+              _HomeTopBar(isAuthenticated: isAuthenticated),
+              const SizedBox(height: ManahSpacing.xl),
+              Text(
+                'Scoring individu',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-            
-            // Mulai Latihan Quick Card (di-hide dulu)
-            // const SliverToBoxAdapter(
-            //   child: _QuickStartCard(),
-            // ),
+              const SizedBox(height: ManahSpacing.xs),
+              Text(
+                'Catat setiap anak panah, bahkan saat offline.',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: ManahSpacing.lg),
+              sessionsAsync.when(
+                loading: _HomeLoading.new,
+                error: (_, __) => _HomeError(
+                  onRetry: () => ref.invalidate(sessionsListProvider),
+                ),
+                data: (_) => const _HomeScoringContent(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
-            // Feature Menu Grid
-            SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 20.0, top: 16.0, bottom: 4.0),
-                    child: Text(
-                      'Layanan Utama',
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.3,
-                        fontSize: 15,
-                      ),
+class _HomeTopBar extends StatelessWidget {
+  const _HomeTopBar({required this.isAuthenticated});
+
+  final bool isAuthenticated;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Row(
+      children: [
+        Expanded(
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Image.asset(
+              'assets/images/logo_border_white.png',
+              height: ManahSpacing.xl,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => Text(
+                'ManahPro',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (isAuthenticated)
+          IconButton(
+            onPressed: () => context.push(AppRoutes.settings),
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Pengaturan',
+          )
+        else
+          TextButton(
+            onPressed: () => context.push('/login'),
+            child: const Text('Masuk'),
+          ),
+      ],
+    );
+  }
+}
+
+class _HomeScoringContent extends StatelessWidget {
+  const _HomeScoringContent();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _StartScoringSurface(),
+        SizedBox(height: ManahSpacing.lg),
+        _ScoringLinks(),
+      ],
+    );
+  }
+}
+
+class _StartScoringSurface extends StatelessWidget {
+  const _StartScoringSurface();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(ManahRadius.lg),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(ManahSpacing.base),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(
+              Icons.adjust_rounded,
+              color: colorScheme.primary,
+              size: ManahSpacing.xl,
+            ),
+            const SizedBox(height: ManahSpacing.base),
+            Text(
+              'Mulai scoring individu',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: ManahSpacing.xs),
+            Text(
+              'Atur busur, jarak, dan target untuk memulai sesi.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: ManahSpacing.md),
+            Row(
+              children: [
+                Icon(
+                  Icons.offline_bolt_outlined,
+                  size: ManahSpacing.base,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: ManahSpacing.sm),
+                Expanded(
+                  child: Text(
+                    'Siap dipakai offline',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
-                  HomeMenuGrid(
-                    onMenuTap: (label) {
-                      if (label == 'Scoring') {
-                        context.push(ScoringRoutes.setup);
-                      } else if (label == 'Bersama') {
-                        context.push(GroupScoringRoutes.list);
-                      } else if (label == 'Statistik') {
-                        context.push(ScoringRoutes.dashboard);
-                      } else if (label == 'Riwayat') {
-                        context.push(ScoringRoutes.history);
-                      } else if (label == 'Klub') {
-                        context.push(SocialRoutes.clubs);
-                      } else if (label == 'Event') {
-                        context.push(EventsRoutes.discovery);
-                      } else if (label == 'Pelatih') {
-                        context.push(SocialRoutes.coaches);
-                      } else if (label == 'Lapangan') {
-                        context.push(SocialRoutes.ranges);
-                      } else if (label == 'Artikel') {
-                        context.push(SocialRoutes.articles);
-                      }
-                    },
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-
-            // Quote of the Day
-            const SliverToBoxAdapter(
-              child: HomeQuoteOfTheDay(),
-            ),
-
-            // Version Footer
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: _HomeFooter(),
-              ),
-            ),
-
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 16 + MediaQuery.of(context).padding.bottom,
-              ),
+            const SizedBox(height: ManahSpacing.base),
+            FilledButton.icon(
+              onPressed: () => context.push(ScoringRoutes.setup),
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Mulai scoring'),
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildAuthenticatedHeader(BuildContext context, WidgetRef ref) {
-    final profileAsync = ref.watch(userProfileProvider);
-    final statsAsync = ref.watch(gamificationStatsProvider);
+class _ScoringLinks extends StatelessWidget {
+  const _ScoringLinks();
 
-    return profileAsync.when(
-      loading: () => const Padding(
-        padding: EdgeInsets.all(32),
-        child: Center(child: CircularProgressIndicator()),
-      ),
-      error: (e, _) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Text('Gagal memuat profil: $e'),
-      ),
-      data: (profile) {
-        final stats = statsAsync.asData?.value;
-        return HomeUserHeader(
-          profile: profile,
-          stats: stats,
-          onProfileTap: () => context.push(AppRoutes.profile),
-        );
-      },
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _ScoringLinkRow(
+          icon: Icons.history_rounded,
+          label: 'Riwayat',
+          description: 'Lihat semua sesi scoring individu',
+          onTap: () => context.push(ScoringRoutes.history),
+        ),
+        const Divider(height: 1),
+        _ScoringLinkRow(
+          icon: Icons.insights_outlined,
+          label: 'Statistik',
+          description: 'Pantau rata-rata dan perkembangan skor',
+          onTap: () => context.push(ScoringRoutes.dashboard),
+        ),
+      ],
     );
   }
+}
 
-  Widget _buildTopBar(BuildContext context, WidgetRef ref, bool isAuthenticated) {
+class _ScoringLinkRow extends StatelessWidget {
+  const _ScoringLinkRow({
+    required this.icon,
+    required this.label,
+    required this.description,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final String description;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Logo ManahPro (kecilkan sedikit ke 32, pojok kiri). Degrade
-          // gracefully if the asset can't load (e.g. corrupt bundle / test
-          // harness) instead of throwing and breaking layout.
-          Image.asset(
-            'assets/images/logo_border_white.png',
-            height: 32,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) => const SizedBox(
-              height: 32,
-              child: Text(
-                'ManahPro',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-              ),
-            ),
-          ),
-          // Ikon pengaturan dan logout (hanya tampil jika terautentikasi)
-          if (isAuthenticated)
-            Row(
-              mainAxisSize: MainAxisSize.min,
+    return Material(
+      color: colorScheme.surface,
+      child: InkWell(
+        onTap: onTap,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 56),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: ManahSpacing.sm),
+            child: Row(
               children: [
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  icon: Icon(
-                    Icons.settings_outlined,
-                    color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6),
-                    size: 20,
-                  ),
-                  onPressed: () => context.push(AppRoutes.settings),
-                  tooltip: 'Pengaturan',
-                  style: IconButton.styleFrom(
-                    backgroundColor: theme.dividerColor.withValues(alpha: isDark ? 0.08 : 0.04),
-                    padding: const EdgeInsets.all(6),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  visualDensity: VisualDensity.compact,
-                  icon: Icon(
-                    Icons.logout_rounded,
-                    color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.6),
-                    size: 20,
-                  ),
-                  onPressed: () {
-                    showDialog<bool>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text('Keluar Akun'),
-                        content: const Text('Apakah Anda yakin ingin keluar dari akun ini?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Batal'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(context, true),
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.redAccent,
-                            ),
-                            child: const Text('Keluar'),
-                          ),
-                        ],
+                Icon(icon, color: colorScheme.primary),
+                const SizedBox(width: ManahSpacing.base),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        label,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ).then((confirmed) {
-                      if (confirmed == true) {
-                        ref.read(authProvider.notifier).logout();
-                      }
-                    });
-                  },
-                  tooltip: 'Keluar',
-                  style: IconButton.styleFrom(
-                    backgroundColor: theme.dividerColor.withValues(alpha: isDark ? 0.08 : 0.04),
-                    padding: const EdgeInsets.all(6),
+                      const SizedBox(height: ManahSpacing.xs),
+                      Text(
+                        description,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
                   ),
+                ),
+                const SizedBox(width: ManahSpacing.sm),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ],
             ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildGuestHeader(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final l10n = AppLocalizations.of(context)!;
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: theme.cardTheme.color,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: theme.dividerColor.withValues(alpha: isDark ? 0.08 : 0.05),
-          width: 1.2,
+          ),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: theme.dividerColor.withValues(alpha: 0.1),
-            child: Icon(
-              Icons.person_rounded,
-              size: 20,
-              color: theme.textTheme.bodyLarge?.color?.withValues(alpha: 0.7),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  l10n.welcome,
-                  style: TextStyle(
-                    color: theme.textTheme.titleMedium?.color ?? (isDark ? Colors.white : ManahColors.nearBlack),
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'Masuk untuk mencatat skor & naik level!',
-                  style: TextStyle(
-                    color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.55),
-                    fontSize: 11,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 8),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(60, 32),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              backgroundColor: ManahColors.brand,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              elevation: 0,
-            ),
-            onPressed: () => context.push('/login'),
-            child: Text(
-              l10n.login,
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
       ),
     );
   }
 }
 
-// Intentionally retained: the "Mulai Latihan" quick card is hidden for now
-// (see the commented-out usage above) but kept for an upcoming home revamp.
-// ignore: unused_element
-class _QuickStartCard extends StatelessWidget {
-  const _QuickStartCard();
+class _HomeLoading extends StatelessWidget {
+  const _HomeLoading();
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [
-                  const Color(0xFF152A4A),
-                  const Color(0xFF0D47A1),
-                ]
-              : [
-                  const Color(0xFF1E88E5), // Sky/Ocean Blue
-                  ManahColors.brand,
-                ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return Semantics(
+      label: 'Memuat data scoring',
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(ManahRadius.lg),
         ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: ManahColors.brand.withOpacity(isDark ? 0.2 : 0.15),
-            blurRadius: 16,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Mulai Scoring Latihan',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.1,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Catat skor anak panah Anda secara instan dan dapatkan analisis prestasinya.',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.85),
-                    fontSize: 11,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: ManahColors.brand,
-                    minimumSize: const Size(120, 36),
-                    padding: const EdgeInsets.symmetric(horizontal: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                  onPressed: () => context.push(ScoringRoutes.setup),
-                  child: const Text(
-                    'Mulai Sekarang',
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.18),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 8,
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.track_changes_rounded,
-              size: 40,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _HomeFooter extends StatefulWidget {
-  const _HomeFooter();
-
-  @override
-  State<_HomeFooter> createState() => _HomeFooterState();
-}
-
-class _HomeFooterState extends State<_HomeFooter> {
-  String _appName = '';
-  String _appVersion = '';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadAppInfo();
-  }
-
-  Future<void> _loadAppInfo() async {
-    try {
-      final info = await PackageInfo.fromPlatform();
-      if (mounted) {
-        setState(() {
-          _appName = info.appName.isNotEmpty ? info.appName : 'ManahPro';
-          _appVersion = '${info.version}+${info.buildNumber}';
-        });
-      }
-    } catch (_) {}
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_appName.isEmpty) return const SizedBox.shrink();
-
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
+        child: const Padding(
+          padding: EdgeInsets.all(ManahSpacing.base),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                child: Image.asset(
-                  'packages/features_shared/assets/logo.png',
-                  width: 20,
-                  height: 20,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                _appName,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.5,
-                    ),
-              ),
+              _SkeletonLine(widthFactor: 0.45),
+              SizedBox(height: ManahSpacing.md),
+              _SkeletonLine(widthFactor: 0.8),
+              SizedBox(height: ManahSpacing.lg),
+              _SkeletonLine(widthFactor: 1),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Versi $_appVersion',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .onSurface
-                      .withOpacity(0.4),
-                ),
-          ),
-        ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SkeletonLine extends StatelessWidget {
+  const _SkeletonLine({required this.widthFactor});
+
+  final double widthFactor;
+
+  @override
+  Widget build(BuildContext context) {
+    return FractionallySizedBox(
+      alignment: Alignment.centerLeft,
+      widthFactor: widthFactor,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(ManahRadius.sm),
+        ),
+        child: const SizedBox(height: ManahSpacing.lg),
+      ),
+    );
+  }
+}
+
+class _HomeError extends StatelessWidget {
+  const _HomeError({required this.onRetry});
+
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(ManahRadius.lg),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(ManahSpacing.base),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(Icons.cloud_off_outlined, color: colorScheme.error),
+            const SizedBox(height: ManahSpacing.md),
+            Text(
+              'Data scoring belum bisa dimuat.',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: ManahSpacing.xs),
+            Text(
+              'Periksa kembali data lokal lalu coba lagi.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: ManahSpacing.base),
+            OutlinedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Coba lagi'),
+            ),
+          ],
+        ),
       ),
     );
   }
