@@ -1,136 +1,116 @@
-import 'package:manahpro/features/home/domain/entities/user_profile.dart';
-import 'package:manahpro/features/home/presentation/home_provider.dart';
-import 'package:manahpro/features/home/presentation/home_screen.dart';
-import 'package:manahpro/features/quotes/presentation/quotes_notifier.dart';
-import 'package:manahpro/features/quotes/domain/entities/quote_entity.dart';
-import 'package:manahpro/features/gamification/presentation/gamification_providers.dart';
-import 'package:manahpro/features/gamification/domain/gamification_entities.dart';
-import 'package:manahpro/features/scoring/domain/scoring_entities.dart';
-import 'package:manahpro/features/scoring/domain/scoring_enums.dart';
-import 'package:manahpro/features/scoring/presentation/scoring_providers.dart';
 import 'package:core/core.dart';
 import 'package:features_shared/features_shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:manahpro/features/home/presentation/home_screen.dart';
+import 'package:manahpro/features/scoring/domain/scoring_entities.dart';
+import 'package:manahpro/features/scoring/domain/scoring_enums.dart';
+import 'package:manahpro/features/scoring/presentation/scoring_providers.dart';
+import 'package:manahpro/features/scoring/presentation/scoring_routes.dart';
+import 'package:manahpro/theme/manah_theme.dart';
 
 class FakeAuthNotifier extends AuthNotifier {
   FakeAuthNotifier(this._initialState);
+
   final AuthState _initialState;
 
   @override
   AuthState build() => _initialState;
 }
 
-class FakeQuotesNotifier extends QuotesNotifier {
-  @override
-  Future<List<QuoteEntity>> build() async => [];
-}
-
 void main() {
-  const testProfile = UserProfile(
-    name: 'Test User',
-    email: 'test@example.com',
-    phone: '08123456789',
-    avatarUrl: null,
-    role: 'Member',
-  );
-
-  const testStats = UserStatsEntity(
-    xp: 650,
-    level: 2,
-    currentStreak: 3,
-    longestStreak: 5,
-    lastSessionAt: null,
-    badges: [],
-  );
-
   Widget buildSubject({
     List<ScoringSessionEntity> sessions = const [],
-  }) =>
-      ProviderScope(
-        overrides: [
-          authProvider.overrideWith(() => FakeAuthNotifier(
-                const AuthAuthenticated(User(
-                  id: '1',
-                  name: 'Test User',
-                  email: 'test@example.com',
-                  phone: '08123456789',
-                  roles: ['Member'],
-                )),
-              )),
-          quotesProvider.overrideWith(() => FakeQuotesNotifier()),
-          userProfileProvider.overrideWith((_) async => testProfile),
-          gamificationStatsProvider.overrideWith((_) async => testStats),
-          sessionsListProvider.overrideWith((_) async => sessions),
-        ],
-        child: MaterialApp.router(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          locale: const Locale('en'),
-          routerConfig: GoRouter(
-            routes: [
-              GoRoute(
-                path: '/',
-                builder: (_, __) => const HomeScreen(),
-              ),
-              GoRoute(
-                path: AppRoutes.settings,
-                builder: (_, __) => const Scaffold(body: Text('Settings')),
-              ),
-              GoRoute(
-                path: '/scoring/session/:id',
-                builder: (_, state) => Scaffold(
-                  body: Text('Input ${state.pathParameters['id']}'),
-                ),
-              ),
-              GoRoute(
-                path: '/scoring/session/:id/summary',
-                builder: (_, state) => Scaffold(
-                  body: Text('Summary ${state.pathParameters['id']}'),
-                ),
-              ),
-            ],
+    Object? sessionsError,
+    ThemeMode themeMode = ThemeMode.light,
+    TextScaler textScaler = TextScaler.noScaling,
+    bool isAuthenticated = true,
+  }) {
+    final router = GoRouter(
+      routes: [
+        GoRoute(path: '/', builder: (_, __) => const HomeScreen()),
+        GoRoute(
+          path: AppRoutes.settings,
+          builder: (_, __) => const Scaffold(
+            body: Text('Settings destination'),
           ),
         ),
-      );
+        GoRoute(
+          path: '/login',
+          builder: (_, __) => const Scaffold(
+            body: Text('Login destination'),
+          ),
+        ),
+        GoRoute(
+          path: ScoringRoutes.setup,
+          builder: (_, __) => const Scaffold(
+            body: Text('Setup destination'),
+          ),
+        ),
+        GoRoute(
+          path: ScoringRoutes.history,
+          builder: (_, __) => const Scaffold(
+            body: Text('History destination'),
+          ),
+        ),
+        GoRoute(
+          path: ScoringRoutes.dashboard,
+          builder: (_, __) => const Scaffold(
+            body: Text('Dashboard destination'),
+          ),
+        ),
+        GoRoute(
+          path: '/scoring/session/:id',
+          builder: (_, state) => Scaffold(
+            body: Text('Input ${state.pathParameters['id']}'),
+          ),
+        ),
+        GoRoute(
+          path: '/scoring/session/:id/summary',
+          builder: (_, state) => Scaffold(
+            body: Text('Summary ${state.pathParameters['id']}'),
+          ),
+        ),
+      ],
+    );
 
-  testWidgets('shows user header after profile loads', (tester) async {
-    await tester.pumpWidget(buildSubject());
-    await tester.pumpAndSettle();
-    expect(find.text('Test User'), findsOneWidget);
-    expect(find.text('test@example.com'), findsOneWidget);
-  });
+    final authState = isAuthenticated
+        ? const AuthAuthenticated(
+            User(
+              id: '1',
+              name: 'Test User',
+              email: 'test@example.com',
+              phone: '08123456789',
+              roles: ['Member'],
+            ),
+          )
+        : const AuthUnauthenticated();
 
-  testWidgets('shows level, streak and progress bar', (tester) async {
-    await tester.pumpWidget(buildSubject());
-    await tester.pumpAndSettle();
-    expect(find.text('LVL 2'), findsOneWidget);
-    expect(find.textContaining('3 Hari'), findsOneWidget);
-  });
-
-  testWidgets('shows all 9 main menu items', (tester) async {
-    await tester.pumpWidget(buildSubject());
-    await tester.pumpAndSettle();
-    expect(find.text('Scoring'), findsOneWidget);
-    expect(find.text('Bersama'), findsOneWidget);
-    expect(find.text('Statistik'), findsOneWidget);
-    expect(find.text('Riwayat'), findsOneWidget);
-    expect(find.text('Klub'), findsOneWidget);
-    expect(find.text('Event'), findsOneWidget);
-    expect(find.text('Pelatih'), findsOneWidget);
-    expect(find.text('Lapangan'), findsOneWidget);
-    expect(find.text('Artikel'), findsOneWidget);
-  });
-
-  testWidgets('settings icon navigates to settings route', (tester) async {
-    await tester.pumpWidget(buildSubject());
-    await tester.pumpAndSettle();
-    await tester.tap(find.byIcon(Icons.settings_outlined));
-    await tester.pumpAndSettle();
-    expect(find.text('Settings'), findsOneWidget);
-  });
+    return ProviderScope(
+      overrides: [
+        authProvider.overrideWith(() => FakeAuthNotifier(authState)),
+        sessionsListProvider.overrideWith((_) async {
+          if (sessionsError != null) throw sessionsError;
+          return sessions;
+        }),
+      ],
+      child: MaterialApp.router(
+        theme: ManahTheme.light,
+        darkTheme: ManahTheme.dark,
+        themeMode: themeMode,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        locale: const Locale('id'),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaler: textScaler),
+          child: child!,
+        ),
+        routerConfig: router,
+      ),
+    );
+  }
 
   testWidgets('focuses the home screen on individual scoring', (tester) async {
     await tester.pumpWidget(buildSubject());
@@ -148,29 +128,17 @@ void main() {
     expect(find.text('Artikel'), findsNothing);
   });
 
-  testWidgets('continues the latest active scoring session', (tester) async {
-    final activeSession = ScoringSessionEntity(
-      id: 'active-session',
-      clientUuid: 'active-client',
-      bowClass: BowClass.recurve,
-      distanceCategory: DistanceCategory.d50m,
-      distanceM: 50,
-      numEnds: 6,
-      arrowsPerEnd: 6,
-      startedAt: DateTime(2026, 7, 19, 8),
-      ends: const [
-        ScoringEndEntity(
-          id: 'active-end',
-          endNumber: 1,
-          arrows: [
-            ArrowScore(id: 'a1', arrowIndex: 0, scoreValue: 10),
-            ArrowScore(id: 'a2', arrowIndex: 1, scoreValue: 9),
-          ],
-        ),
-      ],
-    );
+  testWidgets('starts a new individual scoring session', (tester) async {
+    await tester.pumpWidget(buildSubject());
+    await tester.pumpAndSettle();
 
-    await tester.pumpWidget(buildSubject(sessions: [activeSession]));
+    await tester.tap(find.widgetWithText(FilledButton, 'Mulai scoring'));
+    await tester.pumpAndSettle();
+    expect(find.text('Setup destination'), findsOneWidget);
+  });
+
+  testWidgets('continues the latest active scoring session', (tester) async {
+    await tester.pumpWidget(buildSubject(sessions: [_activeSession()]));
     await tester.pumpAndSettle();
 
     expect(find.text('Lanjutkan scoring'), findsWidgets);
@@ -184,32 +152,7 @@ void main() {
   });
 
   testWidgets('opens the latest completed session summary', (tester) async {
-    final completedSession = ScoringSessionEntity(
-      id: 'completed-session',
-      clientUuid: 'completed-client',
-      bowClass: BowClass.recurve,
-      distanceCategory: DistanceCategory.d20m,
-      distanceM: 20,
-      numEnds: 1,
-      arrowsPerEnd: 3,
-      status: ScoringSessionStatus.completed,
-      startedAt: DateTime(2026, 7, 18, 8),
-      completedAt: DateTime(2026, 7, 18, 8, 10),
-      isSynced: true,
-      ends: const [
-        ScoringEndEntity(
-          id: 'completed-end',
-          endNumber: 1,
-          arrows: [
-            ArrowScore(id: 'c1', arrowIndex: 0, scoreValue: 10),
-            ArrowScore(id: 'c2', arrowIndex: 1, scoreValue: 9),
-            ArrowScore(id: 'c3', arrowIndex: 2, scoreValue: 9),
-          ],
-        ),
-      ],
-    );
-
-    await tester.pumpWidget(buildSubject(sessions: [completedSession]));
+    await tester.pumpWidget(buildSubject(sessions: [_completedSession()]));
     await tester.pumpAndSettle();
 
     expect(find.text('Sesi terakhir'), findsOneWidget);
@@ -225,4 +168,136 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Summary completed-session'), findsOneWidget);
   });
+
+  testWidgets('opens scoring history', (tester) async {
+    await tester.pumpWidget(buildSubject());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Riwayat'));
+    await tester.pumpAndSettle();
+    expect(find.text('History destination'), findsOneWidget);
+  });
+
+  testWidgets('opens scoring statistics', (tester) async {
+    await tester.pumpWidget(buildSubject());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Statistik'));
+    await tester.pumpAndSettle();
+    expect(find.text('Dashboard destination'), findsOneWidget);
+  });
+
+  testWidgets('opens settings for an authenticated user', (tester) async {
+    await tester.pumpWidget(buildSubject());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Pengaturan'));
+    await tester.pumpAndSettle();
+    expect(find.text('Settings destination'), findsOneWidget);
+  });
+
+  testWidgets('offers sign in without blocking offline scoring',
+      (tester) async {
+    await tester.pumpWidget(buildSubject(isAuthenticated: false));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mulai scoring'), findsOneWidget);
+    await tester.tap(find.text('Masuk'));
+    await tester.pumpAndSettle();
+    expect(find.text('Login destination'), findsOneWidget);
+  });
+
+  testWidgets('shows a human error state without leaking the exception',
+      (tester) async {
+    await tester.pumpWidget(
+      buildSubject(sessionsError: StateError('database failed internally')),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('Data scoring belum bisa dimuat.'), findsOneWidget);
+    expect(find.text('Coba lagi'), findsOneWidget);
+    expect(find.textContaining('database failed'), findsNothing);
+  });
+
+  testWidgets('fits compact light theme at 1.3 text scale', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(360, 690));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      buildSubject(
+        sessions: [_activeSession(), _completedSession()],
+        textScaler: const TextScaler.linear(1.3),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('fits compact dark theme at 1.3 text scale', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(360, 690));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      buildSubject(
+        sessions: [_activeSession(), _completedSession()],
+        themeMode: ThemeMode.dark,
+        textScaler: const TextScaler.linear(1.3),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+  });
+}
+
+ScoringSessionEntity _activeSession() {
+  return ScoringSessionEntity(
+    id: 'active-session',
+    clientUuid: 'active-client',
+    bowClass: BowClass.recurve,
+    distanceCategory: DistanceCategory.d50m,
+    distanceM: 50,
+    numEnds: 6,
+    arrowsPerEnd: 6,
+    startedAt: DateTime(2026, 7, 19, 8),
+    ends: const [
+      ScoringEndEntity(
+        id: 'active-end',
+        endNumber: 1,
+        arrows: [
+          ArrowScore(id: 'a1', arrowIndex: 0, scoreValue: 10),
+          ArrowScore(id: 'a2', arrowIndex: 1, scoreValue: 9),
+        ],
+      ),
+    ],
+  );
+}
+
+ScoringSessionEntity _completedSession() {
+  return ScoringSessionEntity(
+    id: 'completed-session',
+    clientUuid: 'completed-client',
+    bowClass: BowClass.recurve,
+    distanceCategory: DistanceCategory.d20m,
+    distanceM: 20,
+    numEnds: 1,
+    arrowsPerEnd: 3,
+    status: ScoringSessionStatus.completed,
+    startedAt: DateTime(2026, 7, 18, 8),
+    completedAt: DateTime(2026, 7, 18, 8, 10),
+    isSynced: true,
+    ends: const [
+      ScoringEndEntity(
+        id: 'completed-end',
+        endNumber: 1,
+        arrows: [
+          ArrowScore(id: 'c1', arrowIndex: 0, scoreValue: 10),
+          ArrowScore(id: 'c2', arrowIndex: 1, scoreValue: 9),
+          ArrowScore(id: 'c3', arrowIndex: 2, scoreValue: 9),
+        ],
+      ),
+    ],
+  );
 }
