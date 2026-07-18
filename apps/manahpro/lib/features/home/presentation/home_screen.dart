@@ -1,5 +1,3 @@
-import 'dart:ui' show FontFeature;
-
 import 'package:core/core.dart';
 import 'package:features_shared/features_shared.dart';
 import 'package:flutter/material.dart';
@@ -167,7 +165,9 @@ class _PrimaryScoringSurface extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(ManahRadius.lg),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(ManahRadius.lg),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(ManahSpacing.base),
@@ -241,7 +241,9 @@ class _ActiveScoringSurface extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(ManahRadius.lg),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(ManahRadius.lg),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(ManahSpacing.base),
@@ -283,7 +285,9 @@ class _ActiveScoringSurface extends StatelessWidget {
               value: progress.clamp(0, 1),
               backgroundColor: colorScheme.surface.withValues(alpha: 0.5),
               color: colorScheme.primary,
-              borderRadius: BorderRadius.circular(ManahRadius.full),
+              borderRadius: const BorderRadius.all(
+                Radius.circular(ManahRadius.full),
+              ),
             ),
             const SizedBox(height: ManahSpacing.base),
             FilledButton.icon(
@@ -311,11 +315,15 @@ class _LatestCompletedSession extends StatelessWidget {
 
     return Material(
       color: colorScheme.surfaceContainerLow,
-      borderRadius: BorderRadius.circular(ManahRadius.lg),
+      borderRadius: const BorderRadius.all(
+        Radius.circular(ManahRadius.lg),
+      ),
       child: InkWell(
         key: const ValueKey('latest-completed-session'),
         onTap: () => context.push(ScoringRoutes.summary(session.id)),
-        borderRadius: BorderRadius.circular(ManahRadius.lg),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(ManahRadius.lg),
+        ),
         child: Padding(
           padding: const EdgeInsets.all(ManahSpacing.base),
           child: Row(
@@ -494,7 +502,9 @@ class _HomeLoading extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: colorScheme.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(ManahRadius.lg),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(ManahRadius.lg),
+          ),
         ),
         child: const Padding(
           padding: EdgeInsets.all(ManahSpacing.base),
@@ -527,7 +537,9 @@ class _SkeletonLine extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(ManahRadius.sm),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(ManahRadius.sm),
+          ),
         ),
         child: const SizedBox(height: ManahSpacing.lg),
       ),
@@ -548,7 +560,9 @@ class _HomeError extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(ManahRadius.lg),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(ManahRadius.lg),
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.all(ManahSpacing.base),
