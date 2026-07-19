@@ -10,7 +10,7 @@ void main() {
     final light = ManahTheme.light;
     final dark = ManahTheme.dark;
 
-    expect(ManahColors.brand, const Color(0xFF0B5D45));
+    expect(ManahColors.brand, const Color(0xFF117559));
     expect(light.scaffoldBackgroundColor, const Color(0xFFF4F7F5));
     expect(dark.scaffoldBackgroundColor, const Color(0xFF0B1410));
     expect(light.colorScheme.surface, isNot(Colors.white));
@@ -29,6 +29,22 @@ void main() {
     );
     expect(
       _contrastRatio(dark.primary, dark.onPrimary),
+      greaterThanOrEqualTo(4.5),
+    );
+    expect(
+      _contrastRatio(light.secondary, light.onSecondary),
+      greaterThanOrEqualTo(4.5),
+    );
+    expect(
+      _contrastRatio(dark.secondary, dark.onSecondary),
+      greaterThanOrEqualTo(4.5),
+    );
+    expect(
+      _contrastRatio(light.error, light.onError),
+      greaterThanOrEqualTo(4.5),
+    );
+    expect(
+      _contrastRatio(dark.error, dark.onError),
       greaterThanOrEqualTo(4.5),
     );
   });

@@ -129,8 +129,7 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
       _environment = preset.environment;
       _sighterEndCount =
           preset.sighterEndCount.clamp(0, preset.numEnds - 1).toInt();
-      _selectedTargetFace =
-          _targetFaceForPreset(preset, targetFaces) ?? _selectedTargetFace;
+      _selectedTargetFace = _targetFaceForPreset(preset, targetFaces);
       _startError = null;
     });
   }
@@ -195,16 +194,15 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
     await _persistSelection('last_selected_environment', environment.value);
   }
 
-  Future<void> _openPresetPicker(
-    List<TargetFaceEntity> targetFaces,
-  ) async {
+  Future<void> _openPresetPicker() async {
     final preset = await showModalBottomSheet<RoundPreset>(
       context: context,
       isScrollControlled: true,
       builder: (_) => RoundPresetSheet(selected: _selectedPreset),
     );
     if (!mounted || preset == null) return;
-    _applyPreset(preset, targetFaces);
+    final currentTargets = ref.read(targetFacesListProvider).value ?? const [];
+    _applyPreset(preset, currentTargets);
   }
 
   Future<void> _openTargetPicker() async {
@@ -217,16 +215,6 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
   }
 
   Future<void> _retryTargetFaces() async {
-    try {
-      await ref.read(scoringRepositoryProvider).refreshTargetFaces();
-    } on Exception catch (error, stackTrace) {
-      log(
-        'Failed to refresh target faces from scoring setup',
-        error: error,
-        stackTrace: stackTrace,
-      );
-    }
-    if (!mounted) return;
     ref.invalidate(targetFacesListProvider);
   }
 
@@ -259,7 +247,7 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
       final session = await ref.read(scoringRepositoryProvider).startSession(
             bowClass: _bowClass,
             distanceCategory: _distance,
-            distanceM: _distance.meters,
+            distanceM: _selectedPreset?.distanceM ?? _distance.meters,
             numEnds: _numEnds,
             arrowsPerEnd: _arrowsPerEnd,
             environment: _environment,
@@ -377,7 +365,7 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
                 children: [
                   RoundPresetField(
                     selected: _selectedPreset,
-                    onTap: () => _openPresetPicker(targetFaces),
+                    onTap: _openPresetPicker,
                     onClear: () => setState(() {
                       _selectedPreset = null;
                       _startError = null;

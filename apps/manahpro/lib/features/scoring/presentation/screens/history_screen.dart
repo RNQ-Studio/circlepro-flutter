@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../shared/widgets/manah_navigation_button.dart';
-import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../../domain/scoring_entities.dart';
 import '../../domain/scoring_enums.dart';
@@ -85,12 +84,13 @@ class _FilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final classes = sessions.map((s) => s.bowClass).toSet().toList();
-    return SizedBox(
-      height: 52,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(
-            horizontal: ManahSpacing.base, vertical: ManahSpacing.sm),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(
+        horizontal: ManahSpacing.base,
+        vertical: ManahSpacing.sm,
+      ),
+      child: Row(
         children: [
           ChoiceChip(
             label: const Text('Semua'),
@@ -142,7 +142,11 @@ class _SessionCard extends StatelessWidget {
                 '${session.bowClass.label} · ${session.distanceCategory.label}'),
             if (session.isPersonalBest) ...[
               const SizedBox(width: ManahSpacing.sm),
-              const Text('🎯', style: TextStyle(fontSize: 14)),
+              Icon(
+                Icons.workspace_premium_rounded,
+                size: 20,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
             ],
           ],
         ),
@@ -157,8 +161,8 @@ class _SessionCard extends StatelessWidget {
                     : Icons.cloud_upload_outlined,
                 size: 14,
                 color: session.isSynced
-                    ? ManahColors.success
-                    : ManahColors.mediumGrey,
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurfaceVariant,
               ),
             ],
           ],
@@ -170,7 +174,7 @@ class _SessionCard extends StatelessWidget {
             Text(
               inProgress ? 'Berlangsung' : '${session.totalScore}',
               style: theme.textTheme.titleMedium?.copyWith(
-                color: inProgress ? ManahColors.warning : null,
+                color: inProgress ? theme.colorScheme.secondary : null,
                 fontWeight: FontWeight.w700,
               ),
             ),

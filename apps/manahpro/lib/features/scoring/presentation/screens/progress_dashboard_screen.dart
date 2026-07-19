@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/manah_navigation_button.dart';
-import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../dashboard_provider.dart';
 
@@ -16,7 +15,7 @@ class ProgressDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(dashboardStatsProvider);
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colors = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -49,7 +48,7 @@ class ProgressDashboardScreen extends ConsumerWidget {
                     label: 'AVG / PANAH',
                     value: stats.overallAvgPerArrow?.toStringAsFixed(2) ?? '–',
                     icon: Icons.insights,
-                    accentColor: ManahColors.brand,
+                    accentColor: colors.primary,
                     isHero: true,
                   ),
                   _StatCard(
@@ -58,14 +57,12 @@ class ProgressDashboardScreen extends ConsumerWidget {
                         ? '${stats.currentStreakDays} Hari'
                         : '0 Hari',
                     icon: Icons.whatshot,
-                    accentColor: ManahColors.error,
+                    accentColor: colors.error,
                     borderColor: stats.currentStreakDays > 0
-                        ? ManahColors.error.withValues(alpha: 0.25)
+                        ? colors.error.withValues(alpha: 0.25)
                         : null,
                     backgroundColor: stats.currentStreakDays > 0
-                        ? (isDark
-                            ? const Color(0x1AE53935)
-                            : const Color(0x0DE53935))
+                        ? colors.errorContainer
                         : null,
                     isHero: true,
                   ),
@@ -79,7 +76,7 @@ class ProgressDashboardScreen extends ConsumerWidget {
                     label: 'TERBAIK',
                     value: '${stats.bestScore ?? '–'}',
                     icon: Icons.emoji_events,
-                    accentColor: ManahColors.amberDeep,
+                    accentColor: colors.secondary,
                   ),
                   _StatCard(
                     label: 'SESI',
@@ -115,7 +112,9 @@ class ProgressDashboardScreen extends ConsumerWidget {
                 ),
                 decoration: BoxDecoration(
                   color: theme.cardTheme.color,
-                  borderRadius: BorderRadius.circular(ManahRadius.lg),
+                  borderRadius: const BorderRadius.all(
+                    Radius.circular(ManahRadius.lg),
+                  ),
                   border: Border.all(
                     color: theme.dividerColor.withValues(alpha: 0.1),
                     width: 1,
@@ -153,21 +152,13 @@ class _StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colors = theme.colorScheme;
 
     final finalBgColor = backgroundColor ??
-        (isHero
-            ? (isDark ? ManahColors.darkSurface : Colors.white)
-            : (isDark ? ManahColors.darkBg : ManahColors.lightGrey));
+        (isHero ? colors.surface : colors.surfaceContainerLow);
 
     final finalBorderColor = borderColor ??
-        (isHero
-            ? (isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.05))
-            : (isDark
-                ? Colors.white.withValues(alpha: 0.04)
-                : Colors.black.withValues(alpha: 0.02)));
+        (isHero ? colors.outlineVariant : colors.surfaceContainerHighest);
 
     return Expanded(
       child: Container(
@@ -178,17 +169,10 @@ class _StatCard extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: finalBgColor,
-          borderRadius: BorderRadius.circular(ManahRadius.md),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(ManahRadius.md),
+          ),
           border: Border.all(color: finalBorderColor, width: 1.5),
-          boxShadow: isHero
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  )
-                ]
-              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,8 +193,7 @@ class _StatCard extends StatelessWidget {
                   Icon(
                     icon,
                     size: isHero ? 20 : 16,
-                    color: accentColor ??
-                        (isDark ? Colors.white54 : Colors.black45),
+                    color: accentColor ?? colors.onSurfaceVariant,
                   ),
               ],
             ),
@@ -222,8 +205,7 @@ class _StatCard extends StatelessWidget {
                       : theme.textTheme.titleMedium)
                   ?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: accentColor ??
-                    (isDark ? Colors.white : ManahColors.nearBlack),
+                color: accentColor ?? colors.onSurface,
               ),
             ),
           ],
@@ -240,7 +222,7 @@ class _TrendChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final colors = theme.colorScheme;
 
     final spots = [
       for (var i = 0; i < trend.length; i++)
@@ -301,14 +283,15 @@ class _TrendChart extends StatelessWidget {
         ),
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (touchedSpot) =>
-                isDark ? ManahColors.darkElevated : Colors.white,
+            getTooltipColor: (touchedSpot) => colors.surfaceContainerHigh,
             tooltipBorder: BorderSide(
               color: theme.dividerColor.withValues(alpha: 0.1),
               width: 1,
             ),
-            tooltipPadding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            tooltipPadding: const EdgeInsets.symmetric(
+              horizontal: ManahSpacing.sm,
+              vertical: ManahSpacing.xs,
+            ),
             getTooltipItems: (touchedSpots) {
               return touchedSpots.map((spot) {
                 final index = spot.x.toInt();
@@ -336,7 +319,7 @@ class _TrendChart extends StatelessWidget {
                   '${pt.avgPerArrow.toStringAsFixed(2)} / 10\n$dateStr\nTotal: ${pt.totalScore}',
                   theme.textTheme.bodySmall!.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: isDark ? Colors.white : ManahColors.nearBlack,
+                    color: colors.onSurface,
                   ),
                 );
               }).toList();
@@ -347,7 +330,7 @@ class _TrendChart extends StatelessWidget {
           LineChartBarData(
             spots: spots,
             isCurved: true,
-            color: ManahColors.brand,
+            color: colors.primary,
             barWidth: 3,
             dotData: FlDotData(
               show: true,
@@ -355,22 +338,15 @@ class _TrendChart extends StatelessWidget {
                 final isPeak = index == peakIndex;
                 return FlDotCirclePainter(
                   radius: isPeak ? 5.5 : 3.0,
-                  color: isPeak ? ManahColors.error : ManahColors.brand,
+                  color: isPeak ? colors.error : colors.primary,
                   strokeWidth: isPeak ? 2.0 : 1.5,
-                  strokeColor: Colors.white,
+                  strokeColor: colors.surface,
                 );
               },
             ),
             belowBarData: BarAreaData(
               show: true,
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  ManahColors.brand.withValues(alpha: 0.08),
-                  ManahColors.brand.withValues(alpha: 0.00),
-                ],
-              ),
+              color: colors.primary.withValues(alpha: 0.08),
             ),
           ),
         ],

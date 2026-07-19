@@ -6,25 +6,31 @@ import 'package:flutter/material.dart';
 /// crisp, and brass is reserved for secondary/domain emphasis.
 abstract final class ManahColors {
   // Brand
-  static const Color brand = Color(0xFF0B5D45);
+  static const Color brand = Color(0xFF117559);
   static const Color brandLight = Color(0xFF74D5B2);
   static const Color brandSurface = Color(0xFFD8F0E6);
   static const Color brandContainerDark = Color(0xFF124E3E);
   static const Color onBrandContainerDark = Color(0xFFC8F3E3);
 
-  // Secondary (brass)
-  static const Color amber = Color(0xFFD5A33A);
-  static const Color amberDeep = Color(0xFF8A5B0B);
-  static const Color amberSurface = Color(0xFFF5E8C8);
-  static const Color amberDark = Color(0xFFE6B965);
-  static const Color onAmberDark = Color(0xFF3F2B05);
+  // Compatibility accents retained for legacy consumers.
+  static const Color amber = Color(0xFFFFC107);
+  static const Color amberDeep = Color(0xFFFF8F00);
+  static const Color amberSurface = Color(0xFFFFF8E1);
+
+  // Adaptive brass roles used by the app-level ColorScheme.
+  static const Color brass = Color(0xFFD5A33A);
+  static const Color brassDeep = Color(0xFF8A5B0B);
+  static const Color brassSurface = Color(0xFFF5E8C8);
+  static const Color brassDark = Color(0xFFE6B965);
+  static const Color onBrassDark = Color(0xFF3F2B05);
 
   // Status
-  static const Color success = Color(0xFF1E7A55);
-  static const Color warning = Color(0xFF9A6700);
-  static const Color error = Color(0xFFB3261E);
+  static const Color success = Color(0xFF43A047);
+  static const Color warning = Color(0xFFFFA726);
+  static const Color error = Color(0xFFE53935);
+  static const Color errorStrong = Color(0xFFB3261E);
   static const Color errorDark = Color(0xFFFFB4AB);
-  static const Color info = Color(0xFF0E7490);
+  static const Color info = Color(0xFF1E88E5);
 
   // Light graphite neutrals
   static const Color nearBlack = Color(0xFF121A16);
@@ -53,10 +59,10 @@ abstract final class ManahColors {
 
   // Scoring-specific (high contrast for outdoor readability)
   /// 10 & X - target gold highlight.
-  static const Color scoreGold = Color(0xFFF4C430);
+  static const Color scoreGold = Color(0xFFFFC107);
 
   /// Miss (M) - assertive red.
-  static const Color scoreMiss = Color(0xFFC94F5A);
+  static const Color scoreMiss = Color(0xFFE57373);
 
   // Physical target-face colors (domain colors, not interface accents)
   static const Color targetWhite = Color(0xFFF7F8F7);

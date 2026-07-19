@@ -70,7 +70,7 @@ class _ScorecardPreviewScreenState
         await SharePlus.instance.share(
           ShareParams(
             files: [XFile(file.path, mimeType: 'image/png')],
-            text: 'Skor latihan panahanku di ManahPro 🎯',
+            text: 'Skor latihan panahanku di ManahPro.',
           ),
         );
       });
@@ -126,11 +126,15 @@ class _ScorecardPreviewScreenState
                         child: FilledButton.icon(
                           onPressed: _busy ? null : _share,
                           icon: _busy
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
+                              ? SizedBox(
+                                  width: ManahComponentSize.activityIndicator,
+                                  height: ManahComponentSize.activityIndicator,
                                   child: CircularProgressIndicator(
-                                      strokeWidth: 2, color: Colors.white))
+                                    strokeWidth: 2,
+                                    color:
+                                        Theme.of(context).colorScheme.onPrimary,
+                                  ),
+                                )
                               : const Icon(Icons.share),
                           label: const Text('Bagikan'),
                         ),

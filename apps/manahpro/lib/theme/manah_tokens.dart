@@ -31,3 +31,10 @@ abstract final class ManahBorderRadius {
   static const double card = 12;
   static const double button = 12;
 }
+
+/// Reusable component dimensions that are not spacing values.
+abstract final class ManahComponentSize {
+  static const double sectionIcon = 40;
+  static const double activityIndicator = 20;
+  static const double targetPreview = 56;
+}

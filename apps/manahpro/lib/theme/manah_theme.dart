@@ -31,13 +31,13 @@ abstract final class ManahTheme {
           isDark ? ManahColors.brandContainerDark : ManahColors.brandSurface,
       onPrimaryContainer:
           isDark ? ManahColors.onBrandContainerDark : ManahColors.nearBlack,
-      secondary: isDark ? ManahColors.amberDark : ManahColors.amberDeep,
-      onSecondary: isDark ? ManahColors.onAmberDark : ManahColors.nearWhite,
+      secondary: isDark ? ManahColors.brassDark : ManahColors.brassDeep,
+      onSecondary: isDark ? ManahColors.onBrassDark : ManahColors.nearWhite,
       secondaryContainer:
-          isDark ? ManahColors.darkContainerHigh : ManahColors.amberSurface,
+          isDark ? ManahColors.darkContainerHigh : ManahColors.brassSurface,
       onSecondaryContainer:
-          isDark ? ManahColors.amberDark : ManahColors.nearBlack,
-      error: isDark ? ManahColors.errorDark : ManahColors.error,
+          isDark ? ManahColors.brassDark : ManahColors.nearBlack,
+      error: isDark ? ManahColors.errorDark : ManahColors.errorStrong,
       onError: isDark ? ManahColors.nearBlack : ManahColors.nearWhite,
       surface: surface,
       onSurface: onSurface,

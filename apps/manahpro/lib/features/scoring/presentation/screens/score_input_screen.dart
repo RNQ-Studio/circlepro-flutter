@@ -230,7 +230,9 @@ class _SighterNote extends StatelessWidget {
           horizontal: ManahSpacing.base, vertical: ManahSpacing.sm),
       decoration: BoxDecoration(
         color: ManahColors.amberDeep.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(ManahRadius.md),
+        borderRadius: const BorderRadius.all(
+          Radius.circular(ManahRadius.md),
+        ),
       ),
       child: Text(
         'Rambahan percobaan tersimpan, tetapi tidak masuk total atau PB.',

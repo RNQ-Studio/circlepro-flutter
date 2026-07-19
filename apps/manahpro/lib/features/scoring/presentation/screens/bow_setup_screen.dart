@@ -114,14 +114,25 @@ class _DefaultChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: ManahColors.brandSurface,
-        borderRadius: BorderRadius.circular(ManahRadius.full),
+      padding: const EdgeInsets.symmetric(
+        horizontal: ManahSpacing.sm,
+        vertical: ManahSpacing.xs,
       ),
-      child: const Text('Default',
-          style: TextStyle(fontSize: 11, color: ManahColors.brand)),
+      decoration: BoxDecoration(
+        color: colors.primaryContainer,
+        borderRadius: const BorderRadius.all(
+          Radius.circular(ManahRadius.full),
+        ),
+      ),
+      child: Text(
+        'Default',
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: colors.onPrimaryContainer,
+              fontWeight: FontWeight.w700,
+            ),
+      ),
     );
   }
 }

@@ -79,53 +79,57 @@ class _TargetFaceSelectionScreenState
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Filter chips bar
-                Container(
-                  height: 58,
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
                   padding:
-                      const EdgeInsets.symmetric(vertical: ManahSpacing.xs),
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: ManahSpacing.base),
-                    itemCount: categories.length,
-                    itemBuilder: (context, index) {
-                      final filter = categories[index];
-                      final isSelected = _selectedFilter == filter;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: ManahSpacing.xs),
-                        child: FilterChip(
-                          label: Text(
-                            filter,
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              color: isSelected
-                                  ? Colors.white
-                                  : theme.colorScheme.onSurface,
+                      const EdgeInsets.symmetric(horizontal: ManahSpacing.base),
+                  child: Row(
+                    children: [
+                      for (var index = 0; index < categories.length; index++)
+                        Builder(builder: (context) {
+                          final filter = categories[index];
+                          final isSelected = _selectedFilter == filter;
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: ManahSpacing.xs,
+                              vertical: ManahSpacing.sm,
                             ),
-                          ),
-                          selected: isSelected,
-                          selectedColor: ManahColors.brand,
-                          checkmarkColor: Colors.white,
-                          backgroundColor: theme.cardColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(ManahRadius.full),
-                            side: BorderSide(
-                              color: isSelected
-                                  ? ManahColors.brand
-                                  : theme.dividerColor.withValues(alpha: 0.1),
+                            child: FilterChip(
+                              label: Text(
+                                filter,
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: isSelected
+                                      ? theme.colorScheme.onPrimary
+                                      : theme.colorScheme.onSurface,
+                                ),
+                              ),
+                              selected: isSelected,
+                              selectedColor: theme.colorScheme.primary,
+                              checkmarkColor: theme.colorScheme.onPrimary,
+                              backgroundColor: theme.cardColor,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: const BorderRadius.all(
+                                  Radius.circular(ManahRadius.full),
+                                ),
+                                side: BorderSide(
+                                  color: isSelected
+                                      ? ManahColors.brand
+                                      : theme.dividerColor
+                                          .withValues(alpha: 0.1),
+                                ),
+                              ),
+                              onSelected: (selected) {
+                                if (selected) {
+                                  setState(() => _selectedFilter = filter);
+                                }
+                              },
                             ),
-                          ),
-                          onSelected: (selected) {
-                            if (selected) {
-                              setState(() => _selectedFilter = filter);
-                            }
-                          },
-                        ),
-                      );
-                    },
+                          );
+                        }),
+                    ],
                   ),
                 ),
                 const Divider(height: 1),
@@ -153,15 +157,17 @@ class _TargetFaceSelectionScreenState
 
                             return InkWell(
                               onTap: () => context.pop(target),
-                              borderRadius:
-                                  BorderRadius.circular(ManahRadius.md),
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(ManahRadius.md),
+                              ),
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? ManahColors.brandSurface
                                       : theme.cardColor,
-                                  borderRadius:
-                                      BorderRadius.circular(ManahRadius.md),
+                                  borderRadius: const BorderRadius.all(
+                                    Radius.circular(ManahRadius.md),
+                                  ),
                                   border: Border.all(
                                     color: isSelected
                                         ? ManahColors.brand
@@ -178,7 +184,9 @@ class _TargetFaceSelectionScreenState
                                     children: [
                                       Expanded(
                                         child: Padding(
-                                          padding: const EdgeInsets.all(4.0),
+                                          padding: const EdgeInsets.all(
+                                            ManahSpacing.xs,
+                                          ),
                                           child: TargetFacePreview(
                                             code: target.code,
                                             imagePath: target.imagePath,
@@ -201,17 +209,18 @@ class _TargetFaceSelectionScreenState
                                               : null,
                                         ),
                                       ),
-                                      const SizedBox(height: 2),
+                                      const SizedBox(
+                                        height: ManahSpacing.xs,
+                                      ),
                                       Text(
                                         target.usedCount > 0
                                             ? '${NumberFormat.decimalPattern('id').format(target.usedCount)}x digunakan'
                                             : '0x digunakan',
-                                        style:
-                                            theme.textTheme.bodySmall?.copyWith(
+                                        style: theme.textTheme.labelSmall
+                                            ?.copyWith(
                                           color: theme
-                                              .textTheme.bodySmall?.color
+                                              .textTheme.labelSmall?.color
                                               ?.withValues(alpha: 0.6),
-                                          fontSize: 10,
                                         ),
                                       ),
                                     ],

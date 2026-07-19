@@ -84,7 +84,7 @@ class ScoringSetupSection extends StatelessWidget {
                     ),
                   ),
                   child: SizedBox.square(
-                    dimension: 40,
+                    dimension: ManahComponentSize.sectionIcon,
                     child: Icon(
                       icon,
                       color: colors.onPrimaryContainer,
@@ -414,7 +414,7 @@ class DistanceSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<DistanceCategory>(
-      key: const ValueKey('distance-selector'),
+      key: ValueKey(selected),
       initialValue: selected,
       decoration: const InputDecoration(labelText: 'Jarak'),
       items: [
@@ -609,7 +609,9 @@ class _TargetFaceSkeleton extends StatelessWidget {
                   color: colors.surfaceContainerHighest,
                   shape: BoxShape.circle,
                 ),
-                child: const SizedBox.square(dimension: 56),
+                child: const SizedBox.square(
+                  dimension: ManahComponentSize.targetPreview,
+                ),
               ),
               const SizedBox(width: ManahSpacing.base),
               Expanded(
@@ -735,7 +737,7 @@ class _TargetFaceData extends StatelessWidget {
           child: Row(
             children: [
               SizedBox.square(
-                dimension: 56,
+                dimension: ManahComponentSize.targetPreview,
                 child: target == null
                     ? DecoratedBox(
                         decoration: BoxDecoration(
@@ -957,7 +959,7 @@ class SessionActionBar extends StatelessWidget {
                 onPressed: isStarting ? null : onPressed,
                 icon: isStarting
                     ? SizedBox.square(
-                        dimension: 20,
+                        dimension: ManahComponentSize.activityIndicator,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           color: colors.onPrimary,
