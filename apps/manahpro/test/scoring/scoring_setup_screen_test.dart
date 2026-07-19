@@ -32,8 +32,8 @@ class FakeUserSubscription extends UserSubscription {
 
 enum _TargetStreamMode { data, loading, error }
 
-class FakeScoringRepository implements ScoringRepository {
-  FakeScoringRepository({
+class _FakeScoringRepository implements ScoringRepository {
+  _FakeScoringRepository({
     this.targets = const [_targetFace],
     this.targetStreamMode = _TargetStreamMode.data,
     this.failStart = false,
@@ -149,7 +149,7 @@ class FakeScoringRepository implements ScoringRepository {
 
 void main() {
   Widget buildSubject({
-    required FakeScoringRepository repository,
+    required _FakeScoringRepository repository,
     ThemeMode themeMode = ThemeMode.light,
     TextScaler textScaler = TextScaler.noScaling,
   }) {
@@ -208,7 +208,7 @@ void main() {
   testWidgets('presents a focused session composer with live summary',
       (tester) async {
     await tester.pumpWidget(
-      buildSubject(repository: FakeScoringRepository()),
+      buildSubject(repository: _FakeScoringRepository()),
     );
     await tester.pumpAndSettle();
 
@@ -216,6 +216,7 @@ void main() {
     expect(find.text('Siapkan sesi'), findsOneWidget);
     expect(find.text('Busur'), findsOneWidget);
     expect(find.text('Format latihan'), findsOneWidget);
+    await _reveal(tester, find.text('Target'));
     expect(find.text('Target'), findsOneWidget);
     expect(find.byKey(const ValueKey('session-live-summary')), findsOneWidget);
     expect(find.byKey(const ValueKey('start-scoring-button')), findsOneWidget);
@@ -224,13 +225,15 @@ void main() {
 
   testWidgets('applies a round preset from the bottom sheet', (tester) async {
     await tester.pumpWidget(
-      buildSubject(repository: FakeScoringRepository()),
+      buildSubject(repository: _FakeScoringRepository()),
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const ValueKey('round-preset-field')));
+    final presetField = find.byKey(const ValueKey('round-preset-field'));
+    await _reveal(tester, presetField);
+    await tester.tap(presetField);
     await tester.pumpAndSettle();
-    expect(find.text('Pilih preset ronde'), findsOneWidget);
+    expect(find.text('Pilih preset ronde'), findsWidgets);
 
     await tester.tap(find.text('Latihan 30m'));
     await tester.pumpAndSettle();
@@ -242,13 +245,15 @@ void main() {
 
   testWidgets('shows human target error and retries the local-first provider',
       (tester) async {
-    final repository = FakeScoringRepository(
+    final repository = _FakeScoringRepository(
       targetStreamMode: _TargetStreamMode.error,
     );
     await tester.pumpWidget(buildSubject(repository: repository));
     await tester.pumpAndSettle();
 
-    expect(find.text('Target belum bisa dimuat.'), findsOneWidget);
+    final errorTitle = find.text('Target belum bisa dimuat.');
+    await _reveal(tester, errorTitle);
+    expect(errorTitle, findsOneWidget);
     expect(find.textContaining('target API failed'), findsNothing);
     final callsBeforeRetry = repository.refreshCalls;
 
@@ -261,7 +266,7 @@ void main() {
       (tester) async {
     await tester.pumpWidget(
       buildSubject(
-        repository: FakeScoringRepository(
+        repository: _FakeScoringRepository(
           targetStreamMode: _TargetStreamMode.loading,
         ),
       ),
@@ -269,24 +274,27 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(
-        find.byKey(const ValueKey('target-loading-skeleton')), findsOneWidget);
+    final skeleton = find.byKey(const ValueKey('target-loading-skeleton'));
+    await _reveal(tester, skeleton);
+    expect(skeleton, findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
   testWidgets('explains an empty target cache and offers refresh',
       (tester) async {
     await tester.pumpWidget(
-      buildSubject(repository: FakeScoringRepository(targets: const [])),
+      buildSubject(repository: _FakeScoringRepository(targets: const [])),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Belum ada target tersimpan.'), findsOneWidget);
+    final emptyTitle = find.text('Belum ada target tersimpan.');
+    await _reveal(tester, emptyTitle);
+    expect(emptyTitle, findsOneWidget);
     expect(find.text('Muat target'), findsOneWidget);
   });
 
   testWidgets('creates a session and opens score input', (tester) async {
-    final repository = FakeScoringRepository();
+    final repository = _FakeScoringRepository();
     await tester.pumpWidget(buildSubject(repository: repository));
     await tester.pumpAndSettle();
 
@@ -306,7 +314,7 @@ void main() {
   testWidgets('keeps the form intact when local session creation fails',
       (tester) async {
     await tester.pumpWidget(
-      buildSubject(repository: FakeScoringRepository(failStart: true)),
+      buildSubject(repository: _FakeScoringRepository(failStart: true)),
     );
     await tester.pumpAndSettle();
 
@@ -351,7 +359,7 @@ void main() {
 
       await tester.pumpWidget(
         buildSubject(
-          repository: FakeScoringRepository(),
+          repository: _FakeScoringRepository(),
           themeMode: scenario.themeMode,
           textScaler: scenario.textScaler,
         ),
@@ -366,11 +374,22 @@ void main() {
 }
 
 Future<void> _selectTarget(WidgetTester tester) async {
-  await tester.tap(find.byKey(const ValueKey('target-face-selector')));
+  final selector = find.byKey(const ValueKey('target-face-selector'));
+  await _reveal(tester, selector);
+  await tester.tap(selector);
   await tester.pumpAndSettle();
   await tester.tap(find.byKey(const ValueKey('select-test-target')));
   await tester.pumpAndSettle();
   expect(find.text(_targetFace.name), findsOneWidget);
+}
+
+Future<void> _reveal(WidgetTester tester, Finder finder) async {
+  await tester.scrollUntilVisible(
+    finder,
+    240,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.pumpAndSettle();
 }
 
 const _targetFace = TargetFaceEntity(

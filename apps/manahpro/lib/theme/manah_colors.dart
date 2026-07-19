@@ -58,6 +58,14 @@ abstract final class ManahColors {
   /// Miss (M) - assertive red.
   static const Color scoreMiss = Color(0xFFC94F5A);
 
+  // Physical target-face colors (domain colors, not interface accents)
+  static const Color targetWhite = Color(0xFFF7F8F7);
+  static const Color targetBlack = Color(0xFF151918);
+  static const Color targetBlue = Color(0xFF1976D2);
+  static const Color targetRed = Color(0xFFD32F2F);
+  static const Color targetGold = Color(0xFFFBC02D);
+  static const Color targetOutline = Color(0x4D687A70);
+
   // Ranking badge colors
   static const Color rankDiamond = Color(0xFFB9F2FF);
   static const Color rankGold = Color(0xFFFFD700);

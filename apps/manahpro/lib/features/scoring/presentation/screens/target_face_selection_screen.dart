@@ -8,7 +8,7 @@ import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../../domain/scoring_entities.dart';
 import '../scoring_providers.dart';
-import 'scoring_setup_screen.dart';
+import '../widgets/scoring_setup_components.dart';
 
 class TargetFaceSelectionScreen extends ConsumerStatefulWidget {
   const TargetFaceSelectionScreen({
