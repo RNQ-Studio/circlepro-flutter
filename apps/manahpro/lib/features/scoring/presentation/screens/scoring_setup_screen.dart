@@ -16,6 +16,8 @@ import '../scoring_providers.dart';
 import '../scoring_routes.dart';
 import '../widgets/scoring_setup_components.dart';
 
+export '../widgets/scoring_setup_components.dart' show TargetFacePreview;
+
 /// Creates a personal scoring session while preserving the offline-first
 /// repository contract.
 class ScoringSetupScreen extends ConsumerStatefulWidget {
