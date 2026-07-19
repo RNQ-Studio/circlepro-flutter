@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../shared/widgets/manah_navigation_button.dart';
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../../domain/scoring_entities.dart';
@@ -18,10 +19,12 @@ class TargetFaceSelectionScreen extends ConsumerStatefulWidget {
   final TargetFaceEntity? currentSelection;
 
   @override
-  ConsumerState<TargetFaceSelectionScreen> createState() => _TargetFaceSelectionScreenState();
+  ConsumerState<TargetFaceSelectionScreen> createState() =>
+      _TargetFaceSelectionScreenState();
 }
 
-class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionScreen> {
+class _TargetFaceSelectionScreenState
+    extends ConsumerState<TargetFaceSelectionScreen> {
   String _selectedFilter = 'SEMUA';
 
   @override
@@ -31,15 +34,19 @@ class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionS
 
     return Scaffold(
       appBar: AppBar(
+        leadingWidth: 64,
+        leading: const ManahNavigationButton.back(),
         title: const Text('Pilih Target Face'),
       ),
       body: SafeArea(
         child: targetFacesAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (err, _) => Center(child: Text('Gagal memuat target face: $err')),
+          error: (err, _) =>
+              Center(child: Text('Gagal memuat target face: $err')),
           data: (targets) {
             if (targets.isEmpty) {
-              return const Center(child: Text('Tidak ada target face tersedia'));
+              return const Center(
+                  child: Text('Tidak ada target face tersedia'));
             }
 
             // Categories: SEMUA, TRADISIONAL, MODERN
@@ -48,8 +55,12 @@ class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionS
             bool isModern(TargetFaceEntity target) {
               final code = target.code;
               final orgSlug = target.organizationSlug?.toLowerCase();
-              if (orgSlug == 'perpani') return true;
-              if (code.startsWith('fita_') || code == 'las_vegas_3spot') return true;
+              if (orgSlug == 'perpani') {
+                return true;
+              }
+              if (code.startsWith('fita_') || code == 'las_vegas_3spot') {
+                return true;
+              }
               return false;
             }
 
@@ -70,10 +81,12 @@ class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionS
                 // Filter chips bar
                 Container(
                   height: 58,
-                  padding: const EdgeInsets.symmetric(vertical: ManahSpacing.xs),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: ManahSpacing.xs),
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: ManahSpacing.base),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: ManahSpacing.base),
                     itemCount: categories.length,
                     itemBuilder: (context, index) {
                       final filter = categories[index];
@@ -84,8 +97,12 @@ class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionS
                           label: Text(
                             filter,
                             style: theme.textTheme.labelMedium?.copyWith(
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              color: isSelected ? Colors.white : theme.colorScheme.onSurface,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: isSelected
+                                  ? Colors.white
+                                  : theme.colorScheme.onSurface,
                             ),
                           ),
                           selected: isSelected,
@@ -93,7 +110,8 @@ class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionS
                           checkmarkColor: Colors.white,
                           backgroundColor: theme.cardColor,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(ManahRadius.full),
+                            borderRadius:
+                                BorderRadius.circular(ManahRadius.full),
                             side: BorderSide(
                               color: isSelected
                                   ? ManahColors.brand
@@ -111,15 +129,18 @@ class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionS
                   ),
                 ),
                 const Divider(height: 1),
-                
+
                 // Targets grid
                 Expanded(
                   child: filteredTargets.isEmpty
-                      ? const Center(child: Text('Tidak ada target face dalam kategori ini'))
+                      ? const Center(
+                          child:
+                              Text('Tidak ada target face dalam kategori ini'))
                       : GridView.builder(
                           padding: const EdgeInsets.all(ManahSpacing.base),
                           itemCount: filteredTargets.length,
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
                             crossAxisSpacing: ManahSpacing.sm,
                             mainAxisSpacing: ManahSpacing.sm,
@@ -127,26 +148,31 @@ class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionS
                           ),
                           itemBuilder: (context, idx) {
                             final target = filteredTargets[idx];
-                            final isSelected = widget.currentSelection?.id == target.id;
-                            
+                            final isSelected =
+                                widget.currentSelection?.id == target.id;
+
                             return InkWell(
                               onTap: () => context.pop(target),
-                              borderRadius: BorderRadius.circular(ManahRadius.md),
+                              borderRadius:
+                                  BorderRadius.circular(ManahRadius.md),
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? ManahColors.brandSurface
                                       : theme.cardColor,
-                                  borderRadius: BorderRadius.circular(ManahRadius.md),
+                                  borderRadius:
+                                      BorderRadius.circular(ManahRadius.md),
                                   border: Border.all(
                                     color: isSelected
                                         ? ManahColors.brand
-                                        : theme.dividerColor.withValues(alpha: 0.1),
+                                        : theme.dividerColor
+                                            .withValues(alpha: 0.1),
                                     width: isSelected ? 2 : 1,
                                   ),
                                 ),
                                 child: Padding(
-                                  padding: const EdgeInsets.all(ManahSpacing.sm),
+                                  padding:
+                                      const EdgeInsets.all(ManahSpacing.sm),
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -165,9 +191,14 @@ class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionS
                                         textAlign: TextAlign.center,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: theme.textTheme.labelMedium?.copyWith(
-                                          fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
-                                          color: isSelected ? ManahColors.brand : null,
+                                        style: theme.textTheme.labelMedium
+                                            ?.copyWith(
+                                          fontWeight: isSelected
+                                              ? FontWeight.w700
+                                              : FontWeight.normal,
+                                          color: isSelected
+                                              ? ManahColors.brand
+                                              : null,
                                         ),
                                       ),
                                       const SizedBox(height: 2),
@@ -175,8 +206,11 @@ class _TargetFaceSelectionScreenState extends ConsumerState<TargetFaceSelectionS
                                         target.usedCount > 0
                                             ? '${NumberFormat.decimalPattern('id').format(target.usedCount)}x digunakan'
                                             : '0x digunakan',
-                                        style: theme.textTheme.bodySmall?.copyWith(
-                                          color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.6),
+                                        style:
+                                            theme.textTheme.bodySmall?.copyWith(
+                                          color: theme
+                                              .textTheme.bodySmall?.color
+                                              ?.withValues(alpha: 0.6),
                                           fontSize: 10,
                                         ),
                                       ),

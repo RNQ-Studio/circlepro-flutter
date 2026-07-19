@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../shared/widgets/manah_navigation_button.dart';
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../../domain/scoring_entities.dart';
@@ -29,7 +30,10 @@ class ScoreInputScreen extends ConsumerWidget {
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (e, _) => Scaffold(
-        appBar: AppBar(),
+        appBar: AppBar(
+          leadingWidth: 64,
+          leading: const ManahNavigationButton.back(),
+        ),
         body: Center(child: Text('Gagal memuat sesi: $e')),
       ),
       data: (s) {
@@ -96,6 +100,8 @@ class _ScoreInputView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leadingWidth: 64,
+        leading: const ManahNavigationButton.back(),
         title: Text(
           '${end.isSighter ? 'Percobaan' : 'Ronde'} ${end.endNumber}/${session.numEnds}',
         ),

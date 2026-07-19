@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../shared/widgets/manah_navigation_button.dart';
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../../domain/scoring_entities.dart';
@@ -25,7 +26,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     final async = ref.watch(sessionsListProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Riwayat')),
+      appBar: AppBar(
+        leadingWidth: 64,
+        leading: const ManahNavigationButton.back(),
+        title: const Text('Riwayat'),
+      ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Gagal memuat: $e')),
@@ -52,8 +57,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                     child: ListView.separated(
                       padding: const EdgeInsets.all(ManahSpacing.base),
                       itemCount: filtered.length,
-                      separatorBuilder: (_, __) => const SizedBox(height: ManahSpacing.sm),
-                      itemBuilder: (context, i) => _SessionCard(session: filtered[i]),
+                      separatorBuilder: (_, __) =>
+                          const SizedBox(height: ManahSpacing.sm),
+                      itemBuilder: (context, i) =>
+                          _SessionCard(session: filtered[i]),
                     ),
                   ),
                 ),
@@ -66,7 +73,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 }
 
 class _FilterBar extends StatelessWidget {
-  const _FilterBar({required this.sessions, required this.selected, required this.onSelected});
+  const _FilterBar(
+      {required this.sessions,
+      required this.selected,
+      required this.onSelected});
 
   final List<ScoringSessionEntity> sessions;
   final BowClass? selected;
@@ -79,7 +89,8 @@ class _FilterBar extends StatelessWidget {
       height: 52,
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: ManahSpacing.base, vertical: ManahSpacing.sm),
+        padding: const EdgeInsets.symmetric(
+            horizontal: ManahSpacing.base, vertical: ManahSpacing.sm),
         children: [
           ChoiceChip(
             label: const Text('Semua'),
@@ -127,7 +138,8 @@ class _SessionCard extends StatelessWidget {
         },
         title: Row(
           children: [
-            Text('${session.bowClass.label} · ${session.distanceCategory.label}'),
+            Text(
+                '${session.bowClass.label} · ${session.distanceCategory.label}'),
             if (session.isPersonalBest) ...[
               const SizedBox(width: ManahSpacing.sm),
               const Text('🎯', style: TextStyle(fontSize: 14)),
@@ -140,9 +152,13 @@ class _SessionCard extends StatelessWidget {
             if (!inProgress) ...[
               const SizedBox(width: ManahSpacing.xs),
               Icon(
-                session.isSynced ? Icons.cloud_done_outlined : Icons.cloud_upload_outlined,
+                session.isSynced
+                    ? Icons.cloud_done_outlined
+                    : Icons.cloud_upload_outlined,
                 size: 14,
-                color: session.isSynced ? ManahColors.success : ManahColors.mediumGrey,
+                color: session.isSynced
+                    ? ManahColors.success
+                    : ManahColors.mediumGrey,
               ),
             ],
           ],
@@ -159,7 +175,8 @@ class _SessionCard extends StatelessWidget {
               ),
             ),
             if (!inProgress)
-              Text('/ ${session.maxPossibleScore}', style: theme.textTheme.bodySmall),
+              Text('/ ${session.maxPossibleScore}',
+                  style: theme.textTheme.bodySmall),
           ],
         ),
       ),

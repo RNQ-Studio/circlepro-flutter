@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../features/feed/presentation/feed_providers.dart';
+import '../../../../shared/widgets/manah_navigation_button.dart';
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../../domain/scoring_entities.dart';
@@ -24,8 +25,8 @@ class SessionSummaryScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ringkasan Sesi'),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
+        leadingWidth: 64,
+        leading: ManahNavigationButton.close(
           onPressed: () => context.go('/'),
         ),
       ),
@@ -70,15 +71,19 @@ class _SummaryBody extends StatelessWidget {
               padding: const EdgeInsets.all(ManahSpacing.lg),
               child: Column(
                 children: [
-                  Text('TOTAL SKOR', style: theme.textTheme.labelSmall?.copyWith(color: Colors.white70)),
+                  Text('TOTAL SKOR',
+                      style: theme.textTheme.labelSmall
+                          ?.copyWith(color: Colors.white70)),
                   const SizedBox(height: ManahSpacing.xs),
                   Text(
                     '${session.totalScore}',
-                    style: theme.textTheme.displayLarge?.copyWith(color: Colors.white),
+                    style: theme.textTheme.displayLarge
+                        ?.copyWith(color: Colors.white),
                   ),
                   Text(
                     'dari ${session.maxPossibleScore}',
-                    style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                    style: theme.textTheme.bodyMedium
+                        ?.copyWith(color: Colors.white70),
                   ),
                 ],
               ),
@@ -87,16 +92,27 @@ class _SummaryBody extends StatelessWidget {
           const SizedBox(height: ManahSpacing.base),
           Row(
             children: [
-              _StatTile(label: 'Avg/Panah', value: session.avgPerArrow?.toStringAsFixed(2) ?? '–'),
+              _StatTile(
+                  label: 'Avg/Panah',
+                  value: session.avgPerArrow?.toStringAsFixed(2) ?? '–'),
               _StatTile(label: 'Panah', value: '${session.arrowsShot}'),
             ],
           ),
           const SizedBox(height: ManahSpacing.sm),
           Row(
             children: [
-              _StatTile(label: 'X', value: '${session.xCount}', accent: ManahColors.amberDeep),
-              _StatTile(label: '10', value: '${session.tenCount}', accent: ManahColors.amberDeep),
-              _StatTile(label: 'Miss', value: '${session.missCount}', accent: ManahColors.error),
+              _StatTile(
+                  label: 'X',
+                  value: '${session.xCount}',
+                  accent: ManahColors.amberDeep),
+              _StatTile(
+                  label: '10',
+                  value: '${session.tenCount}',
+                  accent: ManahColors.amberDeep),
+              _StatTile(
+                  label: 'Miss',
+                  value: '${session.missCount}',
+                  accent: ManahColors.error),
             ],
           ),
           const SizedBox(height: ManahSpacing.lg),
@@ -143,7 +159,8 @@ class _StatTile extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Text(value, style: theme.textTheme.headlineSmall?.copyWith(color: accent)),
+            Text(value,
+                style: theme.textTheme.headlineSmall?.copyWith(color: accent)),
             Text(label, style: theme.textTheme.labelSmall),
           ],
         ),
@@ -167,7 +184,10 @@ class _EndBars extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: ManahSpacing.xs),
           child: Row(
             children: [
-              SizedBox(width: 32, child: Text('R${end.endNumber}', style: Theme.of(context).textTheme.bodySmall)),
+              SizedBox(
+                  width: 32,
+                  child: Text('R${end.endNumber}',
+                      style: Theme.of(context).textTheme.bodySmall)),
               Expanded(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(ManahRadius.sm),
@@ -175,7 +195,8 @@ class _EndBars extends StatelessWidget {
                     value: ratio.clamp(0.0, 1.0),
                     minHeight: 18,
                     backgroundColor: ManahColors.brandSurface,
-                    valueColor: const AlwaysStoppedAnimation(ManahColors.brandLight),
+                    valueColor:
+                        const AlwaysStoppedAnimation(ManahColors.brandLight),
                   ),
                 ),
               ),
@@ -230,7 +251,8 @@ class _ShareToFeedButtonState extends ConsumerState<_ShareToFeedButton> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal membagikan: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Gagal membagikan: $e')));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -242,7 +264,10 @@ class _ShareToFeedButtonState extends ConsumerState<_ShareToFeedButton> {
     return OutlinedButton.icon(
       onPressed: (_busy || _shared) ? null : _share,
       icon: _busy
-          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2))
           : Icon(_shared ? Icons.check : Icons.forum_outlined),
       label: Text(_shared ? 'Sudah dibagikan' : 'Bagikan ke Feed'),
     );

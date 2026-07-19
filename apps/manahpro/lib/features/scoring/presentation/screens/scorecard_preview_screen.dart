@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../../shared/widgets/manah_navigation_button.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../../domain/scoring_entities.dart';
 import '../scoring_providers.dart';
@@ -21,16 +22,19 @@ class ScorecardPreviewScreen extends ConsumerStatefulWidget {
   final String sessionId;
 
   @override
-  ConsumerState<ScorecardPreviewScreen> createState() => _ScorecardPreviewScreenState();
+  ConsumerState<ScorecardPreviewScreen> createState() =>
+      _ScorecardPreviewScreenState();
 }
 
-class _ScorecardPreviewScreenState extends ConsumerState<ScorecardPreviewScreen> {
+class _ScorecardPreviewScreenState
+    extends ConsumerState<ScorecardPreviewScreen> {
   final GlobalKey _boundaryKey = GlobalKey();
   bool _busy = false;
 
   /// Render the scorecard boundary to a PNG file in [dir].
   Future<File> _capture(Directory dir) async {
-    final boundary = _boundaryKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+    final boundary = _boundaryKey.currentContext!.findRenderObject()
+        as RenderRepaintBoundary;
     final image = await boundary.toImage(pixelRatio: 3);
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
     final file = File('${dir.path}/scorecard_${widget.sessionId}.png');
@@ -44,7 +48,8 @@ class _ScorecardPreviewScreenState extends ConsumerState<ScorecardPreviewScreen>
       await action();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Gagal: $e')));
       }
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -75,7 +80,11 @@ class _ScorecardPreviewScreenState extends ConsumerState<ScorecardPreviewScreen>
     final repo = ref.watch(scoringRepositoryProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Scorecard')),
+      appBar: AppBar(
+        leadingWidth: 64,
+        leading: const ManahNavigationButton.back(),
+        title: const Text('Scorecard'),
+      ),
       body: FutureBuilder<ScoringSessionEntity?>(
         future: repo.getSession(widget.sessionId),
         builder: (context, snapshot) {
@@ -118,7 +127,10 @@ class _ScorecardPreviewScreenState extends ConsumerState<ScorecardPreviewScreen>
                           onPressed: _busy ? null : _share,
                           icon: _busy
                               ? const SizedBox(
-                                  width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                      strokeWidth: 2, color: Colors.white))
                               : const Icon(Icons.share),
                           label: const Text('Bagikan'),
                         ),

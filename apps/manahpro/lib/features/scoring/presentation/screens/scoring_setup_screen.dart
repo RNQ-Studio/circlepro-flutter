@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:core/core.dart';
 
+import '../../../../shared/widgets/manah_navigation_button.dart';
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../../../monetization/presentation/monetization_providers.dart';
@@ -291,7 +292,11 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
     final sighterArrows = _sighterEndCount * _arrowsPerEnd;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mulai Scoring')),
+      appBar: AppBar(
+        leadingWidth: 64,
+        leading: const ManahNavigationButton.back(),
+        title: const Text('Mulai Scoring'),
+      ),
       body: SafeArea(
         top: false,
         child: ListView(

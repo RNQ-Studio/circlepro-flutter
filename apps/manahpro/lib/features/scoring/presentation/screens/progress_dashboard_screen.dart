@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../shared/widgets/manah_navigation_button.dart';
 import '../../../../theme/manah_colors.dart';
 import '../../../../theme/manah_tokens.dart';
 import '../dashboard_provider.dart';
@@ -18,7 +19,11 @@ class ProgressDashboardScreen extends ConsumerWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Statistik')),
+      appBar: AppBar(
+        leadingWidth: 64,
+        leading: const ManahNavigationButton.back(),
+        title: const Text('Statistik'),
+      ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Gagal memuat: $e')),
@@ -49,16 +54,18 @@ class ProgressDashboardScreen extends ConsumerWidget {
                   ),
                   _StatCard(
                     label: 'STREAK',
-                    value: stats.currentStreakDays > 0 
+                    value: stats.currentStreakDays > 0
                         ? '${stats.currentStreakDays} Hari'
                         : '0 Hari',
                     icon: Icons.whatshot,
                     accentColor: ManahColors.error,
-                    borderColor: stats.currentStreakDays > 0 
+                    borderColor: stats.currentStreakDays > 0
                         ? ManahColors.error.withValues(alpha: 0.25)
                         : null,
-                    backgroundColor: stats.currentStreakDays > 0 
-                        ? (isDark ? const Color(0x1AE53935) : const Color(0x0DE53935))
+                    backgroundColor: stats.currentStreakDays > 0
+                        ? (isDark
+                            ? const Color(0x1AE53935)
+                            : const Color(0x0DE53935))
                         : null,
                     isHero: true,
                   ),
@@ -88,7 +95,8 @@ class ProgressDashboardScreen extends ConsumerWidget {
               ),
               const SizedBox(height: ManahSpacing.xl),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: ManahSpacing.xs),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: ManahSpacing.xs),
                 child: Text(
                   'Tren Rata-rata per Panah',
                   style: theme.textTheme.titleMedium?.copyWith(
@@ -147,13 +155,19 @@ class _StatCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final finalBgColor = backgroundColor ?? (isHero 
-        ? (isDark ? ManahColors.darkSurface : Colors.white)
-        : (isDark ? ManahColors.darkBg : ManahColors.lightGrey));
-        
-    final finalBorderColor = borderColor ?? (isHero 
-        ? (isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.05))
-        : (isDark ? Colors.white.withValues(alpha: 0.04) : Colors.black.withValues(alpha: 0.02)));
+    final finalBgColor = backgroundColor ??
+        (isHero
+            ? (isDark ? ManahColors.darkSurface : Colors.white)
+            : (isDark ? ManahColors.darkBg : ManahColors.lightGrey));
+
+    final finalBorderColor = borderColor ??
+        (isHero
+            ? (isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.05))
+            : (isDark
+                ? Colors.white.withValues(alpha: 0.04)
+                : Colors.black.withValues(alpha: 0.02)));
 
     return Expanded(
       child: Container(
@@ -186,7 +200,8 @@ class _StatCard extends StatelessWidget {
                 Text(
                   label,
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.textTheme.labelSmall?.color?.withValues(alpha: 0.6),
+                    color: theme.textTheme.labelSmall?.color
+                        ?.withValues(alpha: 0.6),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -194,18 +209,21 @@ class _StatCard extends StatelessWidget {
                   Icon(
                     icon,
                     size: isHero ? 20 : 16,
-                    color: accentColor ?? (isDark ? Colors.white54 : Colors.black45),
+                    color: accentColor ??
+                        (isDark ? Colors.white54 : Colors.black45),
                   ),
               ],
             ),
             const SizedBox(height: ManahSpacing.xs),
             Text(
               value,
-              style: (isHero 
-                  ? theme.textTheme.headlineMedium 
-                  : theme.textTheme.titleMedium)?.copyWith(
+              style: (isHero
+                      ? theme.textTheme.headlineMedium
+                      : theme.textTheme.titleMedium)
+                  ?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: accentColor ?? (isDark ? Colors.white : ManahColors.nearBlack),
+                color: accentColor ??
+                    (isDark ? Colors.white : ManahColors.nearBlack),
               ),
             ),
           ],
@@ -225,7 +243,8 @@ class _TrendChart extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     final spots = [
-      for (var i = 0; i < trend.length; i++) FlSpot(i.toDouble(), trend[i].avgPerArrow),
+      for (var i = 0; i < trend.length; i++)
+        FlSpot(i.toDouble(), trend[i].avgPerArrow),
     ];
 
     // Find the index of the highest avgPerArrow (peak performance)
@@ -253,9 +272,12 @@ class _TrendChart extends StatelessWidget {
         ),
         borderData: FlBorderData(show: false),
         titlesData: FlTitlesData(
-          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          bottomTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          bottomTitles:
+              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
           leftTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -267,7 +289,8 @@ class _TrendChart extends StatelessWidget {
                   child: Text(
                     value.toStringAsFixed(0),
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.5),
+                      color: theme.textTheme.bodySmall?.color
+                          ?.withValues(alpha: 0.5),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -278,25 +301,37 @@ class _TrendChart extends StatelessWidget {
         ),
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (touchedSpot) => isDark ? ManahColors.darkElevated : Colors.white,
+            getTooltipColor: (touchedSpot) =>
+                isDark ? ManahColors.darkElevated : Colors.white,
             tooltipBorder: BorderSide(
               color: theme.dividerColor.withValues(alpha: 0.1),
               width: 1,
             ),
-            tooltipPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            tooltipPadding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             getTooltipItems: (touchedSpots) {
               return touchedSpots.map((spot) {
                 final index = spot.x.toInt();
                 if (index < 0 || index >= trend.length) return null;
                 final pt = trend[index];
-                
+
                 // Format date as "d MMM" (e.g. "4 Jun")
                 final months = [
-                  'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 
-                  'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'
+                  'Jan',
+                  'Feb',
+                  'Mar',
+                  'Apr',
+                  'Mei',
+                  'Jun',
+                  'Jul',
+                  'Agt',
+                  'Sep',
+                  'Okt',
+                  'Nov',
+                  'Des'
                 ];
                 final dateStr = '${pt.date.day} ${months[pt.date.month - 1]}';
-                
+
                 return LineTooltipItem(
                   '${pt.avgPerArrow.toStringAsFixed(2)} / 10\n$dateStr\nTotal: ${pt.totalScore}',
                   theme.textTheme.bodySmall!.copyWith(
