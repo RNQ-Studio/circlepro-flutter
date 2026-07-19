@@ -405,16 +405,18 @@ class DistanceSelector extends StatelessWidget {
   const DistanceSelector({
     super.key,
     required this.selected,
+    required this.effectiveMeters,
     required this.onChanged,
   });
 
   final DistanceCategory selected;
+  final int effectiveMeters;
   final ValueChanged<DistanceCategory> onChanged;
 
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<DistanceCategory>(
-      key: ValueKey(selected),
+      key: ValueKey((selected, effectiveMeters)),
       initialValue: selected,
       decoration: const InputDecoration(labelText: 'Jarak'),
       items: [
@@ -422,6 +424,14 @@ class DistanceSelector extends StatelessWidget {
           DropdownMenuItem(
             value: distance,
             child: Text(distance.label),
+          ),
+      ],
+      selectedItemBuilder: (context) => [
+        for (final distance in DistanceCategory.values)
+          Text(
+            distance == selected && effectiveMeters != distance.meters
+                ? '${effectiveMeters}m'
+                : distance.label,
           ),
       ],
       onChanged: (value) {
@@ -867,7 +877,7 @@ class SessionActionBar extends StatelessWidget {
   const SessionActionBar({
     super.key,
     required this.bowClass,
-    required this.distance,
+    required this.distanceM,
     required this.environment,
     required this.countedArrows,
     required this.sighterArrows,
@@ -879,7 +889,7 @@ class SessionActionBar extends StatelessWidget {
   });
 
   final BowClass bowClass;
-  final DistanceCategory distance;
+  final int distanceM;
   final ArcheryEnvironment environment;
   final int countedArrows;
   final int sighterArrows;
@@ -925,7 +935,7 @@ class SessionActionBar extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${distance.label} · ${bowClass.label} · ${environment.label}',
+                          '${distanceM}m · ${bowClass.label} · ${environment.label}',
                           style: theme.textTheme.titleSmall,
                         ),
                         const SizedBox(height: ManahSpacing.xs),

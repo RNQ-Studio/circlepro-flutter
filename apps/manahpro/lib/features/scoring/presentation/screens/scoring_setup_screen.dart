@@ -45,6 +45,8 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
   bool _hasLoadedLastSelected = false;
   bool _initialTargetFaceApplied = false;
 
+  int get _effectiveDistanceM => _selectedPreset?.distanceM ?? _distance.meters;
+
   @override
   void initState() {
     super.initState();
@@ -247,7 +249,7 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
       final session = await ref.read(scoringRepositoryProvider).startSession(
             bowClass: _bowClass,
             distanceCategory: _distance,
-            distanceM: _selectedPreset?.distanceM ?? _distance.meters,
+            distanceM: _effectiveDistanceM,
             numEnds: _numEnds,
             arrowsPerEnd: _arrowsPerEnd,
             environment: _environment,
@@ -285,7 +287,20 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
     final subscription = ref.watch(userSubscriptionProvider).value;
     final isGated = subscription?.isGated ?? false;
 
-    if (!_initialTargetFaceApplied &&
+    final activePreset = _selectedPreset;
+    if (activePreset != null && targetFaces.isNotEmpty) {
+      final compatibleTarget = _targetFaceForPreset(
+        activePreset,
+        targetFaces,
+      );
+      if (compatibleTarget != _selectedTargetFace) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted || _selectedPreset != activePreset) return;
+          if (_selectedTargetFace == compatibleTarget) return;
+          setState(() => _selectedTargetFace = compatibleTarget);
+        });
+      }
+    } else if (!_initialTargetFaceApplied &&
         targetFaces.isNotEmpty &&
         _hasLoadedLastSelected) {
       _initialTargetFaceApplied = true;
@@ -295,7 +310,11 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
       if (matchingTargets.isNotEmpty) {
         final target = matchingTargets.first;
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!mounted || _selectedTargetFace != null) return;
+          if (!mounted ||
+              _selectedTargetFace != null ||
+              _selectedPreset != null) {
+            return;
+          }
           setState(() => _selectedTargetFace = target);
         });
       }
@@ -374,6 +393,7 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
                   const SizedBox(height: ManahSpacing.base),
                   DistanceSelector(
                     selected: _distance,
+                    effectiveMeters: _effectiveDistanceM,
                     onChanged: _updateDistance,
                   ),
                   const SizedBox(height: ManahSpacing.base),
@@ -453,7 +473,7 @@ class _ScoringSetupScreenState extends ConsumerState<ScoringSetupScreen> {
       ),
       bottomNavigationBar: SessionActionBar(
         bowClass: _bowClass,
-        distance: _distance,
+        distanceM: _effectiveDistanceM,
         environment: _environment,
         countedArrows: countedArrows,
         sighterArrows: sighterArrows,

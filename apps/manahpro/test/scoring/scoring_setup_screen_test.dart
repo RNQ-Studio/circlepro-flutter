@@ -348,6 +348,59 @@ void main() {
     expect(repository.startedTargetFaceId, isNull);
   });
 
+  testWidgets('reconciles a late target cache with the active preset',
+      (tester) async {
+    SharedPreferences.setMockInitialValues({
+      'last_selected_target_face_id': _targetFace.id,
+    });
+    final repository = _FakeScoringRepository(targets: const []);
+    await tester.pumpWidget(buildSubject(repository: repository));
+    await tester.pumpAndSettle();
+
+    final presetField = find.byKey(const ValueKey('round-preset-field'));
+    await _reveal(tester, presetField);
+    await tester.tap(presetField);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Latihan 30m'));
+    await tester.pumpAndSettle();
+    expect(find.text('Pilih target untuk mulai'), findsOneWidget);
+
+    repository.emitTargets(const [_targetFace, _targetFace80]);
+    await tester.pumpAndSettle();
+    await _reveal(tester, find.text(_targetFace80.name));
+
+    expect(find.text(_targetFace80.name), findsOneWidget);
+    expect(find.text(_targetFace.name), findsNothing);
+    expect(find.text('Pilih target untuk mulai'), findsNothing);
+  });
+
+  testWidgets('shows and submits the exact WA 18 meter preset distance',
+      (tester) async {
+    final repository = _FakeScoringRepository(targets: const [_targetFace40]);
+    await tester.pumpWidget(buildSubject(repository: repository));
+    await tester.pumpAndSettle();
+
+    final presetField = find.byKey(const ValueKey('round-preset-field'));
+    await _reveal(tester, presetField);
+    await tester.tap(presetField);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('WA 18m Indoor'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('18m · Recurve · Indoor'), findsOneWidget);
+    expect(find.text('20m · Recurve · Indoor'), findsNothing);
+    await tester.tap(find.byKey(const ValueKey('start-scoring-button')));
+    await tester.pumpAndSettle();
+
+    expect(repository.startedDistance, DistanceCategory.d20m);
+    expect(repository.startedDistanceM, 18);
+    expect(repository.startedTargetFaceId, _targetFace40.id);
+    expect(repository.startedTargetFaceCm, 40);
+    expect(repository.startedSighterEndCount, 2);
+    expect(repository.startedMaxPossibleScoreOverride, 540);
+    expect(repository.startedTitle, 'WA 18m Indoor');
+  });
+
   testWidgets('shows human target error and retries the local-first provider',
       (tester) async {
     final repository = _FakeScoringRepository(
@@ -548,6 +601,29 @@ const _targetFace80 = TargetFaceEntity(
   code: 'fita_80',
   name: 'Target FITA 80 cm',
   usedCount: 18,
+  scoringRules: [
+    TargetFaceRule(
+      value: 10,
+      label: '10',
+      colorHex: '#F4C430',
+    ),
+    TargetFaceRule(
+      value: 0,
+      label: 'M',
+      colorHex: '#C94F5A',
+      isMiss: true,
+    ),
+  ],
+);
+
+const _targetFace40 = TargetFaceEntity(
+  id: 'target-40',
+  organizationId: 'org-manahpro',
+  organizationName: 'ManahPro',
+  organizationSlug: 'manahpro',
+  code: 'fita_40',
+  name: 'Target FITA 40 cm',
+  usedCount: 9,
   scoringRules: [
     TargetFaceRule(
       value: 10,
