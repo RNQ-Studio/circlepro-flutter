@@ -20,7 +20,7 @@ abstract final class ManahRadius {
   static const double sm = 8;
   static const double md = 12;
   static const double lg = 16;
-  static const double xl = 24;
+  static const double xl = 28;
   static const double full = 9999;
 }
 
@@ -28,6 +28,6 @@ abstract final class ManahRadius {
 abstract final class ManahBorderRadius {
   static const double small = 8;
   static const double badge = 9999;
-  static const double card = 16;
+  static const double card = 12;
   static const double button = 12;
 }

@@ -4,105 +4,213 @@ import 'manah_colors.dart';
 import 'manah_text_styles.dart';
 import 'manah_tokens.dart';
 
-/// ManahPro app-level theme (light & dark) built on Material 3 with the
-/// Forest Archery brand. Used by [App] instead of the shared core theme so the
-/// `variant` flavor is unaffected.
+/// ManahPro app-level Material 3 theme.
+///
+/// This remains isolated from the shared core theme used by `apps/variant`.
 abstract final class ManahTheme {
   static ThemeData get light => _build(Brightness.light);
   static ThemeData get dark => _build(Brightness.dark);
 
   static ThemeData _build(Brightness brightness) {
     final isDark = brightness == Brightness.dark;
+    final scaffoldBackground =
+        isDark ? ManahColors.darkBg : ManahColors.lightBg;
+    final surface = isDark ? ManahColors.darkSurface : ManahColors.nearWhite;
+    final onSurface =
+        isDark ? ManahColors.darkOnSurface : ManahColors.nearBlack;
+    final primary = isDark ? ManahColors.brandLight : ManahColors.brand;
+    final onPrimary = isDark ? ManahColors.darkBg : ManahColors.nearWhite;
 
     final colorScheme = ColorScheme.fromSeed(
       seedColor: ManahColors.brand,
       brightness: brightness,
-      primary: ManahColors.brand,
-      secondary: ManahColors.amberDeep,
-      error: ManahColors.error,
+    ).copyWith(
+      primary: primary,
+      onPrimary: onPrimary,
+      primaryContainer:
+          isDark ? ManahColors.brandContainerDark : ManahColors.brandSurface,
+      onPrimaryContainer:
+          isDark ? ManahColors.onBrandContainerDark : ManahColors.nearBlack,
+      secondary: isDark ? ManahColors.amberDark : ManahColors.amberDeep,
+      onSecondary: isDark ? ManahColors.onAmberDark : ManahColors.nearWhite,
+      secondaryContainer:
+          isDark ? ManahColors.darkContainerHigh : ManahColors.amberSurface,
+      onSecondaryContainer:
+          isDark ? ManahColors.amberDark : ManahColors.nearBlack,
+      error: isDark ? ManahColors.errorDark : ManahColors.error,
+      onError: isDark ? ManahColors.nearBlack : ManahColors.nearWhite,
+      surface: surface,
+      onSurface: onSurface,
+      surfaceContainerLowest:
+          isDark ? ManahColors.darkBg : ManahColors.nearWhite,
+      surfaceContainerLow:
+          isDark ? ManahColors.darkContainerLow : ManahColors.lightContainerLow,
+      surfaceContainer:
+          isDark ? ManahColors.darkElevated : ManahColors.lightGrey,
+      surfaceContainerHigh: isDark
+          ? ManahColors.darkContainerHigh
+          : ManahColors.lightContainerHigh,
+      surfaceContainerHighest: isDark
+          ? ManahColors.darkContainerHighest
+          : ManahColors.lightContainerHighest,
+      onSurfaceVariant:
+          isDark ? ManahColors.darkOnSurfaceVariant : ManahColors.mediumGrey,
+      outline: isDark ? ManahColors.darkOutline : ManahColors.lightOutline,
+      outlineVariant: isDark
+          ? ManahColors.darkOutlineVariant
+          : ManahColors.lightOutlineVariant,
     );
 
-    final textColor = isDark ? const Color(0xFFE8E8E8) : ManahColors.nearBlack;
-    final scaffoldBg = isDark ? ManahColors.darkBg : Colors.white;
-    final surface = isDark ? ManahColors.darkSurface : Colors.white;
+    final inputBorder = OutlineInputBorder(
+      borderRadius: const BorderRadius.all(
+        Radius.circular(ManahRadius.md),
+      ),
+      borderSide: BorderSide(color: colorScheme.outlineVariant),
+    );
 
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: scaffoldBg,
-      textTheme: ManahTextStyles.textTheme(textColor),
+      scaffoldBackgroundColor: scaffoldBackground,
+      textTheme: ManahTextStyles.textTheme(onSurface),
       appBarTheme: AppBarTheme(
-        backgroundColor: scaffoldBg,
-        foregroundColor: textColor,
+        backgroundColor: scaffoldBackground,
+        foregroundColor: onSurface,
         elevation: 0,
-        scrolledUnderElevation: 0.5,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         centerTitle: false,
-        titleTextStyle: ManahTextStyles.h3.copyWith(color: textColor),
+        titleTextStyle: ManahTextStyles.h3.copyWith(color: onSurface),
       ),
       cardTheme: CardThemeData(
-        color: surface,
+        color: colorScheme.surface,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ManahRadius.lg),
+          borderRadius: const BorderRadius.all(
+            Radius.circular(ManahRadius.md),
+          ),
+          side: BorderSide(color: colorScheme.outlineVariant),
         ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: ManahColors.brand,
-          foregroundColor: Colors.white,
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
+          disabledBackgroundColor: colorScheme.surfaceContainerHighest,
+          disabledForegroundColor: colorScheme.onSurfaceVariant,
           minimumSize: const Size(double.infinity, 52),
-          textStyle: ManahTextStyles.bodyL.copyWith(fontWeight: FontWeight.w600),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(ManahRadius.md),
+          textStyle: ManahTextStyles.bodyM.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(ManahRadius.md),
+            ),
           ),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: ManahColors.brand,
-          foregroundColor: Colors.white,
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
           minimumSize: const Size(double.infinity, 52),
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(ManahRadius.md),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(ManahRadius.md),
+            ),
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: ManahColors.brand,
+          foregroundColor: colorScheme.primary,
           minimumSize: const Size(double.infinity, 52),
-          side: const BorderSide(color: ManahColors.brand),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(ManahRadius.md),
+          side: BorderSide(color: colorScheme.outline),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(ManahRadius.md),
+            ),
           ),
         ),
       ),
       chipTheme: ChipThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(ManahRadius.full),
+        backgroundColor: colorScheme.surfaceContainerLow,
+        selectedColor: colorScheme.primaryContainer,
+        disabledColor: colorScheme.surfaceContainerLowest,
+        labelStyle: ManahTextStyles.bodyM.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
+        secondaryLabelStyle: ManahTextStyles.bodyM.copyWith(
+          color: colorScheme.onPrimaryContainer,
+          fontWeight: FontWeight.w600,
+        ),
+        side: BorderSide(color: colorScheme.outlineVariant),
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(ManahRadius.sm)),
+        ),
+      ),
+      segmentedButtonTheme: SegmentedButtonThemeData(
+        style: ButtonStyle(
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            return states.contains(WidgetState.selected)
+                ? colorScheme.onPrimaryContainer
+                : colorScheme.onSurfaceVariant;
+          }),
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            return states.contains(WidgetState.selected)
+                ? colorScheme.primaryContainer
+                : colorScheme.surfaceContainerLow;
+          }),
+          side: WidgetStatePropertyAll(
+            BorderSide(color: colorScheme.outlineVariant),
+          ),
+          shape: const WidgetStatePropertyAll(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(ManahRadius.md),
+              ),
+            ),
+          ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: isDark ? ManahColors.darkElevated : ManahColors.lightGrey,
+        fillColor: colorScheme.surfaceContainerLow,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: ManahSpacing.base,
           vertical: ManahSpacing.base,
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(ManahRadius.md),
-          borderSide: BorderSide.none,
+        border: inputBorder,
+        enabledBorder: inputBorder,
+        disabledBorder: inputBorder,
+        focusedBorder: inputBorder.copyWith(
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(ManahRadius.md),
-          borderSide: BorderSide.none,
+        errorBorder: inputBorder.copyWith(
+          borderSide: BorderSide(color: colorScheme.error),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(ManahRadius.md),
-          borderSide: const BorderSide(color: ManahColors.brand, width: 1.5),
+        focusedErrorBorder: inputBorder.copyWith(
+          borderSide: BorderSide(color: colorScheme.error, width: 2),
+        ),
+      ),
+      dividerTheme: DividerThemeData(
+        color: colorScheme.outlineVariant,
+        thickness: 1,
+        space: 1,
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: colorScheme.surface,
+        surfaceTintColor: Colors.transparent,
+        modalBackgroundColor: colorScheme.surface,
+        modalBarrierColor: colorScheme.scrim.withValues(alpha: 0.48),
+        showDragHandle: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(ManahRadius.xl),
+          ),
         ),
       ),
     );
