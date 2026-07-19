@@ -24,6 +24,7 @@ void main() {
   Widget buildSubject({
     List<ScoringSessionEntity> sessions = const [],
     Object? sessionsError,
+    bool failSessionsOnce = false,
     ThemeMode themeMode = ThemeMode.light,
     TextScaler textScaler = TextScaler.noScaling,
     bool isAuthenticated = true,
@@ -88,11 +89,17 @@ void main() {
           )
         : const AuthUnauthenticated();
 
+    var sessionsHaveFailed = false;
+
     return ProviderScope(
       overrides: [
         authProvider.overrideWith(() => FakeAuthNotifier(authState)),
         sessionsListProvider.overrideWith((_) async {
-          if (sessionsError != null) throw sessionsError;
+          if (sessionsError != null &&
+              (!failSessionsOnce || !sessionsHaveFailed)) {
+            sessionsHaveFailed = true;
+            throw sessionsError;
+          }
           return sessions;
         }),
       ],
@@ -207,10 +214,13 @@ void main() {
     expect(find.text('Login destination'), findsOneWidget);
   });
 
-  testWidgets('shows a human error state without leaking the exception',
+  testWidgets('recovers from a session loading error through retry',
       (tester) async {
     await tester.pumpWidget(
-      buildSubject(sessionsError: StateError('database failed internally')),
+      buildSubject(
+        sessionsError: StateError('database failed internally'),
+        failSessionsOnce: true,
+      ),
     );
     await tester.pump();
     await tester.pump();
@@ -218,16 +228,22 @@ void main() {
     expect(find.text('Data scoring belum bisa dimuat.'), findsOneWidget);
     expect(find.text('Coba lagi'), findsOneWidget);
     expect(find.textContaining('database failed'), findsNothing);
+
+    await tester.tap(find.text('Coba lagi'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Data scoring belum bisa dimuat.'), findsNothing);
+    expect(find.text('Mulai scoring'), findsOneWidget);
   });
 
-  testWidgets('fits compact light theme at 1.3 text scale', (tester) async {
+  testWidgets('fits compact light theme at 2.0 text scale', (tester) async {
     await tester.binding.setSurfaceSize(const Size(360, 690));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
     await tester.pumpWidget(
       buildSubject(
         sessions: [_activeSession(), _completedSession()],
-        textScaler: const TextScaler.linear(1.3),
+        textScaler: const TextScaler.linear(2),
       ),
     );
     await tester.pumpAndSettle();
@@ -235,7 +251,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('fits compact dark theme at 1.3 text scale', (tester) async {
+  testWidgets('fits compact dark theme at 2.0 text scale', (tester) async {
     await tester.binding.setSurfaceSize(const Size(360, 690));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -243,7 +259,7 @@ void main() {
       buildSubject(
         sessions: [_activeSession(), _completedSession()],
         themeMode: ThemeMode.dark,
-        textScaler: const TextScaler.linear(1.3),
+        textScaler: const TextScaler.linear(2),
       ),
     );
     await tester.pumpAndSettle();
